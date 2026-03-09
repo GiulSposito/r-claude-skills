@@ -1,9 +1,9 @@
 ---
 name: r-tidymodels
 description: Expert R data science using tidymodels for machine learning. Use when working with tidymodels, recipes, parsnip, tune, workflows, user mentions "machine learning in R", "predictive modeling", "feature engineering", "model tuning", "cross-validation", "hyperparameters", discusses ML workflows, data preprocessing, or model development in R.
-version: 1.0.0
+version: 1.1.0
 user-invocable: false
-allowed-tools: Read, Write, Edit, Bash(Rscript *), Bash(R *)
+allowed-tools: Read, Write, Edit, Bash(Rscript *), Bash(R *), WebFetch
 ---
 
 # R Tidymodels - Expert Machine Learning in R
@@ -52,6 +52,99 @@ library(tidyverse)   # Data manipulation and visualization
 - `probably` - Probability calibration
 - `applicable` - Applicability domain assessment
 - `vip` - Variable importance plots
+
+## Dynamic Reference Lookup
+
+This skill combines curated local knowledge (~100 recipe steps, ~50 models) with the ability to search the complete tidymodels reference (300+ steps, 160+ models) when needed.
+
+### When to Use Dynamic Lookup
+
+**Use WebFetch to search online when:**
+- User asks about a specific recipe step not in local knowledge
+- User needs to find models with specific capabilities
+- User asks about prediction type support for model/engine combinations
+- User needs sparse data compatibility information
+- Searching for recently added tidymodels functionality
+
+**Use local knowledge when:**
+- Providing general guidance on workflow and best practices
+- Explaining common patterns and step ordering
+- Teaching concepts and principles
+- Most common recipe steps and models (covered comprehensively)
+
+### Available Search Tools
+
+**1. Recipe Steps Search** (300+ steps)
+- URL: https://www.tidymodels.org/find/recipes/
+- Columns: Title (description), Topic (function name), Package
+- Use for: Finding specific preprocessing steps, exploring packages like themis, textrecipes, embed
+
+**Example queries:**
+```
+WebFetch: "Search for recipe steps related to 'holiday' or 'date features'"
+WebFetch: "Find all SMOTE-related recipe steps from themis package"
+```
+
+**2. Parsnip Models Search** (160+ models)
+- URL: https://www.tidymodels.org/find/parsnip/
+- Columns: Title, Model (function), Engine, Mode, Package
+- Use for: Finding specific model types, discovering available engines, checking package sources
+
+**Example queries:**
+```
+WebFetch: "Find all gradient boosting models available in parsnip"
+WebFetch: "What engines are available for neural networks?"
+```
+
+**3. Prediction Types Matrix**
+- URL: https://www.tidymodels.org/find/parsnip_pred_types/
+- Shows which prediction types (numeric, class, prob, conf_int, pred_int, quantile, raw) each model/engine supports
+- Use for: Verifying if a model/engine combination supports needed prediction type
+
+**Example queries:**
+```
+WebFetch: "Does svm_rbf with liquidSVM engine support confidence intervals?"
+WebFetch: "Which random forest engines support prediction intervals?"
+```
+
+**4. Sparse Data Compatibility**
+- URL: https://www.tidymodels.org/find/sparse/
+- Lists methods compatible with sparse matrices
+- Use for: Building models with high-dimensional sparse data
+
+**Example queries:**
+```
+WebFetch: "Which recipe steps work with sparse matrices?"
+WebFetch: "Can I use step_pca with sparse data?"
+```
+
+**5. Complete Tidymodels Search**
+- URL: https://www.tidymodels.org/find/all/
+- Searches across all tidymodels packages
+- Use for: Broad searches when you're not sure which category
+
+### Search Pattern
+
+When user asks about specific functionality:
+
+1. **Check local knowledge first** - Most common steps/models are documented
+2. **If not found or user asks for comprehensive list** - Use WebFetch to search appropriate tool
+3. **Extract relevant information** - Function names, descriptions, packages
+4. **Provide context** - How it fits in workflow, when to use, example code
+
+**Example workflow:**
+```
+User: "Is there a recipe step for handling holidays in date data?"
+
+1. Check local knowledge → step_holiday() is documented ✓
+2. Provide answer with example from local knowledge
+
+User: "What are ALL the date-related recipe steps available?"
+
+1. Local knowledge has main ones (step_date, step_holiday, step_time)
+2. Use WebFetch to search https://www.tidymodels.org/find/recipes/ for "date"
+3. Return comprehensive list with descriptions
+```
 
 ## Phase 1: Foundation Workflow
 

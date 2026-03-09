@@ -27,7 +27,18 @@ Three-phase approach based on "Tidy Modeling with R":
 - **Phase 2: Optimization** - Resampling, hyperparameter tuning, model comparison
 - **Phase 3: Production** - Ensembles, interpretability, deployment, monitoring
 
-### 2. Expert Recipe Knowledge
+### 2. Dynamic Knowledge Base 🆕
+
+**Hybrid approach combining curated expertise with live reference lookup:**
+
+- **Local knowledge**: ~100 most common recipe steps and ~50 popular models with detailed guidance
+- **Dynamic search**: Access to complete tidymodels reference (300+ recipe steps, 160+ models)
+- **Smart lookup**: Automatically searches online when you ask about specific functionality not in local knowledge
+- **Always current**: Accesses latest tidymodels documentation for new features
+
+**Example:** Ask "What recipe steps are available for handling holidays?" → Gets instant answer from local knowledge. Ask "Show me ALL date-related recipe steps" → Searches complete online catalog and returns comprehensive list.
+
+### 3. Expert Recipe Knowledge
 
 Comprehensive preprocessing with 100+ recipe steps:
 - Missing data handling (imputation strategies)
@@ -169,6 +180,30 @@ Comprehensive catalog of all recipe steps organized by category with:
 - Pros and cons
 - Example code
 - Critical ordering rules
+
+## Dynamic Search Capabilities 🆕
+
+The skill can search the complete tidymodels online reference when needed:
+
+**Available searches:**
+- **Recipe Steps** (300+): https://www.tidymodels.org/find/recipes/
+- **Parsnip Models** (160+): https://www.tidymodels.org/find/parsnip/
+- **Prediction Types Matrix**: Which prediction types each model/engine supports
+- **Sparse Compatibility**: Methods that work with sparse matrices
+
+**When it searches automatically:**
+- You ask about a specific step/model not in local knowledge
+- You request comprehensive lists ("show me ALL...")
+- You need prediction type compatibility information
+- You ask about sparse data support
+
+**Example queries that trigger search:**
+- "What recipe steps are available for text processing?"
+- "Show me all gradient boosting models in tidymodels"
+- "Does svm_rbf with liquidSVM support confidence intervals?"
+- "Which recipe steps work with sparse matrices?"
+
+The skill intelligently decides when to use curated local knowledge vs. searching the complete online catalog.
 
 ## Key Principles
 
@@ -312,6 +347,12 @@ Ask Claude:
 - "What recipe steps should I use for text data?"
 - "Help me compare multiple models systematically"
 
+### Search Queries 🆕
+- "Find all recipe steps for handling dates and times"
+- "What models are available for survival analysis?"
+- "Does random forest with randomForest engine support prediction intervals?"
+- "Show me all SMOTE variants in tidymodels"
+
 ### Debugging
 - "Why is my recipe failing?"
 - "How do I fix this novel factor level error?"
@@ -342,9 +383,15 @@ For questions about tidymodels itself, visit [forum.posit.co](https://forum.posi
 
 ## Version
 
-**Version:** 1.0.0
+**Version:** 1.1.0 🆕
 **Last Updated:** 2026-03-08
 **Based on:** tidymodels 1.2.0, Tidy Modeling with R (2024 edition)
+
+**What's New in 1.1.0:**
+- ✨ Dynamic search capability with WebFetch
+- 🔍 Access to complete tidymodels online reference (300+ steps, 160+ models)
+- 🎯 Smart hybrid approach: curated local knowledge + comprehensive online catalog
+- 📊 Prediction types matrix, sparse compatibility, and more search tools
 
 ---
 

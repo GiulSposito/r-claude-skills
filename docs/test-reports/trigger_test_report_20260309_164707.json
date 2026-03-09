@@ -1,0 +1,126 @@
+{
+  "timestamp": "2026-03-09T16:47:07.237904",
+  "tests_run": 12,
+  "skills": {
+    "tidyverse-expert": {
+      "positive": [
+        {
+          "prompt": "Como uso dplyr para filtrar dados?",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Preciso pivotar uma tabela com tidyr",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Como mapear uma fun\u00e7\u00e3o com purrr?",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Manipule estas strings com stringr",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Como fazer um join entre dois data frames?",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Use mutate para criar novas colunas",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "context": [
+        {
+          "prompt": "df %>% filter(x > 10) %>% select(a, b)\n# What else can I do?",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "I need to reshape this wide dataset to long format",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "How do I apply a function to each group?",
+          "expected": "tidyverse-expert",
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "negative": [
+        {
+          "prompt": "Filter data with pandas",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "JavaScript array mapping",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "SQL join operations",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        }
+      ],
+      "true_positives": 9,
+      "false_negatives": 0,
+      "true_negatives": 3,
+      "false_positives": 0,
+      "metrics": {
+        "recall": 1.0,
+        "precision": 1.0,
+        "accuracy": 1.0,
+        "f1_score": 1.0
+      }
+    }
+  }
+}

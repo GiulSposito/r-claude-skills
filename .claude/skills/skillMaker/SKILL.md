@@ -235,7 +235,7 @@ Use shell command substitution for live data:
 | Git status | `git status --short` |
 | Recent commits | `git log --oneline -N` |
 | Changed files | `git diff --name-only` |
-| PR info | `gh pr view --json title,body` |
+| PR info | `gh pr view --json title,body 2>/dev/null \|\| echo "Not in a PR"` |
 | Project type | `ls package.json pyproject.toml go.mod` |
 | Dependencies | `cat package.json \| jq '.dependencies'` |
 | File count | `find src -name "*.js" \| wc -l` |
@@ -294,7 +294,7 @@ After generating the skill, validate:
 1. **Frontmatter syntax** - Valid YAML
 2. **Description clarity** - Specific trigger conditions
 3. **File references** - All referenced files exist
-4. **Shell commands** - Valid syntax in !`...` blocks
+4. **Shell commands** - Valid syntax in dynamic injection blocks
 5. **Tool alignment** - allowed-tools matches actual needs
 6. **Invocation logic** - Flags match intended behavior
 
@@ -381,13 +381,13 @@ allowed-tools: Bash(gh *)
 
 ## Current PR Context
 
-- Title: !`gh pr view --json title -q .title`
-- Author: !`gh pr view --json author -q .author.login`
-- Status: !`gh pr view --json state -q .state`
+- Title: !`gh pr view --json title -q .title 2>/dev/null || echo "Not in a PR context"`
+- Author: !`gh pr view --json author -q .author.login 2>/dev/null || echo "N/A"`
+- Status: !`gh pr view --json state -q .state 2>/dev/null || echo "Unknown"`
 
 ## Changes
 
-!`gh pr diff`
+!`gh pr diff 2>/dev/null || echo "No PR diff available"`
 
 ## Summary Instructions
 
@@ -438,7 +438,7 @@ Before finalizing, verify:
 - [ ] `allowed-tools` covers actual tool needs
 - [ ] Main SKILL.md is under 500 lines
 - [ ] Supporting files are referenced in main content
-- [ ] Shell commands use proper !`...` syntax
+- [ ] Shell commands use proper dynamic injection syntax
 - [ ] Examples demonstrate key patterns
 - [ ] File structure matches complexity needs
 
@@ -523,7 +523,7 @@ Evaluate skill quality:
 | Structure | Organized sections, clear flow | Wall of text, unclear |
 | References | Explicitly linked supporting files | References missing |
 | Examples | 2-3 concrete examples | No examples or too abstract |
-| Dynamic context | Uses !`...` for live data | All static content |
+| Dynamic context | Uses shell injection for live data | All static content |
 | Tool restrictions | Aligned with actual needs | Too broad or too narrow |
 
 ## Troubleshooting
@@ -539,7 +539,7 @@ Evaluate skill quality:
 - Ensure no `user-invocable: false` flag
 
 **Shell commands fail:**
-- Verify !`...` syntax (not ```...```)
+- Verify dynamic injection syntax (backticks with exclamation prefix)
 - Add error handling with `|| echo "fallback"`
 - Check commands available in user's environment
 

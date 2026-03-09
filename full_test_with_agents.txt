@@ -1,0 +1,400 @@
+================================================================================
+Claude Code Skills Trigger Test Suite
+Testing R & Data Science Skills
+================================================================================
+
+🎯 Testing all 17 skills
+
+⚠️  NOTE: This is a MOCK implementation for demonstration.
+    In production, this would:
+    1. Actually invoke Claude Code CLI
+    2. Parse real skill invocation logs
+    3. Use Claude's debug output
+
+
+================================================================================
+Testing skill: r-datascience
+================================================================================
+
+▶ Testing POSITIVE triggers (5 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-datascience:
+   Recall:    25.0% (2 TP, 6 FN)
+   Precision: 66.7% (2 TP, 1 FP)
+   Accuracy:  36.4%
+
+================================================================================
+Testing skill: tidyverse-expert
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for tidyverse-expert:
+   Recall:    100.0% (9 TP, 0 FN)
+   Precision: 100.0% (9 TP, 0 FP)
+   Accuracy:  100.0%
+
+================================================================================
+Testing skill: tidyverse-patterns
+================================================================================
+
+▶ Testing POSITIVE triggers (5 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for tidyverse-patterns:
+   Recall:    50.0% (4 TP, 4 FN)
+   Precision: 100.0% (4 TP, 0 FP)
+   Accuracy:  63.6%
+
+================================================================================
+Testing skill: r-tidymodels
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-tidymodels:
+   Recall:    22.2% (2 TP, 7 FN)
+   Precision: 100.0% (2 TP, 0 FP)
+   Accuracy:  41.7%
+
+================================================================================
+Testing skill: ggplot2
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for ggplot2:
+   Recall:    100.0% (9 TP, 0 FN)
+   Precision: 100.0% (9 TP, 0 FP)
+   Accuracy:  100.0%
+
+================================================================================
+Testing skill: r-shiny
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-shiny:
+   Recall:    100.0% (9 TP, 0 FN)
+   Precision: 100.0% (9 TP, 0 FP)
+   Accuracy:  100.0%
+
+================================================================================
+Testing skill: r-bayes
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-bayes:
+   Recall:    100.0% (9 TP, 0 FN)
+   Precision: 90.0% (9 TP, 1 FP)
+   Accuracy:  91.7%
+
+================================================================================
+Testing skill: r-timeseries
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-timeseries:
+   Recall:    77.8% (7 TP, 2 FN)
+   Precision: 77.8% (7 TP, 2 FP)
+   Accuracy:  66.7%
+
+================================================================================
+Testing skill: r-text-mining
+================================================================================
+
+▶ Testing POSITIVE triggers (13 tests)...
+
+▶ Testing CONTEXT triggers (5 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-text-mining:
+   Recall:    88.9% (16 TP, 2 FN)
+   Precision: 94.1% (16 TP, 1 FP)
+   Accuracy:  85.7%
+
+================================================================================
+Testing skill: r-performance
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-performance:
+   Recall:    100.0% (9 TP, 0 FN)
+   Precision: 100.0% (9 TP, 0 FP)
+   Accuracy:  100.0%
+
+================================================================================
+Testing skill: r-package-development
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-package-development:
+   Recall:    44.4% (4 TP, 5 FN)
+   Precision: 100.0% (4 TP, 0 FP)
+   Accuracy:  58.3%
+
+================================================================================
+Testing skill: r-oop
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-oop:
+   Recall:    55.6% (5 TP, 4 FN)
+   Precision: 83.3% (5 TP, 1 FP)
+   Accuracy:  58.3%
+
+================================================================================
+Testing skill: r-style-guide
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for r-style-guide:
+   Recall:    33.3% (3 TP, 6 FN)
+   Precision: 75.0% (3 TP, 1 FP)
+   Accuracy:  41.7%
+
+================================================================================
+Testing skill: tdd-workflow
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for tdd-workflow:
+   Recall:    33.3% (3 TP, 6 FN)
+   Precision: 100.0% (3 TP, 0 FP)
+   Accuracy:  50.0%
+
+================================================================================
+Testing skill: dm-relational
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for dm-relational:
+   Recall:    33.3% (3 TP, 6 FN)
+   Precision: 100.0% (3 TP, 0 FP)
+   Accuracy:  50.0%
+
+================================================================================
+Testing skill: rlang-patterns
+================================================================================
+
+▶ Testing POSITIVE triggers (6 tests)...
+
+▶ Testing CONTEXT triggers (3 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for rlang-patterns:
+   Recall:    33.3% (3 TP, 6 FN)
+   Precision: 100.0% (3 TP, 0 FP)
+   Accuracy:  50.0%
+
+================================================================================
+Testing skill: skillMaker
+================================================================================
+
+▶ Testing POSITIVE triggers (5 tests)...
+
+▶ Testing NEGATIVE triggers (3 tests)...
+
+📊 Summary for skillMaker:
+   Recall:    100.0% (5 TP, 0 FN)
+   Precision: 100.0% (5 TP, 0 FP)
+   Accuracy:  100.0%
+
+================================================================================
+FINAL REPORT
+================================================================================
+
+Timestamp: 2026-03-09T16:00:19.806043
+Total tests run: 207
+
+Skill                     Recall     Precision  Accuracy   F1        
+--------------------------------------------------------------------------------
+r-datascience                25.0%     66.7%     36.4%     36.4%
+tidyverse-expert            100.0%    100.0%    100.0%    100.0%
+tidyverse-patterns           50.0%    100.0%     63.6%     66.7%
+r-tidymodels                 22.2%    100.0%     41.7%     36.4%
+ggplot2                     100.0%    100.0%    100.0%    100.0%
+r-shiny                     100.0%    100.0%    100.0%    100.0%
+r-bayes                     100.0%     90.0%     91.7%     94.7%
+r-timeseries                 77.8%     77.8%     66.7%     77.8%
+r-text-mining                88.9%     94.1%     85.7%     91.4%
+r-performance               100.0%    100.0%    100.0%    100.0%
+r-package-development        44.4%    100.0%     58.3%     61.5%
+r-oop                        55.6%     83.3%     58.3%     66.7%
+r-style-guide                33.3%     75.0%     41.7%     46.2%
+tdd-workflow                 33.3%    100.0%     50.0%     50.0%
+dm-relational                33.3%    100.0%     50.0%     50.0%
+rlang-patterns               33.3%    100.0%     50.0%     50.0%
+skillMaker                  100.0%    100.0%    100.0%    100.0%
+--------------------------------------------------------------------------------
+OVERALL AVERAGE              64.5%     93.3%     70.2%
+
+✅ Report saved to: trigger_test_report_20260309_160019.json
+
+================================================================================
+PROBLEM AREAS (Recall < 90% or Precision < 95%)
+================================================================================
+
+⚠️  r-datascience:
+   - Low recall (25.0%)
+   - Low precision (66.7%)
+   False negatives (6):
+      • Preciso fazer uma análise de dados em R...
+      • Quero fazer data wrangling neste dataset...
+      • Me ajude com uma análise estatística em R...
+   False positives (1):
+      • Create a machine learning model in Python...
+
+⚠️  tidyverse-patterns:
+   - Low recall (50.0%)
+   False negatives (4):
+      • Explique per-operation grouping...
+      • df |> filter(x > 10)
+# Is this the new pipe syntax?...
+      • What are the new dplyr 1.1 features?...
+
+⚠️  r-tidymodels:
+   - Low recall (22.2%)
+   False negatives (7):
+      • Crie um modelo de classificação com tidymodels...
+      • Preciso fazer cross-validation...
+      • Como tunear hyperparâmetros em R?...
+
+⚠️  r-bayes:
+   - Low precision (90.0%)
+   False positives (1):
+      • PyMC3 Bayesian modeling...
+
+⚠️  r-timeseries:
+   - Low recall (77.8%)
+   - Low precision (77.8%)
+   False negatives (2):
+      • Análise de sazonalidade...
+      • How do I handle seasonality in R?...
+   False positives (2):
+      • Statsmodels ARIMA in Python...
+      • Prophet forecasting in Python...
+
+⚠️  r-text-mining:
+   - Low recall (88.9%)
+   - Low precision (94.1%)
+   False negatives (2):
+      • I need to analyze customer reviews in R...
+      • How do I preprocess text for modeling?...
+   False positives (1):
+      • spaCy NLP pipeline...
+
+⚠️  r-package-development:
+   - Low recall (44.4%)
+   False negatives (5):
+      • Quero criar um pacote R...
+      • Prepare para submissão no CRAN...
+      • Create package vignette...
+
+⚠️  r-oop:
+   - Low recall (55.6%)
+   - Low precision (83.3%)
+   False negatives (4):
+      • Method dispatch in R...
+      • Create generic functions in R...
+      • I need to design an object-oriented system in R...
+   False positives (1):
+      • Python classes...
+
+⚠️  r-style-guide:
+   - Low recall (33.3%)
+   - Low precision (75.0%)
+   False negatives (6):
+      • Qual o estilo de código correto em R?...
+      • Como formatar código R?...
+      • Run styler on my code...
+   False positives (1):
+      • JavaScript style guide...
+
+⚠️  tdd-workflow:
+   - Low recall (33.3%)
+   False negatives (6):
+      • Preciso escrever testes com testthat...
+      • Implement red-green-refactor cycle...
+      • Como fazer unit testing em R?...
+
+⚠️  dm-relational:
+   - Low recall (33.3%)
+   False negatives (6):
+      • Visualize database schema...
+      • Work with multi-table data in R...
+      • dm_from_data_frames usage...
+
+⚠️  rlang-patterns:
+   - Low recall (33.3%)
+   False negatives (6):
+      • Explique data-masking em R...
+      • Como funcionam dynamic dots?...
+      • Injection operators in rlang...
+
+❌ Some metrics below target

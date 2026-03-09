@@ -1,0 +1,228 @@
+{
+  "timestamp": "2026-03-09T16:00:13.187285",
+  "tests_run": 24,
+  "skills": {
+    "r-tidymodels": {
+      "positive": [
+        {
+          "prompt": "Crie um modelo de classifica\u00e7\u00e3o com tidymodels",
+          "expected": "r-tidymodels",
+          "detected": [
+            "r-oop",
+            "r-datascience"
+          ],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Como fazer feature engineering com recipes?",
+          "expected": "r-tidymodels",
+          "detected": [
+            "r-tidymodels"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Preciso fazer cross-validation",
+          "expected": "r-tidymodels",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Como tunear hyperpar\u00e2metros em R?",
+          "expected": "r-tidymodels",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Use parsnip para criar um random forest",
+          "expected": "r-tidymodels",
+          "detected": [
+            "r-tidymodels"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Como fazer model stacking?",
+          "expected": "r-tidymodels",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        }
+      ],
+      "context": [
+        {
+          "prompt": "library(tidymodels)\n\ndata_split <- initial_split(data)\n# Next steps?",
+          "expected": "r-tidymodels",
+          "detected": [
+            "r-datascience"
+          ],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "I need to preprocess data before modeling",
+          "expected": "r-tidymodels",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "How do I tune a gradient boosting model?",
+          "expected": "r-tidymodels",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        }
+      ],
+      "negative": [
+        {
+          "prompt": "Scikit-learn random forest",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Keras model training",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "XGBoost in Python",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        }
+      ],
+      "true_positives": 2,
+      "false_negatives": 7,
+      "true_negatives": 3,
+      "false_positives": 0,
+      "metrics": {
+        "recall": 0.2222222222222222,
+        "precision": 1.0,
+        "accuracy": 0.4166666666666667,
+        "f1_score": 0.3636363636363636
+      }
+    },
+    "tdd-workflow": {
+      "positive": [
+        {
+          "prompt": "Use TDD para desenvolver esta fun\u00e7\u00e3o",
+          "expected": "tdd-workflow",
+          "detected": [
+            "tdd-workflow"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Preciso escrever testes com testthat",
+          "expected": "tdd-workflow",
+          "detected": [
+            "r-package-development"
+          ],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Test-driven development em R",
+          "expected": "tdd-workflow",
+          "detected": [
+            "tdd-workflow"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Implement red-green-refactor cycle",
+          "expected": "tdd-workflow",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Como fazer unit testing em R?",
+          "expected": "tdd-workflow",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Check test coverage with covr",
+          "expected": "tdd-workflow",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        }
+      ],
+      "context": [
+        {
+          "prompt": "test_that('function works', { ... })\n# What's the TDD workflow?",
+          "expected": "tdd-workflow",
+          "detected": [
+            "tdd-workflow",
+            "r-tidymodels"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "I want to test this R function properly",
+          "expected": "tdd-workflow",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "How do I structure tests in R?",
+          "expected": "tdd-workflow",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        }
+      ],
+      "negative": [
+        {
+          "prompt": "pytest for Python",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Jest testing in JavaScript",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "JUnit for Java",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        }
+      ],
+      "true_positives": 3,
+      "false_negatives": 6,
+      "true_negatives": 3,
+      "false_positives": 0,
+      "metrics": {
+        "recall": 0.3333333333333333,
+        "precision": 1.0,
+        "accuracy": 0.5,
+        "f1_score": 0.5
+      }
+    }
+  }
+}

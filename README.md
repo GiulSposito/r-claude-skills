@@ -1,44 +1,106 @@
 # R Programming Skills for Claude Code
 
-A comprehensive collection of Claude Code skills specifically designed for R programming, data science, and statistical computing workflows.
+A comprehensive collection of Claude Code skills for R programming, data science, and statistical computing. Transform Claude into an expert R data scientist with **8,465+ lines** of specialized knowledge.
 
 ## 🎯 Overview
 
-This repository contains production-ready skills that enhance Claude Code's capabilities when working with R projects. These skills provide expert guidance on R programming patterns, package development, data visualization, machine learning with tidymodels, Bayesian analysis, performance optimization, and more.
+This repository contains production-ready skills that enhance Claude Code's capabilities for complete data science workflows in R. From data wrangling to machine learning, time series forecasting to text mining, these skills provide expert guidance extracted from authoritative R resources.
 
-**Featured**: The new **r-tidymodels** skill provides comprehensive machine learning expertise with ~4,150 lines of knowledge covering the complete ML workflow from data preparation through model deployment, based on official tidymodels documentation and the "Tidy Modeling with R" book.
+**🆕 Complete Data Science Suite**: Three specialized skills covering the entire R data science ecosystem:
+- **r-timeseries** (2,328 lines) - Time series forecasting
+- **r-text-mining** (3,747 lines) - NLP and text analysis
+- **r-datascience** (2,390 lines) - Core tidyverse/tidymodels
 
-### ✨ r-tidymodels Highlights
+**Plus**: Machine learning with **r-tidymodels** (4,150 lines) for advanced ML workflows
 
-- **Complete ML Workflows**: 3-phase approach (Foundation → Optimization → Production)
-- **100+ Recipe Steps**: Comprehensive preprocessing catalog with guidelines
-- **6 Production Templates**: Binary/multiclass classification, regression, time series, deployment
-- **4 Case Studies**: Ames housing, hotel bookings, bean classification, credit default
-- **Expert Patterns**: Hyperparameter tuning, class imbalance, ensembles, deployment
-- **4,150 Lines**: Deep knowledge from tidymodels.org + "Tidy Modeling with R" book
+### ✨ New Data Science Skills
 
-[→ See full r-tidymodels documentation](/.claude/skills/r-tidymodels/)
+**🔮 r-timeseries** - Expert forecasting with fable/tsibble
+- Complete forecasting workflows (ARIMA, ETS, Prophet, NNETAR, TBATS)
+- Model selection frameworks and diagnostics
+- Cross-validation and accuracy metrics
+- Production deployment patterns
+- 7 files with templates and examples
+
+**📝 r-text-mining** - NLP and text analysis
+- Sentiment analysis (AFINN, Bing, NRC, Loughran lexicons)
+- Topic modeling with LDA
+- Text classification with tidymodels
+- Complete preprocessing reference
+- 7 files with comprehensive guides
+
+**📊 r-datascience** - Core data science workflows
+- Data wrangling (dplyr/tidyr complete reference)
+- Feature engineering with recipes
+- Statistical modeling (lm, glm, mixed models)
+- Machine learning best practices
+- 5 files covering the full data science pipeline
+
+[→ See r-timeseries documentation](/.claude/skills/r-timeseries/)
+[→ See r-text-mining documentation](/.claude/skills/r-text-mining/)
+[→ See r-datascience documentation](/.claude/skills/r-datascience/)
 
 ## 📦 Available Skills
 
-### Core R Skills
+### 🆕 Data Science Suite (8,465 lines)
 
-- **[r-style-guide](/.claude/skills/r-style-guide/)** - R style guide covering naming conventions, spacing, layout, and function design best practices
-- **[r-performance](/.claude/skills/r-performance/)** - Performance optimization including profiling, benchmarking, vctrs, and optimization strategies
-- **[r-oop](/.claude/skills/r-oop/)** - Object-oriented programming guide for S7, S3, S4, and vctrs systems
-- **[r-package-development](/.claude/skills/r-package-development/)** - Package development covering dependencies, API design, testing, and documentation
+- **[r-datascience](/.claude/skills/r-datascience/)** (2,390 lines) - Complete tidyverse/tidymodels workflows
+  - Data wrangling with dplyr/tidyr
+  - Feature engineering with recipes
+  - Statistical modeling (lm, glm, mixed models)
+  - ML workflows and best practices
 
-### Data Science & Visualization
+- **[r-timeseries](/.claude/skills/r-timeseries/)** (2,328 lines) - Expert time series forecasting
+  - ARIMA, ETS, Prophet, NNETAR, TBATS
+  - Model selection and diagnostics
+  - Forecast evaluation and cross-validation
+  - Production deployment
 
-- **[tidyverse-patterns](/.claude/skills/tidyverse-patterns/)** - Modern tidyverse patterns including pipes, joins, grouping, purrr, and stringr
-- **[ggplot2](/.claude/skills/ggplot2/)** - Expert data visualization with grammar of graphics, geoms, themes, scales, and faceting
-- **[dm-relational](/.claude/skills/dm-relational/)** - Relational data modeling with {dm} package for multi-table data models
-- **[rlang-patterns](/.claude/skills/rlang-patterns/)** - Metaprogramming patterns for data-masking, injection operators, and dynamic dots
+- **[r-text-mining](/.claude/skills/r-text-mining/)** (3,747 lines) - NLP and text analysis
+  - Sentiment analysis (multiple lexicons)
+  - Topic modeling (LDA)
+  - Text classification with tidymodels
+  - Complete preprocessing reference
 
 ### Machine Learning & Statistics
 
-- **[r-tidymodels](/.claude/skills/r-tidymodels/)** - Expert machine learning with tidymodels: recipes, parsnip, workflows, tune, model deployment
-- **[r-bayes](/.claude/skills/r-bayes/)** - Bayesian inference patterns using brms, including multilevel models and marginal effects
+- **[r-tidymodels](/.claude/skills/r-tidymodels/)** (4,150 lines) - Advanced ML with tidymodels
+  - 3-phase ML workflow (Foundation → Optimization → Production)
+  - 100+ preprocessing recipe steps
+  - Hyperparameter tuning and ensembles
+  - 6 production templates, 4 case studies
+
+- **[r-bayes](/.claude/skills/r-bayes/)** - Bayesian inference with brms
+  - Multilevel models and marginal effects
+  - Prior specification and diagnostics
+  - Model comparison
+
+### Data Visualization
+
+- **[ggplot2](/.claude/skills/ggplot2/)** - Expert data visualization
+  - Grammar of graphics patterns
+  - Geoms, themes, scales, faceting
+  - Custom themes and styling
+
+- **[dm-relational](/.claude/skills/dm-relational/)** - Relational data modeling
+  - Multi-table data models
+  - Primary/foreign key relationships
+
+### Core R Skills
+
+- **[tidyverse-patterns](/.claude/skills/tidyverse-patterns/)** - Modern tidyverse patterns
+  - Pipes, joins, grouping
+  - purrr functional programming
+  - stringr text manipulation
+
+- **[rlang-patterns](/.claude/skills/rlang-patterns/)** - Metaprogramming
+  - Data-masking and injection
+  - Tidy evaluation patterns
+
+- **[r-style-guide](/.claude/skills/r-style-guide/)** - R style conventions
+- **[r-performance](/.claude/skills/r-performance/)** - Performance optimization
+- **[r-oop](/.claude/skills/r-oop/)** - Object-oriented programming (S7, S3, S4)
+- **[r-package-development](/.claude/skills/r-package-development/)** - Package development
 
 ### Development Workflow
 
@@ -133,35 +195,73 @@ library(tidymodels)  # Auto-triggers r-tidymodels skill
 # - Model deployment patterns
 ```
 
+**Time series forecasting:**
+```r
+library(fable)  # Auto-triggers r-timeseries skill
+# Expert forecasting workflows with ARIMA, ETS, Prophet
+```
+
+**Text mining and NLP:**
+```r
+library(tidytext)  # Auto-triggers r-text-mining skill
+# Sentiment analysis, topic modeling, text classification
+```
+
+**Data science workflows:**
+```r
+library(tidyverse)  # Auto-triggers r-datascience skill
+# Complete data wrangling, visualization, and modeling guidance
+```
+
 ## 🏗️ Repository Structure
 
 ```
 .claude/skills/
-├── r-style-guide/
-│   ├── SKILL.md           # Main skill definition
+├── r-datascience/         # 🆕 Core data science (2,390 lines)
+│   ├── SKILL.md           # Complete tidyverse/tidymodels guide
 │   ├── README.md          # User documentation
-│   └── examples/          # Code examples
-├── r-tidymodels/          # 🆕 Machine Learning with tidymodels
-│   ├── SKILL.md           # Complete 3-phase ML workflow
-│   ├── README.md          # User guide
-│   ├── templates/         # 6 ready-to-use ML templates
-│   ├── examples/          # 4 end-to-end case studies
-│   └── references/        # 100+ recipe steps catalog
+│   └── references/        # dplyr, tidyr, recipes, statistical modeling
+├── r-timeseries/          # 🆕 Forecasting (2,328 lines)
+│   ├── SKILL.md           # Complete forecasting workflows
+│   ├── README.md
+│   ├── references/        # Methods, visualization, evaluation
+│   ├── templates/         # Forecasting workflow template
+│   └── examples/          # Retail sales case study
+├── r-text-mining/         # 🆕 NLP (3,747 lines)
+│   ├── SKILL.md           # Text mining workflows
+│   ├── README.md
+│   ├── references/        # Sentiment, topics, classification, preprocessing
+│   └── examples/          # Customer reviews analysis
+├── r-tidymodels/          # Advanced ML (4,150 lines)
+│   ├── SKILL.md           # 3-phase ML workflow
+│   ├── README.md
+│   ├── templates/         # 6 ML templates
+│   ├── examples/          # 4 case studies
+│   └── references/        # 100+ recipe steps
 ├── ggplot2/
 │   ├── SKILL.md
-│   ├── templates/         # Plot templates
-│   └── references/        # Geom reference guide
+│   ├── templates/
+│   └── references/
 ├── tidyverse-patterns/
-│   └── SKILL.md
 ├── r-shiny/
-│   ├── SKILL.md
-│   ├── templates/         # App templates
-│   └── examples/          # Complete app examples
+├── r-bayes/
+├── r-style-guide/
+├── r-performance/
+├── r-oop/
+├── r-package-development/
+├── dm-relational/
+├── rlang-patterns/
+├── tdd-workflow/
 └── skillMaker/
-    ├── SKILL.md
-    ├── templates/
-    ├── examples/
-    └── references/
+
+knowledge-base/             # Extracted knowledge sources
+├── README.md
+├── r4ds-knowledge-extraction.md              (21K)
+├── mdsr-knowledge-extraction.md              (27K)
+├── tidymodels-ml-knowledge-base.md           (52K)
+├── islr-statistical-learning-knowledge.md    (30K)
+├── time_series_forecasting_knowledge.md      (34K)
+└── [planning and architecture docs]
 ```
 
 ## 🛠️ Creating Custom Skills
@@ -204,20 +304,39 @@ MIT License - See [LICENSE](LICENSE) for details
 
 ## 🔗 Resources
 
+### Claude Code
 - [Claude Code Documentation](https://docs.claude.ai/code)
 - [Skill Development Guide](CLAUDE.md)
 - [SkillMaker Architecture](/.claude/skills/skillMaker/ARCHITECTURE.md)
-- [R Project](https://www.r-project.org/)
-- [Tidyverse](https://www.tidyverse.org/)
+
+### R Data Science
+- [R for Data Science](https://r4ds.had.co.nz/) - Tidyverse foundation
+- [Tidyverse](https://www.tidyverse.org/) - Core data science packages
 - [Tidymodels](https://www.tidymodels.org/) - Machine learning framework
-- [Tidy Modeling with R](https://www.tmwr.org/) - Official tidymodels book
+- [Tidy Modeling with R](https://www.tmwr.org/) - ML book
+
+### Specialized Topics
+- [Forecasting: Principles and Practice](https://otexts.com/fpp3/) - Time series
+- [Text Mining with R](https://www.tidytextmining.com/) - NLP
+- [Modern Data Science with R](https://mdsr-book.github.io/) - Comprehensive guide
+- [ISLR](https://www.statlearning.com/) - Statistical learning
+
+### Community
+- [R Project](https://www.r-project.org/)
 - [Posit Community](https://community.rstudio.com/)
 
 ## 🙏 Acknowledgments
 
 - Built with [Claude Code](https://claude.ai/code)
+- Knowledge extracted from authoritative R resources:
+  - R for Data Science by Hadley Wickham & Garrett Grolemund
+  - Forecasting: Principles and Practice by Rob J Hyndman & George Athanasopoulos
+  - Text Mining with R by Julia Silge & David Robinson
+  - Tidy Modeling with R by Max Kuhn & Julia Silge
+  - Modern Data Science with R by Benjamin S. Baumer, Daniel T. Kaplan & Nicholas J. Horton
+  - An Introduction to Statistical Learning by Gareth James et al.
+- Based on conventions from tidyverse, tidymodels, fable, tidytext, brms, shiny, and other excellent R packages
 - Inspired by the R community's best practices
-- Based on conventions from tidyverse, brms, shiny, and other excellent R packages
 
 ## 📮 Support
 

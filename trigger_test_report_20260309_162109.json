@@ -1,0 +1,124 @@
+{
+  "timestamp": "2026-03-09T16:21:09.306679",
+  "tests_run": 11,
+  "skills": {
+    "tidyverse-patterns": {
+      "positive": [
+        {
+          "prompt": "Use the native pipe operator in R",
+          "expected": "tidyverse-patterns",
+          "detected": [
+            "tidyverse-patterns",
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "What's the modern way to use join_by?",
+          "expected": "tidyverse-patterns",
+          "detected": [
+            "tidyverse-patterns"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Como usar .by grouping em dplyr 1.1?",
+          "expected": "tidyverse-patterns",
+          "detected": [
+            "tidyverse-patterns",
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Explique per-operation grouping",
+          "expected": "tidyverse-patterns",
+          "detected": [
+            "tidyverse-patterns"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Use across() para m\u00faltiplas colunas",
+          "expected": "tidyverse-patterns",
+          "detected": [
+            "tidyverse-patterns"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "context": [
+        {
+          "prompt": "df |> filter(x > 10)\n# Is this the new pipe syntax?",
+          "expected": "tidyverse-patterns",
+          "detected": [
+            "tidyverse-patterns",
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "What are the new dplyr 1.1 features?",
+          "expected": "tidyverse-patterns",
+          "detected": [
+            "tidyverse-patterns",
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "How to use reframe() instead of summarize()?",
+          "expected": "tidyverse-patterns",
+          "detected": [
+            "tidyverse-patterns",
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "negative": [
+        {
+          "prompt": "Python pipe operators",
+          "expected": null,
+          "detected": [
+            "tidyverse-expert"
+          ],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Unix pipe commands",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Old R magrittr pipes only",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        }
+      ],
+      "true_positives": 8,
+      "false_negatives": 0,
+      "true_negatives": 3,
+      "false_positives": 0,
+      "metrics": {
+        "recall": 1.0,
+        "precision": 1.0,
+        "accuracy": 1.0,
+        "f1_score": 1.0
+      }
+    }
+  }
+}

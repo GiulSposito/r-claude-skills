@@ -1,7 +1,7 @@
 ---
 name: tidyverse-patterns
-description: Modern tidyverse patterns for R including pipes, joins, grouping, purrr, and stringr. Use when mentions "native pipe", "pipe operator", "|>", "join_by", ".by grouping", "per-operation grouping", "across()", "pick()", "reframe()", "list_rbind", "modern tidyverse", "dplyr 1.1", or writing modern tidyverse R code with latest patterns.
-version: 1.0.0
+description: Modern tidyverse patterns for R including pipes, joins, grouping, purrr, and stringr. Use when mentions "native pipe", "pipe nativo", "pipe operator", "operador pipe", "|>", "new pipe", "novo pipe", "is this the new pipe", "é o novo pipe", "join_by", "join_by()", "join syntax", "sintaxe de join", "relacionamento de join", ".by grouping", ".by", "per-operation grouping", "agrupamento por operação", "agrupamento por operacao", "across()", "pick()", "reframe()", "list_rbind", "list_rbind()", "list_cbind", "list_cbind()", "modern tidyverse", "tidyverse moderno", "latest tidyverse", "tidyverse atual", "dplyr 1.1", "dplyr 1.1 features", "recursos dplyr 1.1", "latest dplyr", "modern patterns", "padrões modernos", "padroes modernos", "usar pipe nativo", "use native pipe", "usar |>", "use |>", "agrupar por operação", "agrupar por operacao", "per-operation group", writing modern tidyverse R code with latest patterns, or implementing current dplyr 1.1+ features. ONLY FOR R - do NOT activate for pandas pipe, Python dplyr, or non-R languages.
+version: 1.1.0
 user-invocable: false
 allowed-tools: Read, Grep, Glob
 ---

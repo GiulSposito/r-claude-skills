@@ -1,7 +1,7 @@
 ---
 name: r-timeseries
-description: Expert time series forecasting and analysis in R using fable/tsibble. Use when forecasting, analyzing time series data, mentions "ARIMA", "ETS", "seasonality", "fable", "tsibble", "feasts", "forecast", "temporal data", "trend", "prophet", "time-based prediction", or any time series task.
-version: 1.0.0
+description: Expert time series forecasting and analysis in R using fable/tsibble/feasts. ONLY R - do NOT activate for Python time series (statsmodels, prophet in Python). Use when user mentions "série temporal", "time series", "time series in R", "time series with R", "previsão", "forecasting", "forecast in R", "predict time series", "prever série temporal", "analisar série temporal", "analyze time series", "temporal data in R", "dados temporais", "time-based prediction", "ARIMA in R", "ARIMA model", "ETS in R", "ETS model", "fable", "tsibble", "feasts", "forecast package", "prophet in R", "sazonalidade", "seasonality", "seasonal patterns", "padrões sazonais", "lidar com sazonalidade", "handle seasonality", "tendência", "trend", "decomposição", "decomposition", "temporal", "time-based", "temporal patterns", "padrões temporais", or any R-specific time series task.
+version: 1.1.0
 user-invocable: false
 allowed-tools: Read, Write, Edit, Bash(Rscript *), Bash(R -e *)
 ---

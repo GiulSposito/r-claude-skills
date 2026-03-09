@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-03-09T16:21:21.854625",
+  "tests_run": 12,
+  "skills": {
+    "r-oop": {
+      "positive": [
+        {
+          "prompt": "Como criar classes S3 em R?",
+          "expected": "r-oop",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Preciso usar S7 para OOP",
+          "expected": "r-oop",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Implemente heran\u00e7a com S4",
+          "expected": "r-oop",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "Use vctrs para criar vector classes",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Method dispatch in R",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Create generic functions in R",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "context": [
+        {
+          "prompt": "new_class('MyClass', ...)\n# How does S7 work?",
+          "expected": "r-oop",
+          "detected": [
+            "rlang-patterns",
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "I need to design an object-oriented system in R",
+          "expected": "r-oop",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        },
+        {
+          "prompt": "What OOP system should I use in R?",
+          "expected": "r-oop",
+          "detected": [],
+          "success": false,
+          "type": "false_negative"
+        }
+      ],
+      "negative": [
+        {
+          "prompt": "Python classes",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Java OOP",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "C++ inheritance",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        }
+      ],
+      "true_positives": 4,
+      "false_negatives": 5,
+      "true_negatives": 3,
+      "false_positives": 0,
+      "metrics": {
+        "recall": 0.4444444444444444,
+        "precision": 1.0,
+        "accuracy": 0.5833333333333334,
+        "f1_score": 0.6153846153846153
+      }
+    }
+  }
+}

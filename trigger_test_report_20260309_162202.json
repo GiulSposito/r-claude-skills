@@ -1,0 +1,128 @@
+{
+  "timestamp": "2026-03-09T16:22:02.095079",
+  "tests_run": 12,
+  "skills": {
+    "r-timeseries": {
+      "positive": [
+        {
+          "prompt": "Como fa\u00e7o forecasting em R?",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Preciso modelar s\u00e9ries temporais com ARIMA",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Use fable para prever vendas",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "An\u00e1lise de sazonalidade",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Como usar tsibble para dados temporais?",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "ETS model for forecasting",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "context": [
+        {
+          "prompt": "library(fable)\n\nts_data <- as_tsibble(...)\n# Next steps?",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-style-guide",
+            "rlang-patterns",
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "I need to forecast monthly sales",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "How do I handle seasonality in R?",
+          "expected": "r-timeseries",
+          "detected": [
+            "r-timeseries"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "negative": [
+        {
+          "prompt": "Statsmodels ARIMA in Python",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Prophet forecasting in Python",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Time series with pandas",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        }
+      ],
+      "true_positives": 9,
+      "false_negatives": 0,
+      "true_negatives": 3,
+      "false_positives": 0,
+      "metrics": {
+        "recall": 1.0,
+        "precision": 1.0,
+        "accuracy": 1.0,
+        "f1_score": 1.0
+      }
+    }
+  }
+}

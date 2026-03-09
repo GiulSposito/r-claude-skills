@@ -1,0 +1,127 @@
+{
+  "timestamp": "2026-03-09T16:22:29.574192",
+  "tests_run": 12,
+  "skills": {
+    "r-oop": {
+      "positive": [
+        {
+          "prompt": "Como criar classes S3 em R?",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Preciso usar S7 para OOP",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Implemente heran\u00e7a com S4",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Use vctrs para criar vector classes",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Method dispatch in R",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Create generic functions in R",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "context": [
+        {
+          "prompt": "new_class('MyClass', ...)\n# How does S7 work?",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop",
+            "rlang-patterns"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "I need to design an object-oriented system in R",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "What OOP system should I use in R?",
+          "expected": "r-oop",
+          "detected": [
+            "r-oop"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "negative": [
+        {
+          "prompt": "Python classes",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Java OOP",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "C++ inheritance",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        }
+      ],
+      "true_positives": 9,
+      "false_negatives": 0,
+      "true_negatives": 3,
+      "false_positives": 0,
+      "metrics": {
+        "recall": 1.0,
+        "precision": 1.0,
+        "accuracy": 1.0,
+        "f1_score": 1.0
+      }
+    }
+  }
+}

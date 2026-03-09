@@ -1,7 +1,7 @@
 ---
 name: r-oop
-description: R object-oriented programming guide for S7, S3, S4, and vctrs. Use when mentions "S3 class", "S4 class", "S7", "vctrs", "new_class", "setClass", "setGeneric", "setMethod", "object-oriented", "OOP in R", "method dispatch", "class definition", "generic functions", "inheritance", or designing R classes and choosing an OOP system.
-version: 1.0.0
+description: R object-oriented programming guide for S7, S3, S4, and vctrs. Use when mentions "orientado a objetos", "orientado a objetos em R", "object-oriented", "object-oriented in R", "OOP", "OOP in R", "OOP em R", "POO", "POO em R", "classes", "classes em R", "classes in R", "métodos", "métodos em R", "methods", "methods in R", "S3 class", "S4 class", "S7 class", "S7", "classe S3", "classe S4", "classe S7", "sistema S3", "sistema S4", "sistema S7", "S3 system", "S4 system", "S7 system", "method dispatch", "despacho de métodos", "dispatch de métodos", "generic functions", "funções genéricas", "generics", "genéricos", "inheritance", "herança", "vctrs", "vctrs package", "methods", "methods package", "setClass", "setGeneric", "setMethod", "new_class", "new_generic", "new_property", "criar classe", "create class", "design class", "desenhar classe", "definir classe", "define class", "sistema de objetos", "object system", "class system", "sistema de classes", "definir métodos", "define methods", "criar genéricos", "create generics", "class definition", "definição de classe", "class design", "design de classes", "validação de classe", "class validation", "property validation", "validação de propriedades", "herança de classes", "class inheritance", or designing R classes and choosing an OOP system. ONLY R - do NOT activate for Python classes, Java OOP, C++ classes, or object-oriented programming in other languages.
+version: 1.1.0
 user-invocable: false
 allowed-tools: Read, Grep, Glob
 ---

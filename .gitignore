@@ -83,3 +83,6 @@ npm-debug.log*
 
 # Log files
 *.log
+
+# Local References
+sources/

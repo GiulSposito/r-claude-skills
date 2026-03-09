@@ -1,6 +1,9 @@
 ---
 name: r-style-guide
-description: R style guide covering naming conventions, spacing, layout, and function design best practices. Use when writing R code.
+description: R style guide covering naming conventions, spacing, layout, and function design best practices. Use when mentions "snake_case", "camelCase", "code style", "naming convention", "R style guide", "function design", "code formatting", "tidyverse style", "lintr", "styler", "best practices", or asks about R coding standards and conventions.
+version: 1.0.0
+user-invocable: false
+allowed-tools: Read, Grep, Glob
 ---
 
 # R Style Guide & Function Writing Best Practices

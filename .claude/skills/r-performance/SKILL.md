@@ -1,6 +1,9 @@
 ---
 name: r-performance
-description: R performance best practices including profiling, benchmarking, vctrs, and optimization strategies. Use when optimizing R code.
+description: R performance best practices including profiling, benchmarking, vctrs, and optimization strategies. Use when mentions "profiling", "profvis", "benchmark", "bench::mark", "slow code", "optimize R", "vectorization", "performance", "memory usage", "bottleneck", "speed up", "parallel processing", "Rcpp", "system.time", or optimizing R code performance.
+version: 1.0.0
+user-invocable: false
+allowed-tools: Read, Grep, Glob, Bash(Rscript -e *)
 ---
 
 # R Performance Best Practices

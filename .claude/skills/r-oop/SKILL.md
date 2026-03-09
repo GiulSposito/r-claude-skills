@@ -1,6 +1,9 @@
 ---
 name: r-oop
-description: R object-oriented programming guide for S7, S3, S4, and vctrs. Use when designing R classes or choosing an OOP system.
+description: R object-oriented programming guide for S7, S3, S4, and vctrs. Use when mentions "S3 class", "S4 class", "S7", "vctrs", "new_class", "setClass", "setGeneric", "setMethod", "object-oriented", "OOP in R", "method dispatch", "class definition", "generic functions", "inheritance", or designing R classes and choosing an OOP system.
+version: 1.0.0
+user-invocable: false
+allowed-tools: Read, Grep, Glob
 ---
 
 # R Object-Oriented Programming

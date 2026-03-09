@@ -137,7 +137,7 @@ mod_filter_server <- function(id, data) {
 
     # Return filtered data
     return(reactive({
-      data() %>% filter(category == input$category)
+      data() |> filter(category == input$category)
     }))
   })
 }
@@ -162,11 +162,11 @@ server <- function(input, output, session) {
 mod_analysis_server <- function(id, data) {
   moduleServer(id, function(input, output, session) {
     filtered <- reactive({
-      data() %>% filter(value > input$threshold)
+      data() |> filter(value > input$threshold)
     })
 
     summary_stats <- reactive({
-      filtered() %>%
+      filtered() |>
         summarize(
           mean = mean(value),
           sd = sd(value),
@@ -204,7 +204,7 @@ server <- function(input, output, session) {
 mod_filter_server <- function(id, data) {
   moduleServer(id, function(input, output, session) {
     return(reactive({
-      data() %>%
+      data() |>
         filter(
           date >= input$start_date,
           date <= input$end_date,
@@ -508,13 +508,13 @@ server <- function(input, output, session) {
 
 # ✅ GOOD: Extract data processing
 process_data <- function(data, params) {
-  data %>%
-    filter(category == params$category) %>%
+  data |>
+    filter(category == params$category) |>
     mutate(
       adjusted = value * params$adjustment,
       category_clean = clean_category(category)
-    ) %>%
-    group_by(category_clean) %>%
+    ) |>
+    group_by(category_clean) |>
     summarize(
       mean_value = mean(adjusted),
       n = n()

@@ -93,22 +93,22 @@ set.seed(123)
 split <- initial_split(iris, prop = 0.75, strata = Species)
 
 # Create recipe
-rec <- recipe(Species ~ ., data = training(split)) %>%
+rec <- recipe(Species ~ ., data = training(split)) |>
   step_normalize(all_numeric_predictors())
 
 # Specify model
-rf_spec <- rand_forest(mtry = tune(), min_n = tune()) %>%
-  set_engine("ranger") %>%
+rf_spec <- rand_forest(mtry = tune(), min_n = tune()) |>
+  set_engine("ranger") |>
   set_mode("classification")
 
 # Bundle in workflow
-wflow <- workflow() %>%
-  add_recipe(rec) %>%
+wflow <- workflow() |>
+  add_recipe(rec) |>
   add_model(rf_spec)
 
 # Tune
 folds <- vfold_cv(training(split), v = 10)
-results <- wflow %>% tune_grid(resamples = folds, grid = 15)
+results <- wflow |> tune_grid(resamples = folds, grid = 15)
 
 # Finalize and evaluate
 best <- select_best(results, metric = "roc_auc")
@@ -124,12 +124,12 @@ collect_metrics(final_fit)
 library(tidymodels)
 
 # Create advanced recipe
-rec <- recipe(Sale_Price ~ ., data = ames_train) %>%
-  step_mutate(House_Age = Year_Sold - Year_Built) %>%
-  step_log(Sale_Price, Lot_Area, base = 10) %>%
-  step_novel(all_nominal_predictors()) %>%
-  step_dummy(all_nominal_predictors()) %>%
-  step_zv(all_predictors()) %>%
+rec <- recipe(Sale_Price ~ ., data = ames_train) |>
+  step_mutate(House_Age = Year_Sold - Year_Built) |>
+  step_log(Sale_Price, Lot_Area, base = 10) |>
+  step_novel(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_zv(all_predictors()) |>
   step_normalize(all_numeric_predictors())
 
 # Compare multiple models
@@ -143,7 +143,7 @@ wf_set <- workflow_set(
 )
 
 # Tune all at once
-results <- wf_set %>%
+results <- wf_set |>
   workflow_map(fn = "tune_grid", resamples = folds, grid = 20)
 
 # Rank by performance
@@ -220,18 +220,18 @@ test <- testing(split)
 Include ALL preprocessing in validation:
 ```r
 # ✅ Correct - preprocessing in recipe
-recipe(outcome ~ .) %>%
+recipe(outcome ~ .) |>
   step_normalize(all_numeric_predictors())
 
 # ❌ Wrong - preprocessing outside validation
-data_normalized <- data %>% mutate(across(where(is.numeric), scale))
+data_normalized <- data |> mutate(across(where(is.numeric), scale))
 ```
 
 ### 3. Composable Workflows
 Bundle recipe + model for consistency:
 ```r
-workflow() %>%
-  add_recipe(my_recipe) %>%
+workflow() |>
+  add_recipe(my_recipe) |>
   add_model(my_model)
 ```
 
@@ -241,7 +241,7 @@ Compare models on same resampling:
 workflow_set(
   preproc = list(basic = recipe1, advanced = recipe2),
   models = list(rf = rf_spec, xgb = xgb_spec)
-) %>%
+) |>
   workflow_map(fn = "tune_grid", resamples = folds)
 ```
 

@@ -287,7 +287,7 @@ combined <- sales |>
 
 ### Pipe Workflows
 ✅ **DO**:
-- Use native pipe `|>` (R ≥ 4.1) or magrittr `%>%`
+- Use native pipe `|>` (R ≥ 4.1) preferred over magrittr `%>%`
 - Break long pipes into intermediate objects for debugging
 - Put each step on its own line
 - Use `.by` argument in dplyr 1.1+ instead of `group_by() |> ... |> ungroup()`

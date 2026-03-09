@@ -21,8 +21,8 @@ library(tidytext)
 library(tidyverse)
 
 # 1. Create document-term matrix
-dtm <- tidy_text %>%
-  count(document, word) %>%
+dtm <- tidy_text |>
+  count(document, word) |>
   cast_dtm(document, word, n)
 
 # 2. Fit LDA model
@@ -53,15 +53,15 @@ head(topics)
 #      2  model  0.0187654
 
 # Top 10 terms per topic
-top_terms <- topics %>%
-  group_by(topic) %>%
-  slice_max(beta, n = 10) %>%
-  ungroup() %>%
+top_terms <- topics |>
+  group_by(topic) |>
+  slice_max(beta, n = 10) |>
+  ungroup() |>
   arrange(topic, -beta)
 
 # Visualize
-top_terms %>%
-  mutate(term = reorder_within(term, beta, topic)) %>%
+top_terms |>
+  mutate(term = reorder_within(term, beta, topic)) |>
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~topic, scales = "free") +
@@ -87,22 +87,22 @@ head(doc_topics)
 #   doc1        5  0.086423
 
 # Topic prevalence across documents
-doc_topics %>%
-  group_by(topic) %>%
-  summarise(mean_gamma = mean(gamma)) %>%
+doc_topics |>
+  group_by(topic) |>
+  summarise(mean_gamma = mean(gamma)) |>
   ggplot(aes(factor(topic), mean_gamma)) +
   geom_col() +
   labs(title = "Average Topic Prevalence", x = "Topic", y = "Mean Gamma")
 
 # Assign each document to dominant topic
-doc_classification <- doc_topics %>%
-  group_by(document) %>%
-  slice_max(gamma, n = 1) %>%
+doc_classification <- doc_topics |>
+  group_by(document) |>
+  slice_max(gamma, n = 1) |>
   ungroup()
 
 # Topic distribution
-doc_classification %>%
-  count(topic) %>%
+doc_classification |>
+  count(topic) |>
   ggplot(aes(factor(topic), n)) +
   geom_col() +
   labs(title = "Documents per Topic", x = "Topic", y = "Count")
@@ -118,7 +118,7 @@ Lower perplexity indicates better fit (but watch for overfitting).
 library(purrr)
 
 # Fit models with different k
-models <- tibble(k = 2:10) %>%
+models <- tibble(k = 2:10) |>
   mutate(
     lda_model = map(k, ~LDA(dtm, k = .x, control = list(seed = 123))),
     perplexity = map_dbl(lda_model, perplexity, newdata = dtm)
@@ -142,19 +142,19 @@ Higher coherence indicates more interpretable topics.
 ```r
 # Simplified coherence metric (based on term co-occurrence)
 topic_coherence <- function(lda_model, dtm, top_n = 10) {
-  topics <- tidy(lda_model, matrix = "beta") %>%
-    group_by(topic) %>%
+  topics <- tidy(lda_model, matrix = "beta") |>
+    group_by(topic) |>
     slice_max(beta, n = top_n)
 
   # Calculate pairwise PMI (simplified)
   # Full implementation would use external corpus
-  topics %>%
-    group_by(topic) %>%
+  topics |>
+    group_by(topic) |>
     summarise(coherence = mean(beta))
 }
 
 # Compare coherence across k
-models <- models %>%
+models <- models |>
   mutate(coherence = map_dbl(lda_model, topic_coherence, dtm = dtm))
 
 ggplot(models, aes(k, coherence)) +
@@ -170,9 +170,9 @@ Often the best method - fit several k, inspect top terms, choose most interpreta
 ```r
 # Function to print top terms
 print_top_terms <- function(lda_model, n = 10) {
-  tidy(lda_model, matrix = "beta") %>%
-    group_by(topic) %>%
-    slice_max(beta, n = n) %>%
+  tidy(lda_model, matrix = "beta") |>
+    group_by(topic) |>
+    slice_max(beta, n = n) |>
     summarise(terms = paste(term, collapse = ", "))
 }
 
@@ -201,22 +201,22 @@ walk(2:8, ~{
 
 ```r
 # Comprehensive preprocessing
-processed_text <- raw_text %>%
+processed_text <- raw_text |>
   # Tokenize
-  unnest_tokens(word, text) %>%
+  unnest_tokens(word, text) |>
   # Remove stop words
-  anti_join(stop_words, by = "word") %>%
+  anti_join(stop_words, by = "word") |>
   # Remove numbers
-  filter(!str_detect(word, "\\d+")) %>%
+  filter(!str_detect(word, "\\d+")) |>
   # Remove short words
-  filter(nchar(word) >= 3) %>%
+  filter(nchar(word) >= 3) |>
   # Remove very rare words (appear in < 2 documents)
-  group_by(word) %>%
-  filter(n_distinct(document) >= 2) %>%
-  ungroup() %>%
+  group_by(word) |>
+  filter(n_distinct(document) >= 2) |>
+  ungroup() |>
   # Remove very common words (appear in > 90% of documents)
-  add_count(word, name = "word_total") %>%
-  mutate(n_docs = n_distinct(document)) %>%
+  add_count(word, name = "word_total") |>
+  mutate(n_docs = n_distinct(document)) |>
   filter(word_total / n_docs < 0.9)
 ```
 
@@ -226,9 +226,9 @@ processed_text <- raw_text %>%
 library(SnowballC)
 
 # Stem words before creating DTM
-tidy_text %>%
-  mutate(stem = wordStem(word, language = "english")) %>%
-  count(document, stem) %>%
+tidy_text |>
+  mutate(stem = wordStem(word, language = "english")) |>
+  count(document, stem) |>
   cast_dtm(document, stem, n)
 ```
 
@@ -236,9 +236,9 @@ tidy_text %>%
 
 ```r
 # Weight by TF-IDF before LDA
-dtm_tfidf <- tidy_text %>%
-  count(document, word) %>%
-  bind_tf_idf(word, document, n) %>%
+dtm_tfidf <- tidy_text |>
+  count(document, word) |>
+  bind_tf_idf(word, document, n) |>
   cast_dtm(document, word, tf_idf)
 
 lda_tfidf <- LDA(dtm_tfidf, k = 5, control = list(seed = 123))
@@ -250,13 +250,13 @@ lda_tfidf <- LDA(dtm_tfidf, k = 5, control = list(seed = 123))
 
 ```r
 # Extract top terms
-topic_labels <- tidy(lda_model, matrix = "beta") %>%
-  group_by(topic) %>%
-  slice_max(beta, n = 10) %>%
+topic_labels <- tidy(lda_model, matrix = "beta") |>
+  group_by(topic) |>
+  slice_max(beta, n = 10) |>
   summarise(top_terms = paste(term, collapse = ", "))
 
 # Manually assign labels
-topic_labels <- topic_labels %>%
+topic_labels <- topic_labels |>
   mutate(
     label = case_when(
       topic == 1 ~ "Data Analysis",
@@ -268,8 +268,8 @@ topic_labels <- topic_labels %>%
   )
 
 # Use labels in visualizations
-doc_topics %>%
-  left_join(topic_labels, by = "topic") %>%
+doc_topics |>
+  left_join(topic_labels, by = "topic") |>
   ggplot(aes(factor(topic), gamma, fill = label)) +
   geom_boxplot()
 ```
@@ -279,16 +279,16 @@ doc_topics %>%
 ```r
 # Compare topics using beta divergence
 # Terms that distinguish one topic from others
-topic_diff <- topics %>%
-  pivot_wider(names_from = topic, values_from = beta, names_prefix = "topic_") %>%
+topic_diff <- topics |>
+  pivot_wider(names_from = topic, values_from = beta, names_prefix = "topic_") |>
   mutate(
     log_ratio_1_2 = log2(topic_1 / topic_2),
     log_ratio_1_3 = log2(topic_1 / topic_3)
   )
 
 # Words most distinctive to topic 1 vs topic 2
-topic_diff %>%
-  slice_max(abs(log_ratio_1_2), n = 20) %>%
+topic_diff |>
+  slice_max(abs(log_ratio_1_2), n = 20) |>
   ggplot(aes(log_ratio_1_2, reorder(term, log_ratio_1_2))) +
   geom_col() +
   labs(title = "Words Most Distinctive Between Topics 1 & 2",
@@ -299,14 +299,14 @@ topic_diff %>%
 
 ```r
 # Find representative documents for each topic
-representative_docs <- doc_topics %>%
-  group_by(topic) %>%
-  slice_max(gamma, n = 5) %>%
+representative_docs <- doc_topics |>
+  group_by(topic) |>
+  slice_max(gamma, n = 5) |>
   left_join(original_data, by = "document")
 
 # Print examples
-representative_docs %>%
-  select(topic, document, gamma, text_preview) %>%
+representative_docs |>
+  select(topic, document, gamma, text_preview) |>
   arrange(topic, -gamma)
 ```
 
@@ -320,8 +320,8 @@ Incorporates document metadata into topic model.
 library(stm)
 
 # Convert to STM format
-stm_data <- tidy_text %>%
-  count(document, word) %>%
+stm_data <- tidy_text |>
+  count(document, word) |>
   cast_sparse(document, word, n)
 
 # Fit STM with covariates
@@ -360,28 +360,28 @@ Topics evolve over time.
 ```r
 # Requires external package like ldatuning or BTM
 # Split corpus by time period
-time_periods <- tidy_text %>%
+time_periods <- tidy_text |>
   mutate(period = cut(date, breaks = "year"))
 
 # Fit separate LDA per period
-period_models <- time_periods %>%
-  nest(data = -period) %>%
+period_models <- time_periods |>
+  nest(data = -period) |>
   mutate(
     dtm = map(data, ~{
-      .x %>% count(document, word) %>% cast_dtm(document, word, n)
+      .x |> count(document, word) |> cast_dtm(document, word, n)
     }),
     lda = map(dtm, ~LDA(.x, k = 5, control = list(seed = 123)))
   )
 
 # Track topic evolution
-period_topics <- period_models %>%
-  mutate(topics = map(lda, tidy, matrix = "beta")) %>%
+period_topics <- period_models |>
+  mutate(topics = map(lda, tidy, matrix = "beta")) |>
   unnest(topics)
 
 # Visualize topic trends
-period_topics %>%
-  group_by(period, topic) %>%
-  slice_max(beta, n = 5) %>%
+period_topics |>
+  group_by(period, topic) |>
+  slice_max(beta, n = 5) |>
   ggplot(aes(period, beta, color = term, group = term)) +
   geom_line() +
   facet_wrap(~topic)
@@ -395,9 +395,9 @@ period_topics %>%
 library(ggplot2)
 
 # Top terms for all topics
-top_terms <- tidy(lda_model, matrix = "beta") %>%
-  group_by(topic) %>%
-  slice_max(beta, n = 15) %>%
+top_terms <- tidy(lda_model, matrix = "beta") |>
+  group_by(topic) |>
+  slice_max(beta, n = 15) |>
   ungroup()
 
 # Heatmap
@@ -415,16 +415,16 @@ library(igraph)
 library(ggraph)
 
 # Documents with multiple strong topics
-doc_network <- doc_topics %>%
-  filter(gamma > 0.1) %>%
-  group_by(document) %>%
-  filter(n() > 1) %>%
+doc_network <- doc_topics |>
+  filter(gamma > 0.1) |>
+  group_by(document) |>
+  filter(n() > 1) |>
   ungroup()
 
 # Create topic co-occurrence network
-topic_edges <- doc_network %>%
-  inner_join(doc_network, by = "document", suffix = c("_from", "_to")) %>%
-  filter(topic_from < topic_to) %>%
+topic_edges <- doc_network |>
+  inner_join(doc_network, by = "document", suffix = c("_from", "_to")) |>
+  filter(topic_from < topic_to) |>
   count(topic_from, topic_to, name = "weight")
 
 # Plot network
@@ -463,23 +463,23 @@ serVis(json_lda, out.dir = "ldavis", open.browser = TRUE)
 
 ```r
 # 1. Topic exclusivity (how unique are top terms?)
-topic_exclusivity <- tidy(lda_model, matrix = "beta") %>%
-  group_by(term) %>%
+topic_exclusivity <- tidy(lda_model, matrix = "beta") |>
+  group_by(term) |>
   mutate(
     max_beta = max(beta),
     is_top_topic = beta == max_beta
-  ) %>%
-  group_by(topic) %>%
-  slice_max(beta, n = 10) %>%
+  ) |>
+  group_by(topic) |>
+  slice_max(beta, n = 10) |>
   summarise(exclusivity = mean(is_top_topic))
 
 # 2. Topic semantic coherence (do top terms co-occur?)
 # Requires implementation or external package
 
 # 3. Topic size (how many documents primarily about this topic?)
-topic_size <- doc_topics %>%
-  group_by(document) %>%
-  slice_max(gamma, n = 1) %>%
+topic_size <- doc_topics |>
+  group_by(document) |>
+  slice_max(gamma, n = 1) |>
   count(topic)
 ```
 
@@ -555,12 +555,12 @@ map_dbl(multi_fit, logLik)
 
 | Task | Code Pattern |
 |------|--------------|
-| Create DTM | `count(doc, word) %>% cast_dtm(doc, word, n)` |
+| Create DTM | `count(doc, word) |> cast_dtm(doc, word, n)` |
 | Fit LDA | `LDA(dtm, k = 5, control = list(seed = 123))` |
 | Extract topics (beta) | `tidy(lda, matrix = "beta")` |
 | Extract doc-topics (gamma) | `tidy(lda, matrix = "gamma")` |
-| Top terms per topic | `group_by(topic) %>% slice_max(beta, n = 10)` |
-| Dominant topic per doc | `group_by(document) %>% slice_max(gamma, n = 1)` |
+| Top terms per topic | `group_by(topic) |> slice_max(beta, n = 10)` |
+| Dominant topic per doc | `group_by(document) |> slice_max(gamma, n = 1)` |
 | Perplexity | `perplexity(lda, newdata = dtm)` |
 | Log-likelihood | `logLik(lda)` |
 
@@ -573,21 +573,21 @@ library(tidytext)
 library(tidyverse)
 
 # 1. Preprocess
-processed <- raw_data %>%
-  unnest_tokens(word, text) %>%
-  anti_join(stop_words) %>%
-  filter(!str_detect(word, "\\d+")) %>%
-  add_count(word) %>%
-  filter(n >= 5) %>%
+processed <- raw_data |>
+  unnest_tokens(word, text) |>
+  anti_join(stop_words) |>
+  filter(!str_detect(word, "\\d+")) |>
+  add_count(word) |>
+  filter(n >= 5) |>
   select(-n)
 
 # 2. Create DTM
-dtm <- processed %>%
-  count(document, word) %>%
+dtm <- processed |>
+  count(document, word) |>
   cast_dtm(document, word, n)
 
 # 3. Choose k
-perplexity_df <- tibble(k = c(3, 5, 8, 10, 15, 20)) %>%
+perplexity_df <- tibble(k = c(3, 5, 8, 10, 15, 20)) |>
   mutate(
     model = map(k, ~LDA(dtm, k = .x, control = list(seed = 123))),
     perp = map_dbl(model, perplexity, newdata = dtm)
@@ -601,15 +601,15 @@ lda_final <- LDA(dtm, k = final_k, control = list(seed = 123))
 topics <- tidy(lda_final, matrix = "beta")
 doc_topics <- tidy(lda_final, matrix = "gamma")
 
-topic_labels <- topics %>%
-  group_by(topic) %>%
-  slice_max(beta, n = 10) %>%
+topic_labels <- topics |>
+  group_by(topic) |>
+  slice_max(beta, n = 10) |>
   summarise(terms = paste(term, collapse = ", "))
 
 # 6. Visualize
-topics %>%
-  group_by(topic) %>%
-  slice_max(beta, n = 10) %>%
+topics |>
+  group_by(topic) |>
+  slice_max(beta, n = 10) |>
   ggplot(aes(beta, reorder_within(term, beta, topic))) +
   geom_col() +
   facet_wrap(~topic, scales = "free") +

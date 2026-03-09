@@ -76,7 +76,7 @@ shinyApp(ui, server)
 server <- function(input, output, session) {
   # Compute once, use many times
   filtered_data <- reactive({
-    data %>% filter(category == input$category)
+    data |> filter(category == input$category)
   })
 
   output$plot <- renderPlot({ plot(filtered_data()) })
@@ -165,7 +165,7 @@ results <- eventReactive(input$run_button, {
 ```r
 expensive_result <- reactive({
   complex_analysis(input$params)
-}) %>% bindCache(input$params)
+}) |> bindCache(input$params)
 ```
 
 **Security: Input Validation**

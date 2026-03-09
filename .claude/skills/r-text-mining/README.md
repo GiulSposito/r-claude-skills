@@ -34,14 +34,14 @@ library(tidytext)
 library(tidyverse)
 
 # Tokenize and get sentiment
-tidy_text <- data %>%
-  unnest_tokens(word, text_column) %>%
+tidy_text <- data |>
+  unnest_tokens(word, text_column) |>
   inner_join(get_sentiments("bing"), by = "word")
 
 # Calculate scores
-sentiment_scores <- tidy_text %>%
-  count(document_id, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+sentiment_scores <- tidy_text |>
+  count(document_id, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
   mutate(score = positive - negative)
 ```
 
@@ -50,8 +50,8 @@ sentiment_scores <- tidy_text %>%
 library(topicmodels)
 
 # Create document-term matrix
-dtm <- tidy_text %>%
-  count(document_id, word) %>%
+dtm <- tidy_text |>
+  count(document_id, word) |>
   cast_dtm(document_id, word, n)
 
 # Fit LDA
@@ -59,8 +59,8 @@ lda_model <- LDA(dtm, k = 5, control = list(seed = 123))
 
 # Extract topics
 topics <- tidy(lda_model, matrix = "beta")
-top_terms <- topics %>%
-  group_by(topic) %>%
+top_terms <- topics |>
+  group_by(topic) |>
   slice_max(beta, n = 10)
 ```
 
@@ -75,16 +75,16 @@ train <- training(data_split)
 test <- testing(data_split)
 
 # Create recipe
-text_recipe <- recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
-  step_stopwords(text) %>%
-  step_tokenfilter(text, max_tokens = 1000) %>%
+text_recipe <- recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
+  step_stopwords(text) |>
+  step_tokenfilter(text, max_tokens = 1000) |>
   step_tfidf(text)
 
 # Model and workflow
-svm_spec <- svm_linear() %>% set_mode("classification")
-text_wf <- workflow() %>%
-  add_recipe(text_recipe) %>%
+svm_spec <- svm_linear() |> set_mode("classification")
+text_wf <- workflow() |>
+  add_recipe(text_recipe) |>
   add_model(svm_spec)
 
 # Fit and evaluate

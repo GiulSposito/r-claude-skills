@@ -31,7 +31,7 @@ head(afinn)
 #   abilities   2
 
 # Score distribution
-afinn %>% count(value)
+afinn |> count(value)
 ```
 
 **Pros**:
@@ -65,7 +65,7 @@ head(bing)
 #   abominate  negative
 
 # Distribution
-bing %>% count(sentiment)
+bing |> count(sentiment)
 #   sentiment     n
 #   negative   4781
 #   positive   2005
@@ -102,12 +102,12 @@ head(nrc)
 #   abandoned fear
 
 # Available sentiments
-nrc %>% distinct(sentiment)
+nrc |> distinct(sentiment)
 #   anger, anticipation, disgust, fear, joy,
 #   negative, positive, sadness, surprise, trust
 
 # Words per emotion
-nrc %>% count(sentiment, sort = TRUE)
+nrc |> count(sentiment, sort = TRUE)
 ```
 
 **Pros**:
@@ -141,7 +141,7 @@ head(loughran)
 #   abandons    negative
 
 # Categories
-loughran %>% count(sentiment, sort = TRUE)
+loughran |> count(sentiment, sort = TRUE)
 ```
 
 **Pros**:
@@ -172,20 +172,20 @@ library(tidytext)
 library(tidyverse)
 
 # Tokenize text
-tidy_text <- data %>%
+tidy_text <- data |>
   unnest_tokens(word, text_column)
 
 # Join with Bing sentiment
-sentiment_words <- tidy_text %>%
+sentiment_words <- tidy_text |>
   inner_join(get_sentiments("bing"), by = "word")
 
 # Count by sentiment
-sentiment_counts <- sentiment_words %>%
+sentiment_counts <- sentiment_words |>
   count(document_id, sentiment)
 
 # Calculate sentiment score
-sentiment_scores <- sentiment_counts %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+sentiment_scores <- sentiment_counts |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
   mutate(
     sentiment_score = positive - negative,
     total_sentiment_words = positive + negative,
@@ -193,7 +193,7 @@ sentiment_scores <- sentiment_counts %>%
   )
 
 # Classify documents
-sentiment_scores %>%
+sentiment_scores |>
   mutate(
     sentiment_class = case_when(
       sentiment_score > 0 ~ "positive",
@@ -207,9 +207,9 @@ sentiment_scores %>%
 
 ```r
 # AFINN scoring
-afinn_scores <- tidy_text %>%
-  inner_join(get_sentiments("afinn"), by = "word") %>%
-  group_by(document_id) %>%
+afinn_scores <- tidy_text |>
+  inner_join(get_sentiments("afinn"), by = "word") |>
+  group_by(document_id) |>
   summarise(
     sentiment = sum(value),
     sentiment_mean = mean(value),
@@ -217,17 +217,17 @@ afinn_scores <- tidy_text %>%
   )
 
 # Normalize by document length
-tidy_text %>%
-  inner_join(get_sentiments("afinn"), by = "word") %>%
-  group_by(document_id) %>%
+tidy_text |>
+  inner_join(get_sentiments("afinn"), by = "word") |>
+  group_by(document_id) |>
   summarise(
     sentiment_sum = sum(value),
     sentiment_words = n()
-  ) %>%
+  ) |>
   left_join(
-    tidy_text %>% count(document_id, name = "total_words"),
+    tidy_text |> count(document_id, name = "total_words"),
     by = "document_id"
-  ) %>%
+  ) |>
   mutate(
     sentiment_per_word = sentiment_sum / total_words,
     sentiment_coverage = sentiment_words / total_words
@@ -238,26 +238,26 @@ tidy_text %>%
 
 ```r
 # Extract emotions
-nrc_emotions <- tidy_text %>%
-  inner_join(get_sentiments("nrc"), by = "word") %>%
+nrc_emotions <- tidy_text |>
+  inner_join(get_sentiments("nrc"), by = "word") |>
   filter(!sentiment %in% c("positive", "negative"))  # Focus on emotions
 
 # Count emotions per document
-emotion_counts <- nrc_emotions %>%
-  count(document_id, sentiment) %>%
+emotion_counts <- nrc_emotions |>
+  count(document_id, sentiment) |>
   pivot_wider(names_from = sentiment, values_from = n, values_fill = 0)
 
 # Dominant emotion per document
-dominant_emotion <- nrc_emotions %>%
-  count(document_id, sentiment) %>%
-  group_by(document_id) %>%
-  slice_max(n, n = 1) %>%
+dominant_emotion <- nrc_emotions |>
+  count(document_id, sentiment) |>
+  group_by(document_id) |>
+  slice_max(n, n = 1) |>
   select(document_id, dominant_emotion = sentiment, emotion_count = n)
 
 # Emotion profile
-emotion_profile <- nrc_emotions %>%
-  count(document_id, sentiment) %>%
-  group_by(document_id) %>%
+emotion_profile <- nrc_emotions |>
+  count(document_id, sentiment) |>
+  group_by(document_id) |>
   mutate(
     total_emotion_words = sum(n),
     emotion_prop = n / total_emotion_words
@@ -270,10 +270,10 @@ emotion_profile <- nrc_emotions %>%
 
 ```r
 # Sentiment over time
-time_sentiment <- tidy_text %>%
-  inner_join(get_sentiments("bing"), by = "word") %>%
-  count(date, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+time_sentiment <- tidy_text |>
+  inner_join(get_sentiments("bing"), by = "word") |>
+  count(date, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
   mutate(sentiment = positive - negative)
 
 # Plot
@@ -284,8 +284,8 @@ ggplot(time_sentiment, aes(date, sentiment)) +
 
 # Rolling average
 library(zoo)
-time_sentiment %>%
-  mutate(sentiment_ma = rollmean(sentiment, k = 7, fill = NA)) %>%
+time_sentiment |>
+  mutate(sentiment_ma = rollmean(sentiment, k = 7, fill = NA)) |>
   ggplot(aes(date, sentiment_ma)) +
   geom_line()
 ```
@@ -294,17 +294,17 @@ time_sentiment %>%
 
 ```r
 # Compare sentiment across groups
-group_sentiment <- tidy_text %>%
-  inner_join(get_sentiments("bing"), by = "word") %>%
-  count(group_var, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+group_sentiment <- tidy_text |>
+  inner_join(get_sentiments("bing"), by = "word") |>
+  count(group_var, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
   mutate(
     sentiment_score = positive - negative,
     sentiment_ratio = positive / (positive + negative)
   )
 
 # Visualize
-group_sentiment %>%
+group_sentiment |>
   ggplot(aes(reorder(group_var, sentiment_score), sentiment_score, fill = sentiment_score > 0)) +
   geom_col() +
   coord_flip() +
@@ -316,23 +316,23 @@ group_sentiment %>%
 
 ```r
 # Most positive/negative words
-word_sentiment_contribution <- tidy_text %>%
-  inner_join(get_sentiments("afinn"), by = "word") %>%
-  count(word, value, sort = TRUE) %>%
+word_sentiment_contribution <- tidy_text |>
+  inner_join(get_sentiments("afinn"), by = "word") |>
+  count(word, value, sort = TRUE) |>
   mutate(contribution = n * value)
 
 # Top positive contributors
-word_sentiment_contribution %>%
-  filter(contribution > 0) %>%
-  slice_max(contribution, n = 15) %>%
+word_sentiment_contribution |>
+  filter(contribution > 0) |>
+  slice_max(contribution, n = 15) |>
   ggplot(aes(contribution, reorder(word, contribution))) +
   geom_col(fill = "darkgreen") +
   labs(title = "Top Positive Words", x = "Contribution", y = NULL)
 
 # Top negative contributors
-word_sentiment_contribution %>%
-  filter(contribution < 0) %>%
-  slice_min(contribution, n = 15) %>%
+word_sentiment_contribution |>
+  filter(contribution < 0) |>
+  slice_min(contribution, n = 15) |>
   ggplot(aes(contribution, reorder(word, contribution))) +
   geom_col(fill = "darkred") +
   labs(title = "Top Negative Words", x = "Contribution", y = NULL)
@@ -344,27 +344,27 @@ word_sentiment_contribution %>%
 # Bigrams with negation
 library(tidyr)
 
-bigrams <- data %>%
-  unnest_tokens(bigram, text_column, token = "ngrams", n = 2) %>%
-  separate(bigram, c("word1", "word2"), sep = " ")
+bigrams <- data |>
+  unnest_tokens(bigram, text_column, token = "ngrams", n = 2) |>
+  separate_wider_delim(bigram, delim = " ", names = c("word1", "word2"))
 
 # Negation words
 negation_words <- c("not", "no", "never", "without", "nobody", "nowhere",
                    "nothing", "neither", "hardly", "scarcely", "barely")
 
 # Words preceded by negation
-negated_sentiment <- bigrams %>%
-  filter(word1 %in% negation_words) %>%
-  inner_join(get_sentiments("afinn"), by = c("word2" = "word")) %>%
+negated_sentiment <- bigrams |>
+  filter(word1 %in% negation_words) |>
+  inner_join(get_sentiments("afinn"), by = c("word2" = "word")) |>
   mutate(
     value = -value,  # Flip sentiment
     word = paste(word1, word2)
-  ) %>%
+  ) |>
   count(word, value, sort = TRUE)
 
 # Most common negated words
-negated_sentiment %>%
-  slice_max(n, n = 20) %>%
+negated_sentiment |>
+  slice_max(n, n = 20) |>
   ggplot(aes(n, reorder(word, n), fill = value > 0)) +
   geom_col() +
   labs(title = "Most Common Negated Sentiment Words")
@@ -394,17 +394,17 @@ library(wordcloud)
 library(RColorBrewer)
 
 # Sentiment word cloud
-tidy_text %>%
-  inner_join(get_sentiments("bing"), by = "word") %>%
-  count(word, sentiment, sort = TRUE) %>%
-  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+tidy_text |>
+  inner_join(get_sentiments("bing"), by = "word") |>
+  count(word, sentiment, sort = TRUE) |>
+  acast(word ~ sentiment, value.var = "n", fill = 0) |>
   comparison.cloud(colors = c("red", "green"), max.words = 100)
 
 # Single sentiment word cloud
-tidy_text %>%
-  inner_join(get_sentiments("bing"), by = "word") %>%
-  filter(sentiment == "positive") %>%
-  count(word) %>%
+tidy_text |>
+  inner_join(get_sentiments("bing"), by = "word") |>
+  filter(sentiment == "positive") |>
+  count(word) |>
   with(wordcloud(word, n, max.words = 100))
 ```
 
@@ -412,10 +412,10 @@ tidy_text %>%
 
 ```r
 # Sentiment by document and time
-sentiment_matrix <- tidy_text %>%
-  inner_join(get_sentiments("bing"), by = "word") %>%
-  count(document_id, time_period, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+sentiment_matrix <- tidy_text |>
+  inner_join(get_sentiments("bing"), by = "word") |>
+  count(document_id, time_period, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
   mutate(sentiment = positive - negative)
 
 ggplot(sentiment_matrix, aes(time_period, document_id, fill = sentiment)) +
@@ -434,20 +434,20 @@ negation_words <- c("not", "no", "never", "neither", "nobody", "nowhere",
                    "nothing", "none", "hardly", "scarcely", "barely")
 
 # Mark negated words (within 3-word window)
-tidy_text_with_negation <- tidy_text %>%
+tidy_text_with_negation <- tidy_text |>
   mutate(
     word_id = row_number(),
     negated = word %in% negation_words
-  ) %>%
+  ) |>
   mutate(
     in_negation_window = lag(negated, 1) | lag(negated, 2) | lag(negated, 3)
   )
 
 # Flip sentiment for negated words
-sentiment_with_negation <- tidy_text_with_negation %>%
-  inner_join(get_sentiments("afinn"), by = "word") %>%
-  mutate(value = if_else(in_negation_window, -value, value)) %>%
-  group_by(document_id) %>%
+sentiment_with_negation <- tidy_text_with_negation |>
+  inner_join(get_sentiments("afinn"), by = "word") |>
+  mutate(value = if_else(in_negation_window, -value, value)) |>
+  group_by(document_id) |>
   summarise(sentiment = sum(value))
 ```
 
@@ -463,13 +463,13 @@ custom_lexicon <- tibble(
 # Combine with existing lexicon
 combined_lexicon <- bind_rows(
   get_sentiments("afinn"),
-  custom_lexicon %>% anti_join(get_sentiments("afinn"), by = "word")
+  custom_lexicon |> anti_join(get_sentiments("afinn"), by = "word")
 )
 
 # Use combined lexicon
-tidy_text %>%
-  inner_join(combined_lexicon, by = "word") %>%
-  group_by(document_id) %>%
+tidy_text |>
+  inner_join(combined_lexicon, by = "word") |>
+  group_by(document_id) |>
   summarise(sentiment = sum(value))
 ```
 
@@ -481,9 +481,9 @@ intensifiers <- c("very", "extremely", "absolutely", "completely", "totally",
                  "really", "highly", "quite", "especially", "particularly")
 
 # Boost sentiment for words following intensifiers
-sentiment_with_boost <- bigrams %>%
-  filter(word1 %in% intensifiers) %>%
-  inner_join(get_sentiments("afinn"), by = c("word2" = "word")) %>%
+sentiment_with_boost <- bigrams |>
+  filter(word1 %in% intensifiers) |>
+  inner_join(get_sentiments("afinn"), by = c("word2" = "word")) |>
   mutate(
     value = value * 1.5,  # Boost by 50%
     word = paste(word1, word2)
@@ -496,9 +496,9 @@ sentiment_with_boost <- bigrams %>%
 
 ```r
 # What proportion of words have sentiment?
-sentiment_coverage <- tidy_text %>%
-  left_join(get_sentiments("bing"), by = "word") %>%
-  group_by(document_id) %>%
+sentiment_coverage <- tidy_text |>
+  left_join(get_sentiments("bing"), by = "word") |>
+  group_by(document_id) |>
   summarise(
     total_words = n(),
     sentiment_words = sum(!is.na(sentiment)),
@@ -506,8 +506,8 @@ sentiment_coverage <- tidy_text %>%
   )
 
 # Low coverage warning
-sentiment_coverage %>%
-  filter(coverage < 0.05) %>%
+sentiment_coverage |>
+  filter(coverage < 0.05) |>
   arrange(coverage)
 ```
 
@@ -515,17 +515,17 @@ sentiment_coverage %>%
 
 ```r
 # Extract sample for manual review
-sample_sentiment <- tidy_text %>%
-  inner_join(get_sentiments("bing"), by = "word") %>%
-  group_by(document_id) %>%
+sample_sentiment <- tidy_text |>
+  inner_join(get_sentiments("bing"), by = "word") |>
+  group_by(document_id) |>
   summarise(
     sentiment_score = sum(if_else(sentiment == "positive", 1, -1)),
     text_preview = paste(word[1:50], collapse = " ")
   )
 
 # Review extreme cases
-sample_sentiment %>%
-  filter(abs(sentiment_score) > 10) %>%
+sample_sentiment |>
+  filter(abs(sentiment_score) > 10) |>
   select(document_id, sentiment_score, text_preview)
 ```
 
@@ -533,7 +533,7 @@ sample_sentiment %>%
 
 ```r
 # If you have true sentiment labels
-sentiment_predictions <- sentiment_scores %>%
+sentiment_predictions <- sentiment_scores |>
   mutate(
     predicted = case_when(
       sentiment_score > 1 ~ "positive",
@@ -544,11 +544,11 @@ sentiment_predictions <- sentiment_scores %>%
 
 # Confusion matrix
 library(yardstick)
-sentiment_predictions %>%
+sentiment_predictions |>
   conf_mat(truth = true_sentiment, estimate = predicted)
 
 # Metrics
-sentiment_predictions %>%
+sentiment_predictions |>
   metrics(truth = true_sentiment, estimate = predicted)
 ```
 
@@ -608,10 +608,10 @@ sentiment_predictions %>%
 | Task | Code Pattern |
 |------|--------------|
 | Basic Bing sentiment | `inner_join(get_sentiments("bing"))` |
-| AFINN score | `inner_join(get_sentiments("afinn")) %>% summarise(sum(value))` |
-| NRC emotions | `inner_join(get_sentiments("nrc")) %>% filter(!sentiment %in% c("pos", "neg"))` |
-| Time series | `count(date, sentiment) %>% pivot_wider(...)` |
-| Word contribution | `count(word, value) %>% mutate(contribution = n * value)` |
+| AFINN score | `inner_join(get_sentiments("afinn")) |> summarise(sum(value))` |
+| NRC emotions | `inner_join(get_sentiments("nrc")) |> filter(!sentiment %in% c("pos", "neg"))` |
+| Time series | `count(date, sentiment) |> pivot_wider(...)` |
+| Word contribution | `count(word, value) |> mutate(contribution = n * value)` |
 | Negation handling | Use bigrams with negation word list |
 | Custom lexicon | `bind_rows(get_sentiments(...), custom_tibble)` |
 | Coverage check | `summarise(coverage = sum(!is.na(sentiment)) / n())` |
@@ -624,15 +624,15 @@ Sentiment scores can be used as features in text classification:
 library(textrecipes)
 
 # Add sentiment features to recipe
-recipe(outcome ~ text, data = train) %>%
-  step_tokenize(text) %>%
-  step_word_embeddings(text, embeddings = glove) %>%
+recipe(outcome ~ text, data = train) |>
+  step_tokenize(text) |>
+  step_word_embeddings(text, embeddings = glove) |>
   # Custom step for sentiment
   step_mutate(
     sentiment = map_dbl(text, ~{
-      tibble(word = .x) %>%
-        inner_join(get_sentiments("afinn"), by = "word") %>%
-        summarise(sent = sum(value)) %>%
+      tibble(word = .x) |>
+        inner_join(get_sentiments("afinn"), by = "word") |>
+        summarise(sent = sum(value)) |>
         pull(sent)
     })
   )

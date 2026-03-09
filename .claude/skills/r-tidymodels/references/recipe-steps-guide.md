@@ -25,7 +25,7 @@ Comprehensive catalog of all recipe preprocessing steps organized by category.
 Replace missing values with the mean.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_impute_mean(all_numeric_predictors())
 ```
 
@@ -37,7 +37,7 @@ recipe(outcome ~ ., data = train) %>%
 Replace missing values with the median.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_impute_median(age, income, credit_score)
 ```
 
@@ -49,7 +49,7 @@ recipe(outcome ~ ., data = train) %>%
 Replace missing categorical values with the most frequent category.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_impute_mode(all_nominal_predictors())
 ```
 
@@ -61,7 +61,7 @@ recipe(outcome ~ ., data = train) %>%
 K-nearest neighbors imputation.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_impute_knn(all_predictors(), neighbors = 5)
 ```
 
@@ -73,7 +73,7 @@ recipe(outcome ~ ., data = train) %>%
 Bagged tree imputation.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_impute_bag(age, income, trees = 25)
 ```
 
@@ -85,7 +85,7 @@ recipe(outcome ~ ., data = train) %>%
 Linear regression imputation.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_impute_linear(blood_pressure, impute_with = imp_vars(age, weight, gender))
 ```
 
@@ -97,7 +97,7 @@ recipe(outcome ~ ., data = train) %>%
 Convert missing categories to "unknown" level.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_unknown(all_nominal_predictors(), new_level = "missing")
 ```
 
@@ -115,7 +115,7 @@ recipe(outcome ~ ., data = train) %>%
 Create or modify variables using dplyr syntax.
 
 ```r
-recipe(sale_price ~ ., data = train) %>%
+recipe(sale_price ~ ., data = train) |>
   step_mutate(
     house_age = year_sold - year_built,
     price_per_sqft = sale_price / total_sqft,
@@ -131,11 +131,11 @@ recipe(sale_price ~ ., data = train) %>%
 Create interaction terms.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_interact(terms = ~ age:gender + income:education)
 
 # All pairwise interactions
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_interact(terms = ~ all_numeric_predictors():all_numeric_predictors())
 ```
 
@@ -147,7 +147,7 @@ recipe(outcome ~ ., data = train) %>%
 Create polynomial features.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_poly(age, degree = 3)
 ```
 
@@ -160,7 +160,7 @@ Natural splines / B-splines for smooth curves.
 
 ```r
 library(splines)
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_ns(age, deg_free = 4)
 ```
 
@@ -172,7 +172,7 @@ recipe(outcome ~ ., data = train) %>%
 Create ratios between numeric variables.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_ratio(denom = dplyr::vars(total_income),
              naming = function(x) paste0(x, "_ratio"))
 ```
@@ -185,7 +185,7 @@ recipe(outcome ~ ., data = train) %>%
 Create lagged features for time series.
 
 ```r
-recipe(value ~ ., data = time_train) %>%
+recipe(value ~ ., data = time_train) |>
   step_lag(value, lag = 1:7)  # Previous 7 time points
 ```
 
@@ -201,7 +201,7 @@ recipe(value ~ ., data = time_train) %>%
 One-hot encoding (create binary indicators).
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_dummy(all_nominal_predictors(), one_hot = FALSE)  # Drop first level
 ```
 
@@ -217,7 +217,7 @@ recipe(outcome ~ ., data = train) %>%
 Handle novel factor levels in new data.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_novel(all_nominal_predictors(), new_level = "new")
 ```
 
@@ -231,7 +231,7 @@ recipe(outcome ~ ., data = train) %>%
 Pool infrequent categories.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_other(neighborhood, threshold = 0.05, other = "rare")
 ```
 
@@ -243,7 +243,7 @@ recipe(outcome ~ ., data = train) %>%
 Convert ordered factors to numeric scores.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_ordinalscore(education_level)  # e.g., HS=1, College=2, PhD=3
 ```
 
@@ -255,7 +255,7 @@ recipe(outcome ~ ., data = train) %>%
 Convert factors to integers (non-ordinal).
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_integer(color, zero_based = TRUE)
 ```
 
@@ -268,7 +268,7 @@ Target/likelihood encoding.
 
 ```r
 library(embed)
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   embed::step_lencode_mixed(neighborhood, outcome = vars(sale_price))
 ```
 
@@ -286,7 +286,7 @@ recipe(outcome ~ ., data = train) %>%
 Log transformation.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_log(sale_price, lot_area, base = 10, offset = 1)
 ```
 
@@ -298,7 +298,7 @@ recipe(outcome ~ ., data = train) %>%
 Square root transformation.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_sqrt(count_variable)
 ```
 
@@ -310,7 +310,7 @@ recipe(outcome ~ ., data = train) %>%
 Inverse transformation (1/x).
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_inverse(rate)
 ```
 
@@ -322,7 +322,7 @@ recipe(outcome ~ ., data = train) %>%
 Logit transformation for proportions.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_logit(proportion, offset = 0.001)
 ```
 
@@ -334,7 +334,7 @@ recipe(outcome ~ ., data = train) %>%
 Box-Cox power transformation.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_BoxCox(all_numeric_predictors())
 ```
 
@@ -346,7 +346,7 @@ recipe(outcome ~ ., data = train) %>%
 Yeo-Johnson transformation (works with negative values).
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_YeoJohnson(all_numeric_predictors())
 ```
 
@@ -362,7 +362,7 @@ recipe(outcome ~ ., data = train) %>%
 Z-score standardization (mean=0, sd=1).
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_normalize(all_numeric_predictors())
 ```
 
@@ -376,7 +376,7 @@ recipe(outcome ~ ., data = train) %>%
 Min-max scaling to [0, 1] or custom range.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_range(all_numeric_predictors(), min = 0, max = 1)
 ```
 
@@ -388,7 +388,7 @@ recipe(outcome ~ ., data = train) %>%
 Center to mean=0 without scaling.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_center(all_numeric_predictors())
 ```
 
@@ -400,7 +400,7 @@ recipe(outcome ~ ., data = train) %>%
 Scale to sd=1 without centering.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_scale(all_numeric_predictors())
 ```
 
@@ -408,7 +408,7 @@ recipe(outcome ~ ., data = train) %>%
 **Pros:** Handles scale differences
 **Cons:** Incomplete without centering
 
-**Note:** `step_normalize() = step_center() %>% step_scale()`
+**Note:** `step_normalize() = step_center() |> step_scale()`
 
 ---
 
@@ -418,8 +418,8 @@ recipe(outcome ~ ., data = train) %>%
 Remove zero-variance predictors.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
-  step_dummy(all_nominal_predictors()) %>%
+recipe(outcome ~ ., data = train) |>
+  step_dummy(all_nominal_predictors()) |>
   step_zv(all_predictors())
 ```
 
@@ -433,7 +433,7 @@ recipe(outcome ~ ., data = train) %>%
 Remove near-zero-variance predictors.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_nzv(all_predictors(), freq_cut = 95/5, unique_cut = 10)
 ```
 
@@ -445,7 +445,7 @@ recipe(outcome ~ ., data = train) %>%
 Remove highly correlated predictors.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_corr(all_numeric_predictors(), threshold = 0.9)
 ```
 
@@ -459,7 +459,7 @@ recipe(outcome ~ ., data = train) %>%
 Remove linear combinations.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_lincomb(all_numeric_predictors())
 ```
 
@@ -471,7 +471,7 @@ recipe(outcome ~ ., data = train) %>%
 Manually remove specific variables.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_rm(id, timestamp, internal_id)
 ```
 
@@ -489,8 +489,8 @@ recipe(outcome ~ ., data = train) %>%
 Principal Component Analysis.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
-  step_normalize(all_numeric_predictors()) %>%  # Required first!
+recipe(outcome ~ ., data = train) |>
+  step_normalize(all_numeric_predictors()) |>  # Required first!
   step_pca(all_numeric_predictors(), num_comp = 10)
 ```
 
@@ -507,7 +507,7 @@ Independent Component Analysis.
 
 ```r
 library(embed)
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   embed::step_ica(all_numeric_predictors(), num_comp = 5)
 ```
 
@@ -522,7 +522,7 @@ UMAP (Uniform Manifold Approximation and Projection).
 
 ```r
 library(embed)
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   embed::step_umap(all_numeric_predictors(), num_comp = 2, neighbors = 15)
 ```
 
@@ -537,7 +537,7 @@ Kernel PCA.
 
 ```r
 library(embed)
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   embed::step_kpca(all_numeric_predictors(), num_comp = 5, kernel = "rbfdot")
 ```
 
@@ -558,7 +558,7 @@ Upsample minority class(es) by random duplication.
 
 ```r
 library(themis)
-recipe(class ~ ., data = train) %>%
+recipe(class ~ ., data = train) |>
   themis::step_upsample(class, over_ratio = 0.8)
 ```
 
@@ -575,7 +575,7 @@ Downsample majority class(es).
 
 ```r
 library(themis)
-recipe(class ~ ., data = train) %>%
+recipe(class ~ ., data = train) |>
   themis::step_downsample(class, under_ratio = 1.2)
 ```
 
@@ -588,7 +588,7 @@ Synthetic Minority Over-sampling Technique.
 
 ```r
 library(themis)
-recipe(class ~ ., data = train) %>%
+recipe(class ~ ., data = train) |>
   themis::step_smote(class, over_ratio = 0.8, neighbors = 5)
 ```
 
@@ -603,7 +603,7 @@ Random Over-Sampling Examples.
 
 ```r
 library(themis)
-recipe(class ~ ., data = train) %>%
+recipe(class ~ ., data = train) |>
   themis::step_rose(class)
 ```
 
@@ -616,7 +616,7 @@ Adaptive Synthetic Sampling.
 
 ```r
 library(themis)
-recipe(class ~ ., data = train) %>%
+recipe(class ~ ., data = train) |>
   themis::step_adasyn(class, over_ratio = 0.8, neighbors = 5)
 ```
 
@@ -637,7 +637,7 @@ Split text into tokens.
 
 ```r
 library(textrecipes)
-recipe(sentiment ~ review, data = train) %>%
+recipe(sentiment ~ review, data = train) |>
   textrecipes::step_tokenize(review)
 ```
 
@@ -650,8 +650,8 @@ Remove stop words.
 
 ```r
 library(textrecipes)
-recipe(sentiment ~ review, data = train) %>%
-  textrecipes::step_tokenize(review) %>%
+recipe(sentiment ~ review, data = train) |>
+  textrecipes::step_tokenize(review) |>
   textrecipes::step_stopwords(review, language = "en")
 ```
 
@@ -664,8 +664,8 @@ Stem words to root form.
 
 ```r
 library(textrecipes)
-recipe(sentiment ~ review, data = train) %>%
-  textrecipes::step_tokenize(review) %>%
+recipe(sentiment ~ review, data = train) |>
+  textrecipes::step_tokenize(review) |>
   textrecipes::step_stem(review)
 ```
 
@@ -678,13 +678,13 @@ Term frequency or TF-IDF features.
 
 ```r
 library(textrecipes)
-recipe(sentiment ~ review, data = train) %>%
-  textrecipes::step_tokenize(review) %>%
+recipe(sentiment ~ review, data = train) |>
+  textrecipes::step_tokenize(review) |>
   textrecipes::step_tf(review, max_tokens = 100)
 
 # Or with TF-IDF weighting
-recipe(sentiment ~ review, data = train) %>%
-  textrecipes::step_tokenize(review) %>%
+recipe(sentiment ~ review, data = train) |>
+  textrecipes::step_tokenize(review) |>
   textrecipes::step_tfidf(review, max_tokens = 100)
 ```
 
@@ -697,8 +697,8 @@ Pretrained word embeddings.
 
 ```r
 library(textrecipes)
-recipe(sentiment ~ review, data = train) %>%
-  textrecipes::step_tokenize(review) %>%
+recipe(sentiment ~ review, data = train) |>
+  textrecipes::step_tokenize(review) |>
   textrecipes::step_word_embeddings(review, embeddings = glove_embeddings)
 ```
 
@@ -711,8 +711,8 @@ Feature hashing for text.
 
 ```r
 library(textrecipes)
-recipe(sentiment ~ review, data = train) %>%
-  textrecipes::step_tokenize(review) %>%
+recipe(sentiment ~ review, data = train) |>
+  textrecipes::step_tokenize(review) |>
   textrecipes::step_texthash(review, signed = FALSE, num_terms = 1024)
 ```
 
@@ -728,7 +728,7 @@ recipe(sentiment ~ review, data = train) %>%
 Extract date features.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_date(transaction_date, features = c("dow", "month", "year", "doy"))
 ```
 
@@ -749,7 +749,7 @@ Create holiday indicators.
 
 ```r
 library(timeDate)
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_holiday(transaction_date, holidays = timeDate::listHolidays("US"))
 ```
 
@@ -761,7 +761,7 @@ recipe(outcome ~ ., data = train) %>%
 Extract time-of-day features.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_time(timestamp, features = c("hour", "minute"))
 ```
 
@@ -777,8 +777,8 @@ recipe(outcome ~ ., data = train) %>%
 Project predictors onto unit sphere.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
-  step_normalize(all_numeric_predictors()) %>%
+recipe(outcome ~ ., data = train) |>
+  step_normalize(all_numeric_predictors()) |>
   step_spatialsign(all_numeric_predictors())
 ```
 
@@ -791,7 +791,7 @@ Data depth metrics.
 
 ```r
 library(embed)
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   embed::step_depth(all_predictors(), class = "outcome", metric = "spatial")
 ```
 
@@ -805,7 +805,7 @@ recipe(outcome ~ ., data = train) %>%
 Smooth curves for continuous predictors.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_ns(age, deg_free = 4)
 ```
 
@@ -817,7 +817,7 @@ recipe(outcome ~ ., data = train) %>%
 Bin continuous variables.
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
   step_discretize(age, num_breaks = 5, min_unique = 10)
 ```
 
@@ -832,45 +832,45 @@ recipe(outcome ~ ., data = train) %>%
 **Critical ordering rules:**
 
 ```r
-recipe(outcome ~ ., data = train) %>%
+recipe(outcome ~ ., data = train) |>
 
   # 1. UPDATE ROLES
-  update_role(id, new_role = "ID") %>%
+  update_role(id, new_role = "ID") |>
 
   # 2. HANDLE MISSING DATA
-  step_impute_median(all_numeric_predictors()) %>%
-  step_impute_mode(all_nominal_predictors()) %>%
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
 
   # 3. FEATURE CREATION (before transformations)
-  step_mutate(...) %>%
-  step_interact(...) %>%
+  step_mutate(...) |>
+  step_interact(...) |>
 
   # 4. TRANSFORMATIONS
-  step_log(...) %>%
-  step_BoxCox(...) %>%
+  step_log(...) |>
+  step_BoxCox(...) |>
 
   # 5. CLASS IMBALANCE (before encoding)
-  themis::step_smote(outcome) %>%
+  themis::step_smote(outcome) |>
 
   # 6. HANDLE NOVEL LEVELS (before dummy)
-  step_novel(all_nominal_predictors()) %>%
-  step_unknown(all_nominal_predictors()) %>%
+  step_novel(all_nominal_predictors()) |>
+  step_unknown(all_nominal_predictors()) |>
 
   # 7. POOL RARE CATEGORIES (before dummy)
-  step_other(all_nominal_predictors(), threshold = 0.05) %>%
+  step_other(all_nominal_predictors(), threshold = 0.05) |>
 
   # 8. ENCODE CATEGORICAL
-  step_dummy(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors()) |>
 
   # 9. REMOVE PROBLEMATIC PREDICTORS (after dummy)
-  step_zv(all_predictors()) %>%
-  step_nzv(all_predictors()) %>%
+  step_zv(all_predictors()) |>
+  step_nzv(all_predictors()) |>
 
   # 10. NORMALIZE (after dummy, before PCA)
-  step_normalize(all_numeric_predictors()) %>%
+  step_normalize(all_numeric_predictors()) |>
 
   # 11. REMOVE CORRELATIONS (after normalize)
-  step_corr(all_numeric_predictors(), threshold = 0.9) %>%
+  step_corr(all_numeric_predictors(), threshold = 0.9) |>
 
   # 12. DIMENSIONALITY REDUCTION (last)
   step_pca(all_numeric_predictors(), threshold = 0.95)

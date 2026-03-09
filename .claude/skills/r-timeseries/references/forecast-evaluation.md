@@ -63,7 +63,7 @@ RMSSE = RMSE / RMSE_naive
 
 ### Training Set Accuracy
 ```r
-fit %>%
+fit |>
   accuracy()
 ```
 
@@ -71,20 +71,20 @@ Returns metrics for all fitted models.
 
 ### Test Set Accuracy
 ```r
-forecast_result %>%
+forecast_result |>
   accuracy(actual_data)
 ```
 
 ### Selecting Best Model
 ```r
 # By MASE
-fit %>%
-  accuracy() %>%
-  arrange(MASE) %>%
+fit |>
+  accuracy() |>
+  arrange(MASE) |>
   slice(1)
 
 # Extract best model
-best_model <- fit %>%
+best_model <- fit |>
   select(best_model_name)
 ```
 
@@ -100,23 +100,23 @@ best_model <- fit %>%
 **Expanding Window (Recommended)**:
 ```r
 # Create CV folds
-ts_cv <- ts_data %>%
+ts_cv <- ts_data |>
   stretch_tsibble(.init = 60, .step = 1)
 
 # Fit on each fold
-cv_fit <- ts_cv %>%
+cv_fit <- ts_cv |>
   model(
     ets = ETS(value),
     arima = ARIMA(value)
   )
 
 # Forecast each fold
-cv_fc <- cv_fit %>% forecast(h = 12)
+cv_fc <- cv_fit |> forecast(h = 12)
 
 # Evaluate
-cv_fc %>%
-  accuracy(ts_data) %>%
-  group_by(.model) %>%
+cv_fc |>
+  accuracy(ts_data) |>
+  group_by(.model) |>
   summarise(MASE = mean(MASE))
 ```
 
@@ -127,7 +127,7 @@ cv_fc %>%
 
 **Sliding Window**:
 ```r
-ts_cv <- ts_data %>%
+ts_cv <- ts_data |>
   slide_tsibble(.size = 60, .step = 1)
 ```
 Fixed window size, moves forward.
@@ -172,9 +172,9 @@ BIC = -2*log(L) + k*log(n)
 
 **In R**:
 ```r
-fit %>%
-  glance() %>%
-  select(.model, AIC, AICc, BIC) %>%
+fit |>
+  glance() |>
+  select(.model, AIC, AICc, BIC) |>
   arrange(AICc)
 ```
 
@@ -184,7 +184,7 @@ fit %>%
 Tests whether residuals are white noise.
 
 ```r
-augment(fit) %>%
+augment(fit) |>
   features(.innov, ljung_box, lag = 24, dof = 0)
 ```
 
@@ -194,7 +194,7 @@ augment(fit) %>%
 
 **Visual Diagnostics**:
 ```r
-fit %>% gg_tsresiduals()
+fit |> gg_tsresiduals()
 ```
 
 **Good residuals**:
@@ -210,12 +210,12 @@ Prediction intervals should contain actual values X% of the time.
 
 ```r
 # Check 95% interval coverage
-forecast_result %>%
-  hilo(level = 95) %>%
-  unpack_hilo("95%") %>%
+forecast_result |>
+  hilo(level = 95) |>
+  unpack_hilo("95%") |>
   mutate(
     in_interval = actual >= `95%_lower` & actual <= `95%_upper`
-  ) %>%
+  ) |>
   summarise(coverage = mean(in_interval))
 ```
 
@@ -226,7 +226,7 @@ forecast_result %>%
 Penalizes both interval width and coverage violations.
 
 ```r
-forecast_result %>%
+forecast_result |>
   accuracy(actual_data, list(winkler = winkler_score), level = 95)
 ```
 
@@ -240,15 +240,15 @@ Evaluate at multiple horizons to understand performance degradation.
 # Generate forecasts for h = 1 to 12
 horizons <- 1:12
 
-results <- map_dfr(horizons, function(h) {
-  cv_fc <- cv_fit %>% forecast(h = h)
-  cv_fc %>%
-    accuracy(ts_data) %>%
+results <- map(horizons, function(h) {
+  cv_fc <- cv_fit |> forecast(h = h)
+  cv_fc |>
+    accuracy(ts_data) |>
     mutate(horizon = h)
-})
+}) |> list_rbind()
 
 # Plot accuracy by horizon
-results %>%
+results |>
   ggplot(aes(x = horizon, y = MASE, color = .model)) +
   geom_line() +
   labs(title = "Forecast Accuracy by Horizon")
@@ -260,7 +260,7 @@ results %>%
 
 ```r
 # 1. Fit candidate models
-fit <- ts_data %>%
+fit <- ts_data |>
   model(
     naive = NAIVE(value),
     snaive = SNAIVE(value),
@@ -269,49 +269,49 @@ fit <- ts_data %>%
   )
 
 # 2. Training set accuracy (quick check)
-fit %>%
-  accuracy() %>%
+fit |>
+  accuracy() |>
   arrange(MASE)
 
 # 3. Information criteria (model complexity)
-fit %>%
-  glance() %>%
+fit |>
+  glance() |>
   arrange(AICc)
 
 # 4. Residual diagnostics (check assumptions)
-fit %>% select(arima) %>% gg_tsresiduals()
+fit |> select(arima) |> gg_tsresiduals()
 
 # 5. Cross-validation (robust evaluation)
-ts_cv <- ts_data %>%
+ts_cv <- ts_data |>
   stretch_tsibble(.init = 60, .step = 6)
 
-cv_fit <- ts_cv %>%
+cv_fit <- ts_cv |>
   model(
     ets = ETS(value),
     arima = ARIMA(value)
   )
 
-cv_fc <- cv_fit %>% forecast(h = 12)
+cv_fc <- cv_fit |> forecast(h = 12)
 
-cv_fc %>%
-  accuracy(ts_data) %>%
-  group_by(.model) %>%
-  summarise(mean_MASE = mean(MASE)) %>%
+cv_fc |>
+  accuracy(ts_data) |>
+  group_by(.model) |>
+  summarise(mean_MASE = mean(MASE)) |>
   arrange(mean_MASE)
 
 # 6. Select best model
-best_model_name <- cv_fc %>%
-  accuracy(ts_data) %>%
-  group_by(.model) %>%
-  summarise(mean_MASE = mean(MASE)) %>%
-  arrange(mean_MASE) %>%
-  slice(1) %>%
+best_model_name <- cv_fc |>
+  accuracy(ts_data) |>
+  group_by(.model) |>
+  summarise(mean_MASE = mean(MASE)) |>
+  arrange(mean_MASE) |>
+  slice(1) |>
   pull(.model)
 
-final_model <- fit %>% select(all_of(best_model_name))
+final_model <- fit |> select(all_of(best_model_name))
 
 # 7. Generate final forecasts
-final_forecast <- final_model %>% forecast(h = 12)
+final_forecast <- final_model |> forecast(h = 12)
 ```
 
 ## Common Pitfalls

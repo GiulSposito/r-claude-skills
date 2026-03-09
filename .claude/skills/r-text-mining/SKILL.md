@@ -87,14 +87,14 @@ library(tidytext)
 library(tidyverse)
 
 # Tokenize
-tidy_text <- data %>%
+tidy_text <- data |>
   unnest_tokens(word, text_column)
 
 # Get sentiment
-sentiment <- tidy_text %>%
-  inner_join(get_sentiments("bing"), by = "word") %>%
-  count(document_id, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+sentiment <- tidy_text |>
+  inner_join(get_sentiments("bing"), by = "word") |>
+  count(document_id, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
   mutate(score = positive - negative)
 ```
 
@@ -104,8 +104,8 @@ library(tidytext)
 library(topicmodels)
 
 # Create DTM
-dtm <- tidy_text %>%
-  count(document_id, word) %>%
+dtm <- tidy_text |>
+  count(document_id, word) |>
   cast_dtm(document_id, word, n)
 
 # Fit LDA
@@ -126,19 +126,19 @@ train <- training(data_split)
 test <- testing(data_split)
 
 # Recipe
-text_recipe <- recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
-  step_stopwords(text) %>%
-  step_tokenfilter(text, max_tokens = 1000) %>%
+text_recipe <- recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
+  step_stopwords(text) |>
+  step_tokenfilter(text, max_tokens = 1000) |>
   step_tfidf(text)
 
 # Model
-svm_spec <- svm_linear() %>%
+svm_spec <- svm_linear() |>
   set_mode("classification")
 
 # Workflow
-text_wf <- workflow() %>%
-  add_recipe(text_recipe) %>%
+text_wf <- workflow() |>
+  add_recipe(text_recipe) |>
   add_model(svm_spec)
 
 # Fit and evaluate
@@ -153,39 +153,39 @@ collect_metrics(fit)
 library(tidytext)
 
 # Words (unigrams)
-data %>% unnest_tokens(word, text)
+data |> unnest_tokens(word, text)
 
 # Bigrams
-data %>% unnest_tokens(bigram, text, token = "ngrams", n = 2)
+data |> unnest_tokens(bigram, text, token = "ngrams", n = 2)
 
 # Trigrams
-data %>% unnest_tokens(trigram, text, token = "ngrams", n = 3)
+data |> unnest_tokens(trigram, text, token = "ngrams", n = 3)
 
 # Sentences
-data %>% unnest_tokens(sentence, text, token = "sentences")
+data |> unnest_tokens(sentence, text, token = "sentences")
 
 # Characters
-data %>% unnest_tokens(character, text, token = "characters")
+data |> unnest_tokens(character, text, token = "characters")
 ```
 
 ### Cleaning
 ```r
 # Remove stop words
-tidy_text %>%
+tidy_text |>
   anti_join(stop_words, by = "word")
 
 # Custom stop words
 custom_stops <- tibble(word = c("word1", "word2"))
-tidy_text %>% anti_join(custom_stops, by = "word")
+tidy_text |> anti_join(custom_stops, by = "word")
 
 # Remove numbers
-tidy_text %>%
+tidy_text |>
   filter(!str_detect(word, "\\d+"))
 
 # Remove rare/common words
-word_counts <- tidy_text %>% count(word)
-tidy_text %>%
-  filter(word %in% (word_counts %>% filter(n > 5, n < 1000) %>% pull(word)))
+word_counts <- tidy_text |> count(word)
+tidy_text |>
+  filter(word %in% (word_counts |> filter(n > 5, n < 1000) |> pull(word)))
 ```
 
 ### Normalization
@@ -194,13 +194,13 @@ tidy_text %>%
 
 # Stemming
 library(SnowballC)
-tidy_text %>%
+tidy_text |>
   mutate(stem = wordStem(word))
 
 # Lemmatization (requires spaCy or similar)
 # Via textrecipes:
-recipe(~ text, data) %>%
-  step_tokenize(text, engine = "spacyr") %>%
+recipe(~ text, data) |>
+  step_tokenize(text, engine = "spacyr") |>
   step_lemma(text)
 ```
 
@@ -226,16 +226,16 @@ get_sentiments("loughran")
 ### Sentiment Scoring
 ```r
 # Binary sentiment (bing)
-sentiment_scores <- tidy_text %>%
-  inner_join(get_sentiments("bing"), by = "word") %>%
-  count(document_id, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+sentiment_scores <- tidy_text |>
+  inner_join(get_sentiments("bing"), by = "word") |>
+  count(document_id, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
   mutate(sentiment_score = positive - negative)
 
 # Numeric sentiment (AFINN)
-afinn_scores <- tidy_text %>%
-  inner_join(get_sentiments("afinn"), by = "word") %>%
-  group_by(document_id) %>%
+afinn_scores <- tidy_text |>
+  inner_join(get_sentiments("afinn"), by = "word") |>
+  group_by(document_id) |>
   summarize(sentiment = sum(value))
 ```
 
@@ -247,8 +247,8 @@ library(topicmodels)
 library(tidytext)
 
 # 1. Create document-term matrix
-dtm <- tidy_text %>%
-  count(document, word) %>%
+dtm <- tidy_text |>
+  count(document, word) |>
   cast_dtm(document, word, n)
 
 # 2. Fit LDA
@@ -258,16 +258,16 @@ lda_model <- LDA(dtm, k = 5, control = list(seed = 123))
 topics <- tidy(lda_model, matrix = "beta")
 
 # Top terms per topic
-top_terms <- topics %>%
-  group_by(topic) %>%
+top_terms <- topics |>
+  group_by(topic) |>
   slice_max(beta, n = 10)
 
 # 4. Extract document-topic probabilities (gamma)
 doc_topics <- tidy(lda_model, matrix = "gamma")
 
 # Assign documents to most likely topic
-doc_classification <- doc_topics %>%
-  group_by(document) %>%
+doc_classification <- doc_topics |>
+  group_by(document) |>
   slice_max(gamma, n = 1)
 ```
 
@@ -276,7 +276,7 @@ doc_classification <- doc_topics %>%
 # Fit multiple models
 library(purrr)
 
-models <- tibble(k = 2:10) %>%
+models <- tibble(k = 2:10) |>
   mutate(
     lda_model = map(k, ~LDA(dtm, k = .x, control = list(seed = 123))),
     perplexity = map_dbl(lda_model, perplexity, newdata = dtm)
@@ -295,20 +295,20 @@ ggplot(models, aes(k, perplexity)) +
 
 Common preprocessing steps for text:
 ```r
-recipe(outcome ~ text, data = train) %>%
+recipe(outcome ~ text, data = train) |>
 
   # 1. Tokenization
-  step_tokenize(text) %>%
-  step_tokenize(text, token = "ngrams", options = list(n = 2, n_min = 1)) %>%
+  step_tokenize(text) |>
+  step_tokenize(text, token = "ngrams", options = list(n = 2, n_min = 1)) |>
 
   # 2. Filtering
-  step_stopwords(text, stopword_source = "snowball") %>%
-  step_stem(text) %>%  # Stemming
-  step_tokenfilter(text, max_tokens = 1000, min_times = 5) %>%
+  step_stopwords(text, stopword_source = "snowball") |>
+  step_stem(text) |>  # Stemming
+  step_tokenfilter(text, max_tokens = 1000, min_times = 5) |>
 
   # 3. Feature generation
-  step_tfidf(text) %>%  # TF-IDF weighting
-  step_texthash(text, num_terms = 512) %>%  # Feature hashing (alternative)
+  step_tfidf(text) |>  # TF-IDF weighting
+  step_texthash(text, num_terms = 512) |>  # Feature hashing (alternative)
 
   # 4. Normalization
   step_normalize(all_predictors())
@@ -337,22 +337,22 @@ train <- training(data_split)
 test <- testing(data_split)
 
 # 2. Recipe
-text_recipe <- recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
-  step_stopwords(text) %>%
-  step_tokenfilter(text, max_tokens = 1000) %>%
-  step_tfidf(text) %>%
+text_recipe <- recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
+  step_stopwords(text) |>
+  step_tokenfilter(text, max_tokens = 1000) |>
+  step_tfidf(text) |>
   step_normalize(all_predictors())
 
 # 3. Model specs
-nb_spec <- naive_Bayes() %>% set_engine("naivebayes") %>% set_mode("classification")
-svm_spec <- svm_linear() %>% set_engine("LiblineaR") %>% set_mode("classification")
-rf_spec <- rand_forest(trees = 500) %>% set_engine("ranger") %>% set_mode("classification")
+nb_spec <- naive_Bayes() |> set_engine("naivebayes") |> set_mode("classification")
+svm_spec <- svm_linear() |> set_engine("LiblineaR") |> set_mode("classification")
+rf_spec <- rand_forest(trees = 500) |> set_engine("ranger") |> set_mode("classification")
 
 # 4. Workflows
-nb_wf <- workflow() %>% add_recipe(text_recipe) %>% add_model(nb_spec)
-svm_wf <- workflow() %>% add_recipe(text_recipe) %>% add_model(svm_spec)
-rf_wf <- workflow() %>% add_recipe(text_recipe) %>% add_model(rf_spec)
+nb_wf <- workflow() |> add_recipe(text_recipe) |> add_model(nb_spec)
+svm_wf <- workflow() |> add_recipe(text_recipe) |> add_model(svm_spec)
+rf_wf <- workflow() |> add_recipe(text_recipe) |> add_model(rf_spec)
 
 # 5. Cross-validation
 folds <- vfold_cv(train, v = 10, strata = category)
@@ -364,11 +364,11 @@ rf_fit <- fit_resamples(rf_wf, folds)
 
 # 7. Compare
 bind_rows(
-  collect_metrics(nb_fit) %>% mutate(model = "Naive Bayes"),
-  collect_metrics(svm_fit) %>% mutate(model = "SVM"),
-  collect_metrics(rf_fit) %>% mutate(model = "Random Forest")
-) %>%
-  filter(.metric == "accuracy") %>%
+  collect_metrics(nb_fit) |> mutate(model = "Naive Bayes"),
+  collect_metrics(svm_fit) |> mutate(model = "SVM"),
+  collect_metrics(rf_fit) |> mutate(model = "Random Forest")
+) |>
+  filter(.metric == "accuracy") |>
   arrange(desc(mean))
 
 # 8. Final fit
@@ -377,7 +377,7 @@ final_fit <- last_fit(final_wf, data_split)
 collect_metrics(final_fit)
 
 # 9. Confusion matrix
-collect_predictions(final_fit) %>%
+collect_predictions(final_fit) |>
   conf_mat(truth = category, estimate = .pred_class)
 ```
 
@@ -394,19 +394,19 @@ Measures how important a word is to a document in a collection:
 library(tidytext)
 
 # Calculate TF-IDF
-tf_idf <- tidy_text %>%
-  count(document, word) %>%
+tf_idf <- tidy_text |>
+  count(document, word) |>
   bind_tf_idf(word, document, n)
 
 # Find distinctive words per document
-distinctive <- tf_idf %>%
-  group_by(document) %>%
+distinctive <- tf_idf |>
+  group_by(document) |>
   slice_max(tf_idf, n = 10)
 
 # Visualize
-tf_idf %>%
-  group_by(document) %>%
-  slice_max(tf_idf, n = 10) %>%
+tf_idf |>
+  group_by(document) |>
+  slice_max(tf_idf, n = 10) |>
   ggplot(aes(tf_idf, reorder_within(word, tf_idf, document))) +
   geom_col() +
   facet_wrap(~document, scales = "free") +
@@ -498,7 +498,7 @@ library(tidymodels)    # ML workflows
 | TF-IDF | `bind_tf_idf()` |
 | DTM | `cast_dtm()` |
 | LDA | `LDA()` from topicmodels |
-| Text recipe | `recipe() %>% step_tokenize() %>% step_tfidf()` |
+| Text recipe | `recipe() |> step_tokenize() |> step_tfidf()` |
 
 ## Integration with Other Skills
 

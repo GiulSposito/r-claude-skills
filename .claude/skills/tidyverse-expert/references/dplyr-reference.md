@@ -5,7 +5,7 @@
 dplyr provides a grammar of data manipulation with a consistent set of verbs that help you solve the most common data manipulation challenges. All dplyr functions:
 - Take a data frame as the first argument
 - Return a data frame
-- Work naturally with the pipe operator (`|>` or `%>%`)
+- Work naturally with the pipe operator (`|>` or `|>`)
 - Use tidy evaluation for direct column references
 
 ---

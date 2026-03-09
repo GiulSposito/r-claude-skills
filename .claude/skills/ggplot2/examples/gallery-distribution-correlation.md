@@ -41,8 +41,8 @@ ggplot(data, aes(x = group, y = value, fill = group)) +
 ```r
 library(forcats)
 
-data %>%
-  mutate(category = fct_reorder(category, value)) %>%
+data |>
+  mutate(category = fct_reorder(category, value)) |>
   ggplot(aes(x = category, y = value, fill = category)) +
     geom_violin(width = 2.1, linewidth = 0.2) +
     scale_fill_viridis_d() +
@@ -94,8 +94,8 @@ ggplot(data, aes(x = subgroup, y = value, fill = subgroup)) +
 ```r
 library(hrbrthemes)
 
-data %>%
-  filter(price < 300) %>%
+data |>
+  filter(price < 300) |>
   ggplot(aes(x = price)) +
     geom_density(fill = "#69b3a2", color = "#e9ecef", alpha = 0.8) +
     labs(title = "Price Distribution",
@@ -319,8 +319,8 @@ ggplot(data, aes(x = value, y = category, fill = category)) +
 ```r
 library(forcats)
 
-data %>%
-  mutate(category = fct_reorder(category, value, .fun = median)) %>%
+data |>
+  mutate(category = fct_reorder(category, value, .fun = median)) |>
   ggplot(aes(x = value, y = category, fill = category)) +
     geom_density_ridges()
 ```
@@ -395,7 +395,7 @@ ggplot(data, aes(x = var1, y = var2, label = name)) +
 **Advanced**:
 ```r
 geom_text_repel(
-  data = data %>% filter(important == TRUE),  # Label subset only
+  data = data |> filter(important == TRUE),  # Label subset only
   nudge_x = 2,  # Encourage rightward positioning
   direction = "y",  # Restrict to vertical movement only
   force = 2  # Repulsion strength
@@ -546,8 +546,8 @@ ggplot(data, aes(x = gdp, y = life_exp, size = population, color = continent)) +
 **Technique**: Strategic ordering and transparency
 
 ```r
-data %>%
-  arrange(desc(size_var)) %>%  # Plot largest first (background)
+data |>
+  arrange(desc(size_var)) |>  # Plot largest first (background)
   ggplot(aes(x = var1, y = var2, size = size_var, color = category)) +
     geom_point(alpha = 0.4) +
     scale_size_area(max_size = 15)
@@ -680,8 +680,8 @@ ggplot(data, aes(y = category)) +
 **Variations**:
 ```r
 # Color by direction of change
-data %>%
-  mutate(change_direction = ifelse(after > before, "Increase", "Decrease")) %>%
+data |>
+  mutate(change_direction = ifelse(after > before, "Increase", "Decrease")) |>
   ggplot(aes(y = category, color = change_direction)) +
     geom_segment(aes(x = before, xend = after, yend = category), linewidth = 1.5) +
     scale_color_manual(values = c("Decrease" = "red", "Increase" = "blue"))
@@ -695,8 +695,8 @@ data %>%
 
 ```r
 # Get last point per group
-last_points <- data %>%
-  group_by(group) %>%
+last_points <- data |>
+  group_by(group) |>
   slice_max(time, n = 1)
 
 ggplot(data, aes(x = time, y = value, color = group)) +
@@ -769,18 +769,18 @@ Always reorder categorical variables by data values for better communication:
 library(forcats)
 
 # Reorder by value
-data %>%
-  mutate(category = fct_reorder(category, value)) %>%
+data |>
+  mutate(category = fct_reorder(category, value)) |>
   ggplot(...)
 
 # Reorder by value within groups
-data %>%
-  mutate(category = fct_reorder2(category, group, value)) %>%
+data |>
+  mutate(category = fct_reorder2(category, group, value)) |>
   ggplot(...)
 
 # Manual reorder
-data %>%
-  mutate(category = fct_relevel(category, "First", "Second", "Third")) %>%
+data |>
+  mutate(category = fct_relevel(category, "First", "Second", "Third")) |>
   ggplot(...)
 ```
 

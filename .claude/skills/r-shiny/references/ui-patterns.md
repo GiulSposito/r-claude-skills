@@ -378,7 +378,7 @@ output$dynamic_output <- renderUI({
 
 ```r
 # Built-in spinner for outputs
-plotOutput("plot") %>% withSpinner()
+plotOutput("plot") |> withSpinner()
 
 # Or manual loading state
 output$results <- renderUI({

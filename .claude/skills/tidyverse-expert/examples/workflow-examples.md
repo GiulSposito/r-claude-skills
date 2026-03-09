@@ -24,12 +24,12 @@ raw_data <- read_csv(
 )
 
 # Clean and standardize
-clean_data <- raw_data %>%
+clean_data <- raw_data |>
   # Standardize column names: lowercase, snake_case
-  rename_with(~ str_to_lower(.) %>% str_replace_all("\\s+", "_")) %>%
+  rename_with(~ str_to_lower(.) |> str_replace_all("\\s+", "_")) |>
   # Remove completely empty rows/columns
-  filter(if_any(everything(), ~ !is.na(.))) %>%
-  select(where(~ !all(is.na(.)))) %>%
+  filter(if_any(everything(), ~ !is.na(.))) |>
+  select(where(~ !all(is.na(.)))) |>
   # Handle missing values strategically
   mutate(
     # Fill forward for status (carry last known value)
@@ -38,7 +38,7 @@ clean_data <- raw_data %>%
     amount = replace_na(amount, 0),
     # Create flag for originally missing data
     amount_imputed = is.na(amount)
-  ) %>%
+  ) |>
   # Type conversions and formatting
   mutate(
     # Extract year/month/quarter for aggregation
@@ -52,12 +52,12 @@ clean_data <- raw_data %>%
       amount < 10000 ~ "large",
       TRUE ~ "enterprise"
     )
-  ) %>%
+  ) |>
   # Remove duplicates based on key columns
   distinct(date, customer_id, .keep_all = TRUE)
 
 # Summary statistics for quality check
-data_quality <- clean_data %>%
+data_quality <- clean_data |>
   summarise(
     total_rows = n(),
     missing_dates = sum(is.na(date)),
@@ -103,11 +103,11 @@ products <- tibble(
 )
 
 # Multi-table join workflow
-complete_orders <- orders %>%
+complete_orders <- orders |>
   # Left join to keep all orders, even with missing customers
-  left_join(customers, by = "customer_id") %>%
+  left_join(customers, by = "customer_id") |>
   # Inner join with products (only valid products)
-  inner_join(products, by = "product_id") %>%
+  inner_join(products, by = "product_id") |>
   # Calculate derived values
   mutate(
     # Total order value
@@ -116,37 +116,37 @@ complete_orders <- orders %>%
     customer_exists = !is.na(name),
     # Create readable order description
     order_description = str_glue("{name} ordered {quantity}x {product_name}")
-  ) %>%
+  ) |>
   # Handle missing customer data
   mutate(
     name = replace_na(name, "Unknown Customer"),
     region = replace_na(region, "Unassigned")
-  ) %>%
+  ) |>
   # Reorder columns logically
   select(order_id, order_date, customer_id, name, region,
          product_id, product_name, category, quantity, price, order_total,
          customer_exists)
 
 # Find unmatched records for data quality
-orphaned_orders <- orders %>%
-  anti_join(customers, by = "customer_id") %>%
+orphaned_orders <- orders |>
+  anti_join(customers, by = "customer_id") |>
   select(order_id, customer_id, order_date)
 
-unused_products <- products %>%
-  anti_join(orders, by = "product_id") %>%
+unused_products <- products |>
+  anti_join(orders, by = "product_id") |>
   select(product_id, product_name, category)
 
 # Summary by region and category
-regional_summary <- complete_orders %>%
-  filter(customer_exists) %>%  # Only valid customers
-  group_by(region, category) %>%
+regional_summary <- complete_orders |>
+  filter(customer_exists) |>  # Only valid customers
+  group_by(region, category) |>
   summarise(
     total_orders = n(),
     total_quantity = sum(quantity),
     total_revenue = sum(order_total),
     avg_order_value = mean(order_total),
     .groups = "drop"
-  ) %>%
+  ) |>
   arrange(desc(total_revenue))
 
 print(regional_summary)
@@ -175,14 +175,14 @@ survey_wide <- tibble(
 )
 
 # Pivot to long format for analysis
-survey_long <- survey_wide %>%
+survey_long <- survey_wide |>
   pivot_longer(
     cols = starts_with("q"),
     names_to = "question",
     values_to = "score",
     names_prefix = "q"  # Remove "q" prefix
-  ) %>%
-  separate(question, into = c("question_num", "question_topic"), sep = "_") %>%
+  ) |>
+  separate(question, into = c("question_num", "question_topic"), sep = "_") |>
   mutate(
     question_num = as.integer(question_num),
     # Create age groups for segmentation
@@ -195,8 +195,8 @@ survey_long <- survey_wide %>%
   )
 
 # Calculate summary statistics by question
-question_summary <- survey_long %>%
-  group_by(question_topic) %>%
+question_summary <- survey_long |>
+  group_by(question_topic) |>
   summarise(
     n_responses = n(),
     mean_score = mean(score),
@@ -208,24 +208,24 @@ question_summary <- survey_long %>%
   )
 
 # Create crosstab: age group by question topic (wide format for reporting)
-age_crosstab <- survey_long %>%
-  group_by(age_group, question_topic) %>%
-  summarise(mean_score = mean(score), .groups = "drop") %>%
+age_crosstab <- survey_long |>
+  group_by(age_group, question_topic) |>
+  summarise(mean_score = mean(score), .groups = "drop") |>
   pivot_wider(
     names_from = question_topic,
     values_from = mean_score,
     names_prefix = "avg_"
-  ) %>%
+  ) |>
   arrange(age_group)
 
 # Pivot back to create comparative table
-gender_comparison <- survey_long %>%
-  group_by(gender, question_topic) %>%
-  summarise(avg_score = round(mean(score), 2), .groups = "drop") %>%
+gender_comparison <- survey_long |>
+  group_by(gender, question_topic) |>
+  summarise(avg_score = round(mean(score), 2), .groups = "drop") |>
   pivot_wider(
     names_from = gender,
     values_from = avg_score
-  ) %>%
+  ) |>
   mutate(
     difference = M - F,
     larger_gap = abs(difference) > 0.5
@@ -258,9 +258,9 @@ sales_data <- tibble(
 )
 
 # Nested modeling: separate model per region
-regional_models <- sales_data %>%
+regional_models <- sales_data |>
   # Create nested data structure
-  nest(data = -region) %>%
+  nest(data = -region) |>
   # Fit linear model for each region
   mutate(
     model = map(data, ~ lm(sales ~ advertising_spend + month, data = .x)),
@@ -273,42 +273,42 @@ regional_models <- sales_data %>%
   )
 
 # Extract and compare coefficients across regions
-coefficient_comparison <- regional_models %>%
-  select(region, coefficients) %>%
-  unnest(coefficients) %>%
-  select(region, term, estimate, std.error, p.value) %>%
+coefficient_comparison <- regional_models |>
+  select(region, coefficients) |>
+  unnest(coefficients) |>
+  select(region, term, estimate, std.error, p.value) |>
   # Flag statistically significant terms
-  mutate(significant = p.value < 0.05) %>%
+  mutate(significant = p.value < 0.05) |>
   # Pivot for easy comparison
-  select(region, term, estimate) %>%
+  select(region, term, estimate) |>
   pivot_wider(names_from = term, values_from = estimate)
 
 # Extract model performance metrics
-model_performance <- regional_models %>%
-  select(region, model_stats) %>%
-  unnest(model_stats) %>%
-  select(region, r.squared, adj.r.squared, sigma, AIC, BIC) %>%
+model_performance <- regional_models |>
+  select(region, model_stats) |>
+  unnest(model_stats) |>
+  select(region, r.squared, adj.r.squared, sigma, AIC, BIC) |>
   arrange(desc(r.squared))
 
 # Find best and worst performing regions
-best_region <- model_performance %>% slice_max(r.squared, n = 1)
-worst_region <- model_performance %>% slice_min(r.squared, n = 1)
+best_region <- model_performance |> slice_max(r.squared, n = 1)
+worst_region <- model_performance |> slice_min(r.squared, n = 1)
 
 # Extract predictions for visualization
-all_predictions <- regional_models %>%
-  select(region, predictions) %>%
-  unnest(predictions) %>%
+all_predictions <- regional_models |>
+  select(region, predictions) |>
+  unnest(predictions) |>
   select(region, month, advertising_spend, sales, .fitted, .resid)
 
 # Calculate prediction accuracy by region
-accuracy_summary <- all_predictions %>%
-  group_by(region) %>%
+accuracy_summary <- all_predictions |>
+  group_by(region) |>
   summarise(
     mae = mean(abs(.resid)),           # Mean Absolute Error
     rmse = sqrt(mean(.resid^2)),       # Root Mean Squared Error
     mape = mean(abs(.resid / sales)) * 100,  # Mean Absolute % Error
     .groups = "drop"
-  ) %>%
+  ) |>
   arrange(rmse)
 
 print(coefficient_comparison)
@@ -345,7 +345,7 @@ feedback <- tibble(
 )
 
 # Comprehensive text cleaning pipeline
-cleaned_feedback <- feedback %>%
+cleaned_feedback <- feedback |>
   mutate(
     # Standardize names: Title Case, trim whitespace
     customer_name = str_to_title(str_squish(customer_name)),
@@ -354,15 +354,15 @@ cleaned_feedback <- feedback %>%
     email = str_to_lower(str_trim(email)),
 
     # Standardize phone: extract digits only, format consistently
-    phone_digits = str_extract_all(phone, "\\d") %>%
+    phone_digits = str_extract_all(phone, "\\d") |>
                    map_chr(~ paste(.x, collapse = "")),
     phone_clean = str_replace(phone_digits,
                              "(\\d{3})(\\d{3})(\\d{4})",
                              "(\\1) \\2-\\3"),
 
     # Clean comments: trim, remove extra punctuation
-    comment_clean = str_squish(comment) %>%
-                    str_remove_all("!{2,}") %>%  # Multiple exclamation marks
+    comment_clean = str_squish(comment) |>
+                    str_remove_all("!{2,}") |>  # Multiple exclamation marks
                     str_remove_all("\\.{2,}"),   # Multiple periods
 
     # Extract sentiment indicators
@@ -386,7 +386,7 @@ cleaned_feedback <- feedback %>%
     name_length = str_length(customer_name),
     comment_length = str_length(comment_clean),
     comment_words = str_count(comment_clean, "\\w+")
-  ) %>%
+  ) |>
   # Select final columns
   select(id, customer_name, email, phone_clean,
          comment_clean, sentiment, comment_words, has_special_chars)
@@ -431,7 +431,7 @@ transactions <- tibble(
 )
 
 # Comprehensive date-time feature engineering
-transactions_enriched <- transactions %>%
+transactions_enriched <- transactions |>
   mutate(
     # Extract date components
     date = as.Date(timestamp),
@@ -460,15 +460,15 @@ transactions_enriched <- transactions %>%
   )
 
 # Daily aggregation
-daily_summary <- transactions_enriched %>%
-  group_by(date) %>%
+daily_summary <- transactions_enriched |>
+  group_by(date) |>
   summarise(
     n_transactions = n(),
     total_amount = sum(amount),
     avg_amount = mean(amount),
     unique_customers = n_distinct(customer_id),
     .groups = "drop"
-  ) %>%
+  ) |>
   # Add rolling averages
   mutate(
     roll_avg_7day = slider::slide_dbl(total_amount, mean,
@@ -478,43 +478,43 @@ daily_summary <- transactions_enriched %>%
   )
 
 # Weekly aggregation (by week and weekday)
-weekly_pattern <- transactions_enriched %>%
-  group_by(week, weekday) %>%
+weekly_pattern <- transactions_enriched |>
+  group_by(week, weekday) |>
   summarise(
     n_transactions = n(),
     total_amount = sum(amount),
     .groups = "drop"
-  ) %>%
+  ) |>
   # Calculate average pattern across all weeks
-  group_by(weekday) %>%
+  group_by(weekday) |>
   summarise(
     avg_transactions = mean(n_transactions),
     avg_amount = mean(total_amount)
   )
 
 # Hourly patterns
-hourly_pattern <- transactions_enriched %>%
-  group_by(hour, is_weekend) %>%
+hourly_pattern <- transactions_enriched |>
+  group_by(hour, is_weekend) |>
   summarise(
     n_transactions = n(),
     avg_amount = mean(amount),
     .groups = "drop"
-  ) %>%
+  ) |>
   mutate(day_type = if_else(is_weekend, "Weekend", "Weekday"))
 
 # Time period comparison
-period_comparison <- transactions_enriched %>%
+period_comparison <- transactions_enriched |>
   mutate(
     period = if_else(days_since_start < 45, "First 45 Days", "Last 45 Days")
-  ) %>%
-  group_by(period) %>%
+  ) |>
+  group_by(period) |>
   summarise(
     total_transactions = n(),
     total_revenue = sum(amount),
     avg_transaction = mean(amount),
     unique_customers = n_distinct(customer_id),
     .groups = "drop"
-  ) %>%
+  ) |>
   # Calculate growth metrics
   mutate(
     pct_change = (total_revenue / lag(total_revenue) - 1) * 100
@@ -550,7 +550,7 @@ product_sales <- tibble(
 )
 
 # Factor reordering strategies
-sales_prepared <- product_sales %>%
+sales_prepared <- product_sales |>
   mutate(
     # 1. Order by frequency (most common first)
     category_by_freq = fct_infreq(category),
@@ -586,15 +586,15 @@ sales_prepared <- product_sales %>%
   )
 
 # Create visualization-ready summary
-viz_summary <- product_sales %>%
+viz_summary <- product_sales |>
   # Order categories by total sales
-  mutate(category = fct_reorder(category, sales, .fun = sum)) %>%
+  mutate(category = fct_reorder(category, sales, .fun = sum)) |>
   # Order products within categories by margin
-  mutate(product = fct_reorder(product, margin_pct)) %>%
+  mutate(product = fct_reorder(product, margin_pct)) |>
   arrange(category, desc(margin_pct))
 
 # Top/bottom performers with meaningful ordering
-top_bottom <- product_sales %>%
+top_bottom <- product_sales |>
   mutate(
     performance = case_when(
       sales >= quantile(sales, 0.75) ~ "Top Performers",
@@ -606,18 +606,18 @@ top_bottom <- product_sales %>%
                              "Top Performers", "Mid Performers", "Low Performers"),
     # Order products by sales within each performance tier
     product = fct_reorder(product, sales)
-  ) %>%
+  ) |>
   select(product, category, sales, margin_pct, performance)
 
 # Category summary with ordered factors
-category_summary <- product_sales %>%
-  group_by(category) %>%
+category_summary <- product_sales |>
+  group_by(category) |>
   summarise(
     total_sales = sum(sales),
     avg_margin = mean(margin_pct),
     product_count = n(),
     .groups = "drop"
-  ) %>%
+  ) |>
   # Order by total sales for visualization
   mutate(category = fct_reorder(category, total_sales, .desc = TRUE))
 

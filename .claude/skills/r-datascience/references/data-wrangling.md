@@ -12,7 +12,7 @@ All dplyr verbs work similarly:
 - First argument is a data frame
 - Subsequent arguments describe what to do (use column names without quotes)
 - Result is a new data frame
-- Use pipes (`%>%`) to chain operations
+- Use pipes (`|>`) to chain operations
 
 ### 1. filter() - Subset Rows
 
@@ -22,26 +22,26 @@ Select rows based on conditions.
 library(dplyr)
 
 # Single condition
-flights %>% filter(month == 1)
+flights |>filter(month == 1)
 
 # Multiple conditions (AND)
-flights %>% filter(month == 1, day == 1)
-flights %>% filter(month == 1 & day == 1)  # Equivalent
+flights |>filter(month == 1, day == 1)
+flights |>filter(month == 1 & day == 1)  # Equivalent
 
 # OR conditions
-flights %>% filter(month == 11 | month == 12)
-flights %>% filter(month %in% c(11, 12))  # Better
+flights |>filter(month == 11 | month == 12)
+flights |>filter(month %in% c(11, 12))  # Better
 
 # Combining AND and OR
-flights %>% filter((month == 11 | month == 12) & day == 1)
+flights |>filter((month == 11 | month == 12) & day == 1)
 
 # NOT
-flights %>% filter(!(month %in% c(11, 12)))
-flights %>% filter(!between(month, 11, 12))
+flights |>filter(!(month %in% c(11, 12)))
+flights |>filter(!between(month, 11, 12))
 
 # Missing values
-flights %>% filter(is.na(dep_time))
-flights %>% filter(!is.na(dep_time))
+flights |>filter(is.na(dep_time))
+flights |>filter(!is.na(dep_time))
 ```
 
 **Common Operators**:
@@ -58,26 +58,26 @@ Select specific columns from a data frame.
 
 ```r
 # Select by name
-flights %>% select(year, month, day)
+flights |>select(year, month, day)
 
 # Select range
-flights %>% select(year:day)
+flights |>select(year:day)
 
 # Exclude columns
-flights %>% select(-year, -month)
-flights %>% select(-(year:day))
+flights |>select(-year, -month)
+flights |>select(-(year:day))
 
 # Helper functions
-flights %>% select(starts_with("dep"))
-flights %>% select(ends_with("time"))
-flights %>% select(contains("arr"))
-flights %>% select(matches("(.)\\1"))  # Regex: repeated character
+flights |>select(starts_with("dep"))
+flights |>select(ends_with("time"))
+flights |>select(contains("arr"))
+flights |>select(matches("(.)\\1"))  # Regex: repeated character
 
 # Select and rename
-flights %>% select(departure_time = dep_time, arrival_time = arr_time)
+flights |>select(departure_time = dep_time, arrival_time = arr_time)
 
 # Reorder columns
-flights %>% select(time_hour, air_time, everything())
+flights |>select(time_hour, air_time, everything())
 ```
 
 **Helper Functions**:
@@ -96,16 +96,16 @@ Sort rows by column values.
 
 ```r
 # Ascending order
-flights %>% arrange(year, month, day)
+flights |>arrange(year, month, day)
 
 # Descending order
-flights %>% arrange(desc(dep_delay))
+flights |>arrange(desc(dep_delay))
 
 # Mixed
-flights %>% arrange(desc(month), day)
+flights |>arrange(desc(month), day)
 
 # Missing values always at end
-flights %>% arrange(dep_time)  # NAs at end
+flights |>arrange(dep_time)  # NAs at end
 ```
 
 ### 4. mutate() - Create/Modify Columns
@@ -114,21 +114,21 @@ Add new columns or modify existing ones.
 
 ```r
 # Add new columns
-flights %>%
+flights |>
   mutate(
     gain = dep_delay - arr_delay,
     speed = distance / air_time * 60
   )
 
 # Reference newly created columns
-flights %>%
+flights |>
   mutate(
     gain = dep_delay - arr_delay,
     gain_per_hour = gain / (air_time / 60)
   )
 
 # Keep only new columns
-flights %>%
+flights |>
   transmute(
     gain = dep_delay - arr_delay,
     hours = air_time / 60,
@@ -136,14 +136,14 @@ flights %>%
   )
 
 # Modify existing columns
-flights %>%
+flights |>
   mutate(
     dep_time = dep_time %/% 100 * 60 + dep_time %% 100,
     arr_time = arr_time %/% 100 * 60 + arr_time %% 100
   )
 
 # Conditional creation
-flights %>%
+flights |>
   mutate(
     status = case_when(
       arr_delay > 15 ~ "late",
@@ -153,10 +153,10 @@ flights %>%
   )
 
 # Apply to multiple columns
-flights %>%
+flights |>
   mutate(across(where(is.numeric), ~replace_na(.x, 0)))
 
-flights %>%
+flights |>
   mutate(across(c(dep_time, arr_time), ~.x %/% 100))
 ```
 
@@ -173,7 +173,7 @@ Reduce multiple rows to a single summary.
 
 ```r
 # Single summary
-flights %>%
+flights |>
   summarise(
     mean_delay = mean(dep_delay, na.rm = TRUE),
     median_delay = median(dep_delay, na.rm = TRUE),
@@ -181,7 +181,7 @@ flights %>%
   )
 
 # Multiple summaries
-flights %>%
+flights |>
   summarise(
     count = n(),
     mean_delay = mean(dep_delay, na.rm = TRUE),
@@ -191,7 +191,7 @@ flights %>%
   )
 
 # Use across() for multiple columns
-flights %>%
+flights |>
   summarise(across(c(dep_delay, arr_delay),
                    list(mean = ~mean(.x, na.rm = TRUE),
                         sd = ~sd(.x, na.rm = TRUE))))
@@ -211,33 +211,33 @@ The game changer: apply operations to groups independently.
 
 ```r
 # Group and summarize
-flights %>%
-  group_by(year, month, day) %>%
+flights |>
+  group_by(year, month, day) |>
   summarise(mean_delay = mean(dep_delay, na.rm = TRUE))
 
 # Group and mutate (adds column with group statistics)
-flights %>%
-  group_by(dest) %>%
+flights |>
+  group_by(dest) |>
   mutate(
     avg_dest_delay = mean(arr_delay, na.rm = TRUE),
     n_flights = n()
   )
 
 # Group and filter (filter within groups)
-flights %>%
-  group_by(dest) %>%
+flights |>
+  group_by(dest) |>
   filter(n() > 365)  # Destinations with > 365 flights
 
 # Multiple groups
-flights %>%
-  group_by(year, month) %>%
+flights |>
+  group_by(year, month) |>
   summarise(total_flights = n())
 
 # Always ungroup() when done
-flights %>%
-  group_by(dest) %>%
-  summarise(delay = mean(arr_delay, na.rm = TRUE)) %>%
-  ungroup() %>%
+flights |>
+  group_by(dest) |>
+  summarise(delay = mean(arr_delay, na.rm = TRUE)) |>
+  ungroup() |>
   arrange(desc(delay))
 ```
 
@@ -245,24 +245,24 @@ flights %>%
 
 ```r
 # Group by expression
-flights %>%
-  group_by(hour = dep_time %/% 100) %>%
+flights |>
+  group_by(hour = dep_time %/% 100) |>
   summarise(avg_delay = mean(dep_delay, na.rm = TRUE))
 
 # Count groups
-flights %>%
-  group_by(dest) %>%
+flights |>
+  group_by(dest) |>
   tally()  # Equivalent to summarise(n = n())
 
 # Count with weights
-flights %>%
-  group_by(dest) %>%
+flights |>
+  group_by(dest) |>
   tally(wt = distance)  # Total distance by destination
 
 # More concise counting
-flights %>% count(dest)
-flights %>% count(dest, sort = TRUE)  # Sort by count
-flights %>% count(dest, wt = distance)  # With weights
+flights |>count(dest)
+flights |>count(dest, sort = TRUE)  # Sort by count
+flights |>count(dest, wt = distance)  # With weights
 ```
 
 ## tidyr: Reshaping Data
@@ -279,7 +279,7 @@ Convert wide data to long format (multiple columns into key-value pairs).
 
 ```r
 # Basic pivot
-table4a %>%
+table4a |>
   pivot_longer(
     cols = c(`1999`, `2000`),
     names_to = "year",
@@ -287,7 +287,7 @@ table4a %>%
   )
 
 # Use helper functions for cols
-table4a %>%
+table4a |>
   pivot_longer(
     cols = -country,  # All except country
     names_to = "year",
@@ -295,7 +295,7 @@ table4a %>%
   )
 
 # Multiple value columns
-billboard %>%
+billboard |>
   pivot_longer(
     cols = starts_with("wk"),
     names_to = "week",
@@ -304,7 +304,7 @@ billboard %>%
   )
 
 # Parse column names
-who %>%
+who |>
   pivot_longer(
     cols = new_sp_m014:newrel_f65,
     names_to = c("diagnosis", "gender", "age"),
@@ -313,7 +313,7 @@ who %>%
   )
 
 # Names as numeric
-table4a %>%
+table4a |>
   pivot_longer(
     cols = -country,
     names_to = "year",
@@ -328,14 +328,14 @@ Convert long data to wide format (key-value pairs into multiple columns).
 
 ```r
 # Basic pivot
-table2 %>%
+table2 |>
   pivot_wider(
     names_from = type,
     values_from = count
   )
 
 # Handle duplicates
-df %>%
+df |>
   pivot_wider(
     names_from = name,
     values_from = value,
@@ -343,14 +343,14 @@ df %>%
   )
 
 # Multiple value columns
-us_rent_income %>%
+us_rent_income |>
   pivot_wider(
     names_from = variable,
     values_from = c(estimate, moe)
   )
 
 # Custom name separator
-df %>%
+df |>
   pivot_wider(
     names_from = name,
     values_from = value,
@@ -358,30 +358,32 @@ df %>%
   )
 ```
 
-### separate() - Split Column
+### separate_wider_delim() / separate_wider_position() - Split Column
 
 Split one column into multiple columns.
 
 ```r
 # Basic separation
-table3 %>%
-  separate(rate, into = c("cases", "population"), sep = "/")
+table3 |>
+  separate_wider_delim(rate, delim = "/", names = c("cases", "population"))
 
-# Auto-detect separator
-table3 %>%
+# Auto-detect separator (use older separate() for this)
+table3 |>
   separate(rate, into = c("cases", "population"))
 
 # Convert types
-table3 %>%
-  separate(rate, into = c("cases", "population"), convert = TRUE)
+table3 |>
+  separate_wider_delim(rate, delim = "/", names = c("cases", "population")) |>
+  mutate(across(c(cases, population), as.numeric))
 
 # Keep original column
-table3 %>%
-  separate(rate, into = c("cases", "population"), remove = FALSE)
+table3 |>
+  separate_wider_delim(rate, delim = "/", names = c("cases", "population"),
+                       cols_remove = FALSE)
 
 # Separate by position
-table3 %>%
-  separate(year, into = c("century", "year"), sep = 2)
+table3 |>
+  separate_wider_position(year, widths = c(century = 2, year = 2))
 ```
 
 ### unite() - Combine Columns
@@ -390,15 +392,15 @@ Combine multiple columns into one.
 
 ```r
 # Basic unite
-table5 %>%
+table5 |>
   unite(new_col, century, year, sep = "")
 
 # Keep original columns
-table5 %>%
+table5 |>
   unite(new_col, century, year, remove = FALSE)
 
 # Custom separator
-table5 %>%
+table5 |>
   unite(date, year, month, day, sep = "-")
 ```
 
@@ -406,15 +408,15 @@ table5 %>%
 
 ```r
 # Generate all combinations
-stocks %>%
+stocks |>
   complete(year, qtr)
 
 # Fill with specific value
-stocks %>%
+stocks |>
   complete(year, qtr, fill = list(return = 0))
 
 # Nesting
-stocks %>%
+stocks |>
   complete(year, nesting(company, product))
 ```
 
@@ -422,15 +424,15 @@ stocks %>%
 
 ```r
 # Forward fill
-treatment %>%
+treatment |>
   fill(person)
 
 # Backward fill
-treatment %>%
+treatment |>
   fill(person, .direction = "up")
 
 # Both directions
-treatment %>%
+treatment |>
   fill(person, .direction = "downup")
 ```
 
@@ -442,27 +444,27 @@ Add columns from one data frame to another.
 
 ```r
 # Inner join: Keep only matching rows
-flights2 %>%
+flights2 |>
   inner_join(airports, by = c("dest" = "faa"))
 
 # Left join: Keep all rows from left
-flights2 %>%
+flights2 |>
   left_join(airports, by = c("dest" = "faa"))
 
 # Right join: Keep all rows from right
-flights2 %>%
+flights2 |>
   right_join(airports, by = c("dest" = "faa"))
 
 # Full join: Keep all rows from both
-flights2 %>%
+flights2 |>
   full_join(airports, by = c("dest" = "faa"))
 
 # Natural join (match on all common columns)
-flights2 %>%
+flights2 |>
   left_join(weather)
 
 # Multiple key columns
-flights2 %>%
+flights2 |>
   left_join(weather, by = c("year", "month", "day", "hour", "origin"))
 ```
 
@@ -472,12 +474,12 @@ Filter rows based on another data frame.
 
 ```r
 # semi_join: Keep rows with match in y
-flights %>%
+flights |>
   semi_join(top_dest, by = "dest")
 
 # anti_join: Keep rows without match in y
-flights %>%
-  anti_join(planes, by = "tailnum") %>%
+flights |>
+  anti_join(planes, by = "tailnum") |>
   count(tailnum, sort = TRUE)
 ```
 
@@ -500,26 +502,26 @@ Modern tidyverse pattern for operating on multiple columns.
 
 ```r
 # Apply to all numeric columns
-df %>%
+df |>
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
 
 # Apply multiple functions
-df %>%
+df |>
   summarise(across(where(is.numeric),
                    list(mean = mean, sd = sd),
                    na.rm = TRUE))
 
 # Apply to specific columns
-df %>%
+df |>
   mutate(across(c(height, weight), ~.x * 2.54))
 
 # Use with group_by
-df %>%
-  group_by(category) %>%
+df |>
+  group_by(category) |>
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
 
 # Rename output
-df %>%
+df |>
   summarise(across(where(is.numeric),
                    mean,
                    .names = "mean_{.col}",
@@ -528,7 +530,7 @@ df %>%
 
 ## Best Practices
 
-✅ **Use pipes** for readability: `data %>% filter() %>% select() %>% arrange()`
+✅ **Use pipes** for readability: `data |>filter() |>select() |>arrange()`
 ✅ **Always handle NAs**: Use `na.rm = TRUE` in summary functions
 ✅ **Use `count()`** instead of `group_by() + summarise(n = n())`
 ✅ **Use `across()`** for operations on multiple columns
@@ -553,7 +555,7 @@ df %>%
 | Count | `count()` | `count(df, category)` |
 | Wide to long | `pivot_longer()` | `pivot_longer(df, cols = x:z)` |
 | Long to wide | `pivot_wider()` | `pivot_wider(df, names_from = key)` |
-| Split column | `separate()` | `separate(df, col, c("a", "b"))` |
+| Split column | `separate_wider_delim()` | `separate_wider_delim(df, col, "/", names = c("a", "b"))` |
 | Join columns | `unite()` | `unite(df, new_col, a, b)` |
 | Left join | `left_join()` | `left_join(df1, df2, by = "id")` |
 

@@ -23,9 +23,9 @@ library(tidyverse)
 
 # 1. DATA PREPARATION ----
 # Assume retail_data has Date and Sales columns
-retail_ts <- retail_data %>%
-  mutate(Month = yearmonth(Date)) %>%
-  as_tsibble(index = Month) %>%
+retail_ts <- retail_data |>
+  mutate(Month = yearmonth(Date)) |>
+  as_tsibble(index = Month) |>
   select(Month, Sales)
 
 # Check for gaps
@@ -33,43 +33,43 @@ scan_gaps(retail_ts)
 
 # 2. VISUALIZATION AND EXPLORATION ----
 # Time plot
-retail_ts %>%
+retail_ts |>
   autoplot(Sales) +
   labs(title = "Monthly Retail Sales", y = "Sales ($)")
 
 # Seasonal plots
-retail_ts %>%
+retail_ts |>
   gg_season(Sales, labels = "both") +
   labs(title = "Seasonal Plot of Retail Sales")
 
-retail_ts %>%
+retail_ts |>
   gg_subseries(Sales) +
   labs(title = "Subseries Plot")
 
 # ACF and PACF
-retail_ts %>%
+retail_ts |>
   gg_tsdisplay(Sales, plot_type = "partial")
 
 # 3. DECOMPOSITION ----
-retail_dcmp <- retail_ts %>%
+retail_dcmp <- retail_ts |>
   model(stl = STL(Sales))
 
-components(retail_dcmp) %>% autoplot()
+components(retail_dcmp) |> autoplot()
 
 # Check strength of seasonality and trend
-retail_ts %>%
+retail_ts |>
   features(Sales, feat_stl)
 
 # 4. STATIONARITY ----
 # Check for differencing needed
-retail_ts %>%
+retail_ts |>
   features(Sales, unitroot_kpss)
 
-retail_ts %>%
+retail_ts |>
   features(Sales, unitroot_ndiffs)
 
 # 5. MODEL SPECIFICATION ----
-retail_models <- retail_ts %>%
+retail_models <- retail_ts |>
   model(
     # Simple methods (benchmarks)
     mean = MEAN(Sales),
@@ -95,38 +95,38 @@ retail_models <- retail_ts %>%
 
 # 6. MODEL DIAGNOSTICS ----
 # Residual diagnostics for best ETS model
-retail_models %>%
-  select(ets_auto) %>%
+retail_models |>
+  select(ets_auto) |>
   gg_tsresiduals()
 
 # Ljung-Box test (want p-value > 0.05)
-augment(retail_models) %>%
-  filter(.model == "ets_auto") %>%
+augment(retail_models) |>
+  filter(.model == "ets_auto") |>
   features(.innov, ljung_box, lag = 24, dof = 0)
 
 # Check multiple models
-augment(retail_models) %>%
-  filter(.model %in% c("ets_auto", "arima_auto", "ets_mam")) %>%
+augment(retail_models) |>
+  filter(.model %in% c("ets_auto", "arima_auto", "ets_mam")) |>
   features(.innov, ljung_box, lag = 24, dof = 0)
 
 # 7. MODEL SELECTION ----
 # Training accuracy (quick check)
-retail_models %>%
-  accuracy() %>%
-  select(.model, RMSE, MAE, MASE) %>%
+retail_models |>
+  accuracy() |>
+  select(.model, RMSE, MAE, MASE) |>
   arrange(MASE)
 
 # Information criteria
-retail_models %>%
-  glance() %>%
-  select(.model, AICc, BIC) %>%
+retail_models |>
+  glance() |>
+  select(.model, AICc, BIC) |>
   arrange(AICc)
 
 # Cross-validation with time series (ROBUST EVALUATION)
-retail_cv <- retail_ts %>%
+retail_cv <- retail_ts |>
   stretch_tsibble(.init = 36, .step = 3)  # Start with 3 years, step by quarter
 
-retail_cv_fit <- retail_cv %>%
+retail_cv_fit <- retail_cv |>
   model(
     snaive = SNAIVE(Sales),
     ets = ETS(Sales),
@@ -134,51 +134,51 @@ retail_cv_fit <- retail_cv %>%
     ets_mam = ETS(Sales ~ error("M") + trend("A") + season("M"))
   )
 
-retail_cv_fc <- retail_cv_fit %>%
+retail_cv_fc <- retail_cv_fit |>
   forecast(h = 12)
 
 # CV results
-cv_results <- retail_cv_fc %>%
-  accuracy(retail_ts) %>%
-  group_by(.model) %>%
+cv_results <- retail_cv_fc |>
+  accuracy(retail_ts) |>
+  group_by(.model) |>
   summarise(
     mean_MASE = mean(MASE),
     mean_RMSE = mean(RMSE),
     .groups = "drop"
-  ) %>%
+  ) |>
   arrange(mean_MASE)
 
 print(cv_results)
 
 # 8. FORECASTING ----
 # Generate 12-month forecast for all models
-retail_fc <- retail_models %>%
+retail_fc <- retail_models |>
   forecast(h = 12)
 
 # Visualize all forecasts
-retail_fc %>%
+retail_fc |>
   autoplot(retail_ts, level = NULL) +
   facet_wrap(~.model, ncol = 3) +
   labs(title = "Retail Sales Forecasts by Method")
 
 # Focus on best models
-best_models <- cv_results %>%
-  slice_head(n = 3) %>%
+best_models <- cv_results |>
+  slice_head(n = 3) |>
   pull(.model)
 
-retail_fc %>%
-  filter(.model %in% best_models) %>%
+retail_fc |>
+  filter(.model %in% best_models) |>
   autoplot(retail_ts, level = c(80, 95)) +
   labs(title = "12-Month Retail Sales Forecast (Top 3 Models)",
        y = "Sales ($)")
 
 # 9. FORECAST EVALUATION ----
 # If we have test data (last 12 months)
-train_ts <- retail_ts %>% filter(Month < yearmonth("2023-01"))
-test_ts <- retail_ts %>% filter(Month >= yearmonth("2023-01"))
+train_ts <- retail_ts |> filter(Month < yearmonth("2023-01"))
+test_ts <- retail_ts |> filter(Month >= yearmonth("2023-01"))
 
 # Fit on training data
-train_fit <- train_ts %>%
+train_fit <- train_ts |>
   model(
     snaive = SNAIVE(Sales),
     ets = ETS(Sales),
@@ -187,19 +187,19 @@ train_fit <- train_ts %>%
   )
 
 # Forecast test period
-test_fc <- train_fit %>% forecast(h = nrow(test_ts))
+test_fc <- train_fit |> forecast(h = nrow(test_ts))
 
 # Evaluate
-test_accuracy <- test_fc %>%
-  accuracy(test_ts) %>%
-  select(.model, MASE, RMSE, MAE) %>%
+test_accuracy <- test_fc |>
+  accuracy(test_ts) |>
+  select(.model, MASE, RMSE, MAE) |>
   arrange(MASE)
 
 print(test_accuracy)
 
 # Visualize forecasts vs actuals
-test_fc %>%
-  filter(.model == best_models[1]) %>%
+test_fc |>
+  filter(.model == best_models[1]) |>
   autoplot(train_ts, level = c(80, 95)) +
   autolayer(test_ts, color = "black", size = 1) +
   labs(title = "Best Model: Forecast vs Actual",
@@ -207,26 +207,26 @@ test_fc %>%
        y = "Sales ($)")
 
 # Prediction intervals
-test_fc %>%
-  filter(.model == best_models[1]) %>%
-  hilo(level = c(80, 95)) %>%
-  unpack_hilo(cols = c("80%", "95%")) %>%
+test_fc |>
+  filter(.model == best_models[1]) |>
+  hilo(level = c(80, 95)) |>
+  unpack_hilo(cols = c("80%", "95%")) |>
   select(Month, .mean, `80%_lower`, `80%_upper`, `95%_lower`, `95%_upper`)
 
 # 10. FINAL PRODUCTION FORECAST ----
 # Refit best model on full data
-final_model <- retail_ts %>%
+final_model <- retail_ts |>
   model(best = ETS(Sales ~ error("M") + trend("A") + season("M")))
 
 # Report model
 report(final_model)
 
 # Generate 12-month forecast
-final_fc <- final_model %>%
+final_fc <- final_model |>
   forecast(h = 12)
 
 # Visualize with confidence bands
-final_fc %>%
+final_fc |>
   autoplot(retail_ts, level = c(80, 95)) +
   labs(title = "Final 12-Month Retail Sales Forecast",
        subtitle = "ETS(M,A,M) - Multiplicative errors, Additive trend, Multiplicative seasonality",
@@ -234,12 +234,12 @@ final_fc %>%
   theme_minimal()
 
 # Export forecast table
-forecast_table <- final_fc %>%
-  hilo(level = c(80, 95)) %>%
-  unpack_hilo(cols = c("80%", "95%")) %>%
+forecast_table <- final_fc |>
+  hilo(level = c(80, 95)) |>
+  unpack_hilo(cols = c("80%", "95%")) |>
   select(Month, point_forecast = .mean,
          lower_80 = `80%_lower`, upper_80 = `80%_upper`,
-         lower_95 = `95%_lower`, upper_95 = `95%_upper`) %>%
+         lower_95 = `95%_lower`, upper_95 = `95%_upper`) |>
   as_tibble()
 
 write_csv(forecast_table, "retail_sales_forecast_2024.csv")
@@ -257,7 +257,7 @@ cat("3. Best model: ETS(M,A,M) - handles proportional seasonality well\n")
 cat("4. Forecast accuracy: MASE = ", round(test_accuracy$MASE[1], 2), " (benchmark: 1.0)\n")
 
 # Forecast summary
-forecast_summary <- forecast_table %>%
+forecast_summary <- forecast_table |>
   summarise(
     min_forecast = min(point_forecast),
     max_forecast = max(point_forecast),
@@ -279,7 +279,7 @@ cat("- Budget: Plan for 5% YoY growth in revenue\n")
 cat("- Monitoring: Review actuals vs forecast monthly, refit quarterly\n")
 
 # Create monitoring dashboard data
-monitoring_data <- forecast_table %>%
+monitoring_data <- forecast_table |>
   mutate(
     status = "Forecasted",
     actual_sales = NA_real_,

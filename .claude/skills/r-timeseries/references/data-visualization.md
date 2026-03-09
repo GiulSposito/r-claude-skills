@@ -60,8 +60,8 @@ Shows:
 
 ### ACF Only
 ```r
-ts_data %>%
-  ACF(value, lag_max = 48) %>%
+ts_data |>
+  ACF(value, lag_max = 48) |>
   autoplot()
 ```
 
@@ -79,9 +79,9 @@ Partial autocorrelations (controlling for intermediate lags).
 
 ### STL Decomposition
 ```r
-ts_data %>%
-  model(stl = STL(value)) %>%
-  components() %>%
+ts_data |>
+  model(stl = STL(value)) |>
+  components() |>
   autoplot()
 ```
 
@@ -99,7 +99,7 @@ Shows four panels:
 ## Lag Plots
 
 ```r
-ts_data %>%
+ts_data |>
   gg_lag(value, geom = "point", lags = 1:9)
 ```
 
@@ -112,7 +112,7 @@ ts_data %>%
 ## Multiple Series Comparison
 
 ```r
-ts_data %>%
+ts_data |>
   autoplot(value) +
   facet_wrap(~key_variable, scales = "free_y")
 ```
@@ -123,7 +123,7 @@ Compare patterns across different groups/categories.
 
 ### Basic Forecast Plot
 ```r
-forecast_result %>%
+forecast_result |>
   autoplot(ts_data, level = c(80, 95))
 ```
 
@@ -134,7 +134,7 @@ Shows:
 
 ### Forecast Fan Chart
 ```r
-forecast_result %>%
+forecast_result |>
   autoplot(ts_data, level = seq(10, 90, by = 10)) +
   scale_fill_brewer(palette = "Blues")
 ```
@@ -145,7 +145,7 @@ Multiple prediction intervals create a "fan" showing increasing uncertainty.
 
 ### Combined Residual Plot
 ```r
-fit %>% gg_tsresiduals()
+fit |> gg_tsresiduals()
 ```
 
 Three panels:
@@ -161,13 +161,13 @@ Three panels:
 ### Individual Residual Plots
 ```r
 # Time plot
-augment(fit) %>% autoplot(.innov)
+augment(fit) |> autoplot(.innov)
 
 # ACF
-augment(fit) %>% ACF(.innov) %>% autoplot()
+augment(fit) |> ACF(.innov) |> autoplot()
 
 # Histogram
-augment(fit) %>%
+augment(fit) |>
   ggplot(aes(x = .innov)) +
   geom_histogram(bins = 30)
 ```
@@ -176,7 +176,7 @@ augment(fit) %>%
 
 ### Actual vs Fitted
 ```r
-augment(fit) %>%
+augment(fit) |>
   ggplot(aes(x = Month)) +
   geom_line(aes(y = value, color = "Actual")) +
   geom_line(aes(y = .fitted, color = "Fitted")) +
@@ -185,7 +185,7 @@ augment(fit) %>%
 
 ### Forecast vs Actual (Test Set)
 ```r
-forecast_result %>%
+forecast_result |>
   autoplot(train_data) +
   autolayer(test_data, color = "black") +
   labs(title = "Forecast vs Actual")
@@ -195,15 +195,15 @@ forecast_result %>%
 
 ### Multiple Model Comparison
 ```r
-forecast_result %>%
+forecast_result |>
   autoplot(ts_data, level = NULL) +
   facet_wrap(~.model)
 ```
 
 ### Prediction Interval Coverage
 ```r
-forecast_result %>%
-  accuracy(test_data, list(winkler = winkler_score), level = 95) %>%
+forecast_result |>
+  accuracy(test_data, list(winkler = winkler_score), level = 95) |>
   ggplot(aes(x = .model, y = winkler)) +
   geom_col()
 ```
@@ -217,7 +217,7 @@ library(patchwork)
 p1 <- autoplot(ts_data, value)
 p2 <- gg_season(ts_data, value)
 p3 <- gg_subseries(ts_data, value)
-p4 <- ACF(ts_data, value) %>% autoplot()
+p4 <- ACF(ts_data, value) |> autoplot()
 
 (p1 + p2) / (p3 + p4)
 ```

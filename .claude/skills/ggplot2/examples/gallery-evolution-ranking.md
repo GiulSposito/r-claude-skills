@@ -592,8 +592,8 @@ ggplot(data, aes(x = category, y = value)) +
 **Code Pattern:**
 ```r
 # Create continuous x-axis from episodic data
-data <- data %>%
-  arrange(season, episode) %>%
+data <- data |>
+  arrange(season, episode) |>
   mutate(
     episode_id = row_number(),
     episode_mod = episode_id + (9 * season),  # Add gaps between seasons
@@ -649,7 +649,7 @@ ggplot(data, aes(y = fct_reorder(category, gap))) +
             hjust = -0.5, size = 3)
 
 # Sorted by gap size
-data <- data %>%
+data <- data |>
   mutate(gap = abs(value2 - value1))
 
 ggplot(data, aes(y = fct_reorder(category, gap)))
@@ -722,7 +722,7 @@ to_add <- data.frame(
 names(to_add) <- names(data)
 to_add$group <- rep(levels(data$group), each = empty_bar)
 
-data_with_gaps <- rbind(data, to_add) %>%
+data_with_gaps <- rbind(data, to_add) |>
   arrange(group, category)
 
 # Add ID for positioning
@@ -758,7 +758,7 @@ ggplot(data_with_gaps, aes(x = as.factor(id), y = value, fill = group)) +
 # Calculate label positioning
 number_of_bar <- nrow(data_with_gaps)
 
-label_data <- data_with_gaps %>%
+label_data <- data_with_gaps |>
   mutate(
     # Calculate angle for each bar
     angle = 90 - 360 * (id - 0.5) / number_of_bar,
@@ -1022,9 +1022,9 @@ ggplot(data, aes(x = fct_reorder(name, value), y = value))
 
 # Method 2: dplyr
 library(dplyr)
-data %>%
-  arrange(value) %>%
-  mutate(name = factor(name, levels = name)) %>%
+data |>
+  arrange(value) |>
+  mutate(name = factor(name, levels = name)) |>
   ggplot(aes(x = name, y = value))
 
 # Method 3: Base R

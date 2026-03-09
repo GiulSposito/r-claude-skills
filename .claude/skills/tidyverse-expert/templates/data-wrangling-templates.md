@@ -20,17 +20,17 @@ file_paths <- list.files(
 )
 
 # Read and combine all files
-combined_data <- file_paths %>%
-  set_names() %>%                               # Use file paths as names
-  map_dfr(
+combined_data <- file_paths |>
+  set_names() |>                               # Use file paths as names
+  map(
     read_csv,
     col_types = cols(                           # Specify column types
       date = col_date(format = "%Y-%m-%d"),
       amount = col_double(),
       status = col_character()
-    ),
-    .id = "source_file"                         # Add column with file name
-  ) %>%
+    )
+  ) |>
+  list_rbind(names_to = "source_file") |>     # Combine and add file name column
   mutate(
     source_file = basename(source_file),        # Keep only filename
     import_date = Sys.Date()                    # Add import timestamp
@@ -45,7 +45,7 @@ combined_data <- file_paths %>%
 - Add error handling with `possibly()` for inconsistent files:
   ```r
   safe_read <- possibly(read_csv, otherwise = NULL)
-  map_dfr(file_paths, safe_read, .id = "source_file")
+  map(file_paths, safe_read) |> list_rbind(names_to = "source_file")
   ```
 
 ---
@@ -59,16 +59,16 @@ combined_data <- file_paths %>%
 library(tidyverse)
 
 # Clean column names: lowercase, snake_case, no special chars
-data_clean <- raw_data %>%
-  rename_with(~ str_to_lower(.)) %>%                # Lowercase
-  rename_with(~ str_replace_all(., "\\s+", "_")) %>%  # Spaces to underscores
-  rename_with(~ str_replace_all(., "[^a-z0-9_]", "")) %>%  # Remove special chars
-  rename_with(~ str_replace_all(., "_+", "_")) %>%   # Collapse multiple underscores
+data_clean <- raw_data |>
+  rename_with(~ str_to_lower(.)) |>                # Lowercase
+  rename_with(~ str_replace_all(., "\\s+", "_")) |>  # Spaces to underscores
+  rename_with(~ str_replace_all(., "[^a-z0-9_]", "")) |>  # Remove special chars
+  rename_with(~ str_replace_all(., "_+", "_")) |>   # Collapse multiple underscores
   rename_with(~ str_remove(., "^_|_$"))              # Remove leading/trailing underscores
 
 # Alternative: Use janitor package for automatic cleaning
 # library(janitor)
-# data_clean <- raw_data %>% clean_names()
+# data_clean <- raw_data |> clean_names()
 ```
 
 **Adaptation notes**:
@@ -77,8 +77,8 @@ data_clean <- raw_data %>%
 - Consider `janitor::clean_names()` for most cases (handles many edge cases)
 - Preserve original names if needed:
   ```r
-  data_clean <- raw_data %>%
-    mutate(original_columns = list(names(raw_data))) %>%
+  data_clean <- raw_data |>
+    mutate(original_columns = list(names(raw_data))) |>
     rename_with(...)
   ```
 
@@ -92,7 +92,7 @@ data_clean <- raw_data %>%
 ```r
 library(tidyverse)
 
-data_imputed <- raw_data %>%
+data_imputed <- raw_data |>
   mutate(
     # Numeric: Replace with median (robust to outliers)
     numeric_col = replace_na(numeric_col, median(numeric_col, na.rm = TRUE)),
@@ -117,20 +117,20 @@ data_imputed <- raw_data %>%
     # Create indicator for imputed values
     numeric_col_imputed = is.na(numeric_col),
     category_col_imputed = is.na(category_col)
-  ) %>%
+  ) |>
   # Group-wise imputation (e.g., by category)
-  group_by(group_var) %>%
+  group_by(group_var) |>
   mutate(
     group_median = replace_na(value, median(value, na.rm = TRUE))
-  ) %>%
+  ) |>
   ungroup()
 
 # Remove rows with critical missing values
-data_filtered <- data_imputed %>%
+data_filtered <- data_imputed |>
   filter(!is.na(critical_column))
 
 # Or keep only complete cases
-data_complete <- data_imputed %>%
+data_complete <- data_imputed |>
   drop_na(important_col1, important_col2)
 ```
 
@@ -151,8 +151,8 @@ data_complete <- data_imputed %>%
 ```r
 library(tidyverse)
 
-summary_stats <- data %>%
-  group_by(group_var1, group_var2) %>%
+summary_stats <- data |>
+  group_by(group_var1, group_var2) |>
   summarise(
     # Count and size metrics
     n_obs = n(),
@@ -193,7 +193,7 @@ summary_stats <- data %>%
     date_span_days = as.numeric(difftime(last_date, first_date, units = "days")),
 
     .groups = "drop"  # Ungroup after summarize
-  ) %>%
+  ) |>
   # Post-aggregation calculations
   mutate(
     ratio_metric = mean_value / median_value,
@@ -222,7 +222,7 @@ summary_stats <- data %>%
 ```r
 library(tidyverse)
 
-data_recoded <- data %>%
+data_recoded <- data |>
   mutate(
     # Simple if-else
     simple_category = if_else(value > 100, "High", "Low"),
@@ -327,20 +327,20 @@ calculate_stats <- function(x) {
 }
 
 # Apply custom functions
-custom_summary <- data %>%
-  group_by(category) %>%
+custom_summary <- data |>
+  group_by(category) |>
   summarise(
     # Single-value custom function
     wtd_avg = weighted_mean(value, weight),
 
     # Multiple-value custom function with reframe
     stats = list(calculate_stats(value))
-  ) %>%
+  ) |>
   unnest(stats)  # Expand nested tibble
 
 # Using across() with custom function
-multi_col_summary <- data %>%
-  group_by(group) %>%
+multi_col_summary <- data |>
+  group_by(group) |>
   summarise(
     across(
       c(var1, var2, var3),
@@ -353,8 +353,8 @@ multi_col_summary <- data %>%
   )
 
 # Conditional aggregation
-conditional_agg <- data %>%
-  group_by(category) %>%
+conditional_agg <- data |>
+  group_by(category) |>
   summarise(
     # Average only for positive values
     avg_positive = mean(value[value > 0], na.rm = TRUE),
@@ -388,49 +388,49 @@ conditional_agg <- data %>%
 library(tidyverse)
 library(lubridate)
 
-data_filtered <- data %>%
+data_filtered <- data |>
   mutate(
     # Ensure date column is Date type
     date = as.Date(date)
-  ) %>%
+  ) |>
   # Filter patterns:
 
   # Specific date range
   filter(date >= as.Date("2024-01-01"),
-         date <= as.Date("2024-12-31")) %>%
+         date <= as.Date("2024-12-31")) |>
 
   # Last N days
-  filter(date >= today() - days(30)) %>%
+  filter(date >= today() - days(30)) |>
 
   # Current month
   filter(year(date) == year(today()),
-         month(date) == month(today())) %>%
+         month(date) == month(today())) |>
 
   # Last complete month
   filter(date >= floor_date(today() - months(1), "month"),
-         date < floor_date(today(), "month")) %>%
+         date < floor_date(today(), "month")) |>
 
   # Current quarter
-  filter(quarter(date, with_year = TRUE) == quarter(today(), with_year = TRUE)) %>%
+  filter(quarter(date, with_year = TRUE) == quarter(today(), with_year = TRUE)) |>
 
   # Last N months (rolling)
-  filter(date >= floor_date(today() - months(3), "month")) %>%
+  filter(date >= floor_date(today() - months(3), "month")) |>
 
   # Year to date
   filter(year(date) == year(today()),
-         date <= today()) %>%
+         date <= today()) |>
 
   # Between two timestamps (datetime)
   filter(timestamp >= as.POSIXct("2024-01-01 00:00:00"),
-         timestamp < as.POSIXct("2024-02-01 00:00:00")) %>%
+         timestamp < as.POSIXct("2024-02-01 00:00:00")) |>
 
   # Business days only (weekdays)
-  filter(!wday(date, label = FALSE) %in% c(1, 7)) %>%  # 1=Sun, 7=Sat
+  filter(!wday(date, label = FALSE) %in% c(1, 7)) |>  # 1=Sun, 7=Sat
 
   # Exclude specific dates (holidays)
   filter(!date %in% c(as.Date("2024-01-01"),
                       as.Date("2024-07-04"),
-                      as.Date("2024-12-25"))) %>%
+                      as.Date("2024-12-25"))) |>
 
   # Dynamic relative dates
   filter(date >= floor_date(today(), "year"),  # Start of current year
@@ -462,7 +462,7 @@ data_filtered <- data %>%
 library(tidyverse)
 library(forcats)
 
-data_prepared <- data %>%
+data_prepared <- data |>
   mutate(
     # Order by frequency (most common first)
     category_freq = fct_infreq(category),
@@ -502,18 +502,18 @@ data_prepared <- data %>%
 
     # Drop unused levels after filtering
     status_active = fct_drop(status)
-  ) %>%
+  ) |>
   # Group-wise ordering (order categories within each group)
-  group_by(region) %>%
+  group_by(region) |>
   mutate(
     product_rank = fct_reorder(product, sales, .fun = sum)
-  ) %>%
+  ) |>
   ungroup()
 
 # For plotting, ensure factors are in desired order
-plot_data <- data_prepared %>%
+plot_data <- data_prepared |>
   # Order factor levels for x-axis display
-  mutate(month = fct_relevel(month, month.abb)) %>%
+  mutate(month = fct_relevel(month, month.abb)) |>
   # Order by value for sorted bar chart
   mutate(product = fct_reorder(product, sales, .desc = TRUE))
 ```
@@ -522,7 +522,7 @@ plot_data <- data_prepared %>%
 - Apply factor ordering just before visualization for clarity
 - Use `fct_reorder()` for bar charts ordered by height
 - Use `fct_reorder2()` for line charts (orders by y-value at max x)
-- Combine operations: `fct_lump_n() %>% fct_reorder()`
+- Combine operations: `fct_lump_n() |> fct_reorder()`
 - Check factor levels: `levels(data$category)`
 - For complex hierarchies, consider creating separate grouping variables
 
@@ -536,11 +536,11 @@ plot_data <- data_prepared %>%
 ```r
 library(tidyverse)
 
-data_cleaned <- data %>%
+data_cleaned <- data |>
   mutate(
     # Basic cleaning
-    text_clean = str_trim(text) %>%                    # Remove leading/trailing whitespace
-                 str_squish() %>%                      # Collapse internal whitespace
+    text_clean = str_trim(text) |>                    # Remove leading/trailing whitespace
+                 str_squish() |>                      # Collapse internal whitespace
                  str_to_lower(),                       # Lowercase
 
     # Remove specific patterns
@@ -554,17 +554,17 @@ data_cleaned <- data %>%
     url = str_extract(text, "https?://[^\\s]+"),
 
     # Standardize formats
-    phone_clean = str_remove_all(phone, "[-.]") %>%
+    phone_clean = str_remove_all(phone, "[-.]") |>
                   str_replace("(\\d{3})(\\d{3})(\\d{4})", "(\\1) \\2-\\3"),
 
     # Replace patterns
-    text_normalized = str_replace_all(text, "\\s+", " ") %>%      # Multiple spaces to single
-                      str_replace_all("['\u2018\u2019]", "'") %>%  # Standardize quotes
+    text_normalized = str_replace_all(text, "\\s+", " ") |>      # Multiple spaces to single
+                      str_replace_all("['\u2018\u2019]", "'") |>  # Standardize quotes
                       str_replace_all("\\n+", " "),                # Remove newlines
 
     # Extract numbers from text
-    amount = str_extract(text, "\\$?[0-9,]+\\.?[0-9]*") %>%
-             str_remove_all("[$,]") %>%
+    amount = str_extract(text, "\\$?[0-9,]+\\.?[0-9]*") |>
+             str_remove_all("[$,]") |>
              as.numeric(),
 
     # Detect patterns (logical flags)
@@ -588,7 +588,7 @@ data_cleaned <- data %>%
     ),
 
     # Remove common prefixes/suffixes
-    company_clean = str_remove(company, "(?i)(inc|llc|corp|ltd)\\.?$") %>%
+    company_clean = str_remove(company, "(?i)(inc|llc|corp|ltd)\\.?$") |>
                     str_trim()
   )
 ```
@@ -616,33 +616,33 @@ library(tidyverse)
 # ============================================================================
 
 # Inner join: Only matching records from both
-result_inner <- table_a %>%
+result_inner <- table_a |>
   inner_join(table_b, by = "id")
 
 # Left join: All from A, matching from B (NAs where no match)
-result_left <- table_a %>%
+result_left <- table_a |>
   left_join(table_b, by = "id")
 
 # Right join: All from B, matching from A
-result_right <- table_a %>%
+result_right <- table_a |>
   right_join(table_b, by = "id")
 
 # Full join: All records from both (NAs where no match either side)
-result_full <- table_a %>%
+result_full <- table_a |>
   full_join(table_b, by = "id")
 
 # ============================================================================
 # Joins with multiple keys
 # ============================================================================
 
-result_multi <- table_a %>%
+result_multi <- table_a |>
   left_join(table_b, by = c("customer_id", "date"))
 
 # ============================================================================
 # Joins with different column names
 # ============================================================================
 
-result_diff_names <- table_a %>%
+result_diff_names <- table_a |>
   left_join(table_b, by = c("id" = "customer_id",
                             "date" = "transaction_date"))
 
@@ -651,11 +651,11 @@ result_diff_names <- table_a %>%
 # ============================================================================
 
 # Semi join: Rows from A that have match in B (filter, don't merge)
-result_semi <- table_a %>%
+result_semi <- table_a |>
   semi_join(table_b, by = "id")
 
 # Anti join: Rows from A that DON'T have match in B
-result_anti <- table_a %>%
+result_anti <- table_a |>
   anti_join(table_b, by = "id")
 
 # ============================================================================
@@ -663,17 +663,17 @@ result_anti <- table_a %>%
 # ============================================================================
 
 # Join on date ranges (using between)
-result_range <- table_a %>%
+result_range <- table_a |>
   left_join(
-    table_b %>% select(id, start_date, end_date, status),
+    table_b |> select(id, start_date, end_date, status),
     by = "id"
-  ) %>%
+  ) |>
   filter(date >= start_date, date <= end_date)
 
 # Join with tolerance (e.g., dates within 7 days)
-result_fuzzy <- table_a %>%
-  left_join(table_b, by = "id", suffix = c("_a", "_b")) %>%
-  filter(abs(difftime(date_a, date_b, units = "days")) <= 7) %>%
+result_fuzzy <- table_a |>
+  left_join(table_b, by = "id", suffix = c("_a", "_b")) |>
+  filter(abs(difftime(date_a, date_b, units = "days")) <= 7) |>
   select(-date_b)  # Keep only one date column
 
 # ============================================================================
@@ -681,18 +681,18 @@ result_fuzzy <- table_a %>%
 # ============================================================================
 
 # Join and add row number to identify duplicates
-result_m2m <- table_a %>%
-  left_join(table_b, by = "id", relationship = "many-to-many") %>%
-  group_by(id) %>%
-  mutate(match_num = row_number()) %>%
+result_m2m <- table_a |>
+  left_join(table_b, by = "id", relationship = "many-to-many") |>
+  group_by(id) |>
+  mutate(match_num = row_number()) |>
   ungroup()
 
 # Keep only first match
-result_first <- table_a %>%
+result_first <- table_a |>
   left_join(
-    table_b %>%
-      group_by(id) %>%
-      slice_head(n = 1) %>%
+    table_b |>
+      group_by(id) |>
+      slice_head(n = 1) |>
       ungroup(),
     by = "id"
   )
@@ -702,8 +702,8 @@ result_first <- table_a %>%
 # ============================================================================
 
 # Find pairs within same table
-result_self <- table_a %>%
-  inner_join(table_a, by = c("group_id"), suffix = c("_1", "_2")) %>%
+result_self <- table_a |>
+  inner_join(table_a, by = c("group_id"), suffix = c("_1", "_2")) |>
   filter(id_1 < id_2)  # Avoid duplicate pairs
 
 # ============================================================================
@@ -711,8 +711,8 @@ result_self <- table_a %>%
 # ============================================================================
 
 # Check for unexpected row count changes
-join_validation <- table_a %>%
-  left_join(table_b, by = "id") %>%
+join_validation <- table_a |>
+  left_join(table_b, by = "id") |>
   {
     cat(sprintf("Rows before join: %d\n", nrow(table_a)))
     cat(sprintf("Rows after join: %d\n", nrow(.)))
@@ -721,8 +721,8 @@ join_validation <- table_a %>%
   }
 
 # Identify non-matching keys
-unmatched_keys <- table_a %>%
-  anti_join(table_b, by = "id") %>%
+unmatched_keys <- table_a |>
+  anti_join(table_b, by = "id") |>
   distinct(id)
 ```
 
@@ -745,9 +745,9 @@ unmatched_keys <- table_a %>%
 ```r
 library(tidyverse)
 
-data_windowed <- data %>%
-  group_by(category) %>%
-  arrange(date) %>%  # Order matters for cumulative operations
+data_windowed <- data |>
+  group_by(category) |>
+  arrange(date) |>  # Order matters for cumulative operations
   mutate(
     # Rankings
     rank_dense = dense_rank(desc(value)),      # 1,2,2,3 (no gaps)
@@ -790,22 +790,22 @@ data_windowed <- data %>%
     # Identify min/max within group
     is_group_max = value == max(value),
     is_group_min = value == min(value)
-  ) %>%
+  ) |>
   ungroup()
 
 # Find top N per group
-top_n_per_group <- data %>%
-  group_by(category) %>%
-  slice_max(value, n = 3) %>%  # Top 3 per category
+top_n_per_group <- data |>
+  group_by(category) |>
+  slice_max(value, n = 3) |>  # Top 3 per category
   ungroup()
 
 # Calculate percentile within group
-percentile_data <- data %>%
-  group_by(category) %>%
+percentile_data <- data |>
+  group_by(category) |>
   mutate(
     percentile = ecdf(value)(value) * 100,
     is_top_10_pct = percentile >= 90
-  ) %>%
+  ) |>
   ungroup()
 ```
 
@@ -831,16 +831,16 @@ library(tidyverse)
 # Create nested data
 # ============================================================================
 
-nested_data <- data %>%
-  group_by(category, region) %>%
-  nest() %>%                  # Creates 'data' list-column
+nested_data <- data |>
+  group_by(category, region) |>
+  nest() |>                  # Creates 'data' list-column
   ungroup()
 
 # ============================================================================
 # Apply operations to nested data
 # ============================================================================
 
-nested_results <- nested_data %>%
+nested_results <- nested_data |>
   mutate(
     # Count rows in each nested tibble
     n_rows = map_int(data, nrow),
@@ -874,24 +874,24 @@ nested_results <- nested_data %>%
 # ============================================================================
 
 # Unnest back to flat structure
-flat_data <- nested_data %>%
+flat_data <- nested_data |>
   unnest(data)
 
 # Unnest specific list-columns
-summary_unnested <- nested_results %>%
-  select(category, region, custom_summary) %>%
+summary_unnested <- nested_results |>
+  select(category, region, custom_summary) |>
   unnest(custom_summary)
 
 # ============================================================================
 # Work with multiple list-columns
 # ============================================================================
 
-multi_list <- data %>%
-  group_by(category) %>%
+multi_list <- data |>
+  group_by(category) |>
   summarise(
     data = list(tibble(x, y)),
     models = list(lm(y ~ x))
-  ) %>%
+  ) |>
   mutate(
     predictions = map2(models, data, ~ predict(.x, newdata = .y))
   )
@@ -900,8 +900,8 @@ multi_list <- data %>%
 # Practical example: Group-wise operations
 # ============================================================================
 
-group_analysis <- data %>%
-  nest(group_data = -category) %>%
+group_analysis <- data |>
+  nest(group_data = -category) |>
   mutate(
     # Count records
     n_records = map_int(group_data, nrow),
@@ -911,7 +911,7 @@ group_analysis <- data %>%
       q1 <- quantile(.x$value, 0.25)
       q3 <- quantile(.x$value, 0.75)
       iqr <- q3 - q1
-      .x %>% filter(value < q1 - 1.5*iqr | value > q3 + 1.5*iqr)
+      .x |> filter(value < q1 - 1.5*iqr | value > q3 + 1.5*iqr)
     }),
 
     # Count outliers
@@ -945,21 +945,21 @@ library(tidyverse)
 # ============================================================================
 
 # Find completely duplicate rows
-exact_duplicates <- data %>%
-  group_by_all() %>%
-  filter(n() > 1) %>%
+exact_duplicates <- data |>
+  group_by_all() |>
+  filter(n() > 1) |>
   ungroup()
 
 # Find duplicates on specific columns
-key_duplicates <- data %>%
-  group_by(id, date) %>%
-  filter(n() > 1) %>%
-  ungroup() %>%
+key_duplicates <- data |>
+  group_by(id, date) |>
+  filter(n() > 1) |>
+  ungroup() |>
   arrange(id, date)
 
 # Count duplicates per key
-duplicate_summary <- data %>%
-  count(id, name = "n_records") %>%
+duplicate_summary <- data |>
+  count(id, name = "n_records") |>
   filter(n_records > 1)
 
 # ============================================================================
@@ -967,27 +967,27 @@ duplicate_summary <- data %>%
 # ============================================================================
 
 # Keep first occurrence
-deduped_first <- data %>%
+deduped_first <- data |>
   distinct(id, .keep_all = TRUE)
 
 # Keep last occurrence
-deduped_last <- data %>%
-  group_by(id) %>%
-  slice_tail(n = 1) %>%
+deduped_last <- data |>
+  group_by(id) |>
+  slice_tail(n = 1) |>
   ungroup()
 
 # Keep row with max value
-deduped_max <- data %>%
-  group_by(id) %>%
-  slice_max(timestamp, n = 1, with_ties = FALSE) %>%
+deduped_max <- data |>
+  group_by(id) |>
+  slice_max(timestamp, n = 1, with_ties = FALSE) |>
   ungroup()
 
 # Keep most complete record (fewest NAs)
-deduped_complete <- data %>%
-  group_by(id) %>%
-  mutate(n_missing = rowSums(is.na(.))) %>%
-  slice_min(n_missing, n = 1) %>%
-  select(-n_missing) %>%
+deduped_complete <- data |>
+  group_by(id) |>
+  mutate(n_missing = rowSums(is.na(.))) |>
+  slice_min(n_missing, n = 1) |>
+  select(-n_missing) |>
   ungroup()
 
 # ============================================================================
@@ -995,8 +995,8 @@ deduped_complete <- data %>%
 # ============================================================================
 
 # Aggregate duplicates (combine information)
-merged_duplicates <- data %>%
-  group_by(id) %>%
+merged_duplicates <- data |>
+  group_by(id) |>
   summarise(
     # Numeric: take mean or sum
     avg_value = mean(value, na.rm = TRUE),
@@ -1022,8 +1022,8 @@ merged_duplicates <- data %>%
   )
 
 # Coalesce across duplicate rows (take first non-NA)
-coalesced_data <- data %>%
-  group_by(id) %>%
+coalesced_data <- data |>
+  group_by(id) |>
   summarise(
     across(everything(), ~ na.omit(.x)[1]),
     .groups = "drop"
@@ -1034,16 +1034,16 @@ coalesced_data <- data %>%
 # ============================================================================
 
 # Compare duplicates side-by-side
-duplicate_comparison <- data %>%
-  group_by(id) %>%
-  filter(n() > 1) %>%
-  mutate(duplicate_num = row_number()) %>%
-  ungroup() %>%
+duplicate_comparison <- data |>
+  group_by(id) |>
+  filter(n() > 1) |>
+  mutate(duplicate_num = row_number()) |>
+  ungroup() |>
   pivot_longer(
     cols = -c(id, duplicate_num),
     names_to = "field",
     values_to = "value"
-  ) %>%
+  ) |>
   pivot_wider(
     names_from = duplicate_num,
     values_from = value,
@@ -1074,8 +1074,8 @@ library(tidyverse)
 # ============================================================================
 
 # Count frequency table
-freq_table <- data %>%
-  count(category_a, category_b) %>%
+freq_table <- data |>
+  count(category_a, category_b) |>
   pivot_wider(
     names_from = category_b,
     values_from = n,
@@ -1083,13 +1083,13 @@ freq_table <- data %>%
   )
 
 # With percentages
-pct_table <- data %>%
-  count(category_a, category_b) %>%
+pct_table <- data |>
+  count(category_a, category_b) |>
   mutate(
     pct = n / sum(n) * 100,
     pct_label = sprintf("%.1f%%", pct)
-  ) %>%
-  select(-pct) %>%
+  ) |>
+  select(-pct) |>
   pivot_wider(
     names_from = category_b,
     values_from = pct_label,
@@ -1101,30 +1101,30 @@ pct_table <- data %>%
 # ============================================================================
 
 # Mean by two dimensions
-pivot_mean <- data %>%
-  group_by(region, product_category) %>%
-  summarise(avg_sales = mean(sales, na.rm = TRUE), .groups = "drop") %>%
+pivot_mean <- data |>
+  group_by(region, product_category) |>
+  summarise(avg_sales = mean(sales, na.rm = TRUE), .groups = "drop") |>
   pivot_wider(
     names_from = product_category,
     values_from = avg_sales,
     values_fill = 0
-  ) %>%
+  ) |>
   mutate(total_avg = rowMeans(select(., -region)))
 
 # Sum with row and column totals
-pivot_with_totals <- data %>%
-  group_by(region, category) %>%
-  summarise(total = sum(amount, na.rm = TRUE), .groups = "drop") %>%
+pivot_with_totals <- data |>
+  group_by(region, category) |>
+  summarise(total = sum(amount, na.rm = TRUE), .groups = "drop") |>
   pivot_wider(
     names_from = category,
     values_from = total,
     values_fill = 0
-  ) %>%
+  ) |>
   mutate(
     row_total = rowSums(select(., -region))
-  ) %>%
+  ) |>
   bind_rows(
-    summarise(., across(where(is.numeric), sum)) %>%
+    summarise(., across(where(is.numeric), sum)) |>
       mutate(region = "Total")
   )
 
@@ -1133,14 +1133,14 @@ pivot_with_totals <- data %>%
 # ============================================================================
 
 # Multiple metrics in pivot
-multi_metric_pivot <- data %>%
-  group_by(region, product) %>%
+multi_metric_pivot <- data |>
+  group_by(region, product) |>
   summarise(
     count = n(),
     total_sales = sum(sales),
     avg_sales = mean(sales),
     .groups = "drop"
-  ) %>%
+  ) |>
   pivot_wider(
     names_from = product,
     values_from = c(count, total_sales, avg_sales),
@@ -1153,10 +1153,10 @@ multi_metric_pivot <- data %>%
 # ============================================================================
 
 # Highlight high/low values
-formatted_pivot <- data %>%
-  group_by(month, category) %>%
-  summarise(value = sum(amount), .groups = "drop") %>%
-  pivot_wider(names_from = category, values_from = value) %>%
+formatted_pivot <- data |>
+  group_by(month, category) |>
+  summarise(value = sum(amount), .groups = "drop") |>
+  pivot_wider(names_from = category, values_from = value) |>
   mutate(
     across(
       where(is.numeric),
@@ -1194,7 +1194,7 @@ library(tidyverse)
 dataset_summary <- tibble(
   total_rows = nrow(data),
   total_columns = ncol(data),
-  memory_size = object.size(data) %>% format(units = "MB"),
+  memory_size = object.size(data) |> format(units = "MB"),
   duplicate_rows = nrow(data) - nrow(distinct(data))
 )
 
@@ -1202,14 +1202,14 @@ dataset_summary <- tibble(
 # Column-level profiling
 # ============================================================================
 
-column_profile <- data %>%
+column_profile <- data |>
   summarise(across(everything(), list(
     type = ~ class(.x)[1],
     n_missing = ~ sum(is.na(.x)),
     pct_missing = ~ mean(is.na(.x)) * 100,
     n_unique = ~ n_distinct(.x, na.rm = TRUE),
     pct_unique = ~ n_distinct(.x, na.rm = TRUE) / n() * 100
-  ))) %>%
+  ))) |>
   pivot_longer(
     everything(),
     names_to = c("column", ".value"),
@@ -1220,7 +1220,7 @@ column_profile <- data %>%
 # Numeric column statistics
 # ============================================================================
 
-numeric_profile <- data %>%
+numeric_profile <- data |>
   summarise(across(where(is.numeric), list(
     min = ~ min(.x, na.rm = TRUE),
     q25 = ~ quantile(.x, 0.25, na.rm = TRUE),
@@ -1231,7 +1231,7 @@ numeric_profile <- data %>%
     sd = ~ sd(.x, na.rm = TRUE),
     n_zeros = ~ sum(.x == 0, na.rm = TRUE),
     n_negative = ~ sum(.x < 0, na.rm = TRUE)
-  ))) %>%
+  ))) |>
   pivot_longer(
     everything(),
     names_to = c("column", ".value"),
@@ -1242,24 +1242,24 @@ numeric_profile <- data %>%
 # Categorical column frequencies
 # ============================================================================
 
-categorical_profile <- data %>%
-  select(where(~ is.character(.x) | is.factor(.x))) %>%
-  pivot_longer(everything(), names_to = "column", values_to = "value") %>%
-  filter(!is.na(value)) %>%
-  count(column, value, sort = TRUE) %>%
-  group_by(column) %>%
+categorical_profile <- data |>
+  select(where(~ is.character(.x) | is.factor(.x))) |>
+  pivot_longer(everything(), names_to = "column", values_to = "value") |>
+  filter(!is.na(value)) |>
+  count(column, value, sort = TRUE) |>
+  group_by(column) |>
   mutate(
     pct = n / sum(n) * 100,
     rank = row_number()
-  ) %>%
-  filter(rank <= 10) %>%  # Top 10 values per column
+  ) |>
+  filter(rank <= 10) |>  # Top 10 values per column
   ungroup()
 
 # ============================================================================
 # Identify potential issues
 # ============================================================================
 
-data_quality_issues <- column_profile %>%
+data_quality_issues <- column_profile |>
   mutate(
     issue = case_when(
       pct_missing > 50 ~ "High missing rate (>50%)",
@@ -1268,7 +1268,7 @@ data_quality_issues <- column_profile %>%
       pct_unique == 100 ~ "All unique values (potential ID)",
       TRUE ~ "OK"
     )
-  ) %>%
+  ) |>
   filter(issue != "OK")
 
 # ============================================================================
@@ -1281,7 +1281,7 @@ cat("DATASET SUMMARY:\n")
 print(dataset_summary)
 
 cat("\n\nCOLUMN STATISTICS:\n")
-print(column_profile %>% arrange(desc(pct_missing)), n = 20)
+print(column_profile |> arrange(desc(pct_missing)), n = 20)
 
 cat("\n\nPOTENTIAL DATA QUALITY ISSUES:\n")
 print(data_quality_issues)

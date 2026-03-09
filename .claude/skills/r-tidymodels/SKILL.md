@@ -30,7 +30,7 @@ This skill provides comprehensive expertise in the tidymodels ecosystem, followi
 
 ```r
 library(tidymodels)  # Loads core packages
-library(tidyverse)   # Data manipulation and visualization
+library(tidyverse)   # Data manipulation and visualization (uses native pipe |>)
 ```
 
 **Core Packages (loaded by tidymodels):**
@@ -179,41 +179,41 @@ ames_val <- initial_validation_split(ames, prop = c(0.6, 0.2), strata = Sale_Pri
 
 ```r
 # Comprehensive preprocessing recipe
-ames_rec <- recipe(Sale_Price ~ ., data = ames_train) %>%
+ames_rec <- recipe(Sale_Price ~ ., data = ames_train) |>
 
   # 1. Update roles for non-predictors
-  update_role(Id, new_role = "ID") %>%
+  update_role(Id, new_role = "ID") |>
 
   # 2. Handle missing data (before transformations)
-  step_impute_median(all_numeric_predictors()) %>%
-  step_impute_mode(all_nominal_predictors()) %>%
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
 
   # 3. Feature creation
   step_mutate(
     House_Age = Year_Sold - Year_Built,
     Remod_Age = Year_Sold - Year_Remod_Add,
     Total_SF = Gr_Liv_Area + Total_Bsmt_SF
-  ) %>%
+  ) |>
 
   # 4. Transform outcome (if needed)
-  step_log(Sale_Price, base = 10) %>%
+  step_log(Sale_Price, base = 10) |>
 
   # 5. Handle novel factor levels (BEFORE dummy encoding)
-  step_novel(all_nominal_predictors()) %>%
-  step_unknown(all_nominal_predictors()) %>%
+  step_novel(all_nominal_predictors()) |>
+  step_unknown(all_nominal_predictors()) |>
 
   # 6. Other preprocessing for categorical
-  step_other(all_nominal_predictors(), threshold = 0.01) %>%
+  step_other(all_nominal_predictors(), threshold = 0.01) |>
 
   # 7. Encode categorical variables
-  step_dummy(all_nominal_predictors(), one_hot = FALSE) %>%
+  step_dummy(all_nominal_predictors(), one_hot = FALSE) |>
 
   # 8. Remove problematic predictors
-  step_zv(all_predictors()) %>%
-  step_nzv(all_predictors()) %>%
+  step_zv(all_predictors()) |>
+  step_nzv(all_predictors()) |>
 
   # 9. Normalize numeric features (AFTER dummies)
-  step_normalize(all_numeric_predictors()) %>%
+  step_normalize(all_numeric_predictors()) |>
 
   # 10. Remove highly correlated predictors
   step_corr(all_numeric_predictors(), threshold = 0.9)
@@ -247,8 +247,8 @@ rf_spec <- rand_forest(
   mtry = tune(),
   trees = 1000,
   min_n = tune()
-) %>%
-  set_engine("ranger", importance = "impurity") %>%
+) |>
+  set_engine("ranger", importance = "impurity") |>
   set_mode("regression")
 
 # XGBoost
@@ -258,15 +258,15 @@ xgb_spec <- boost_tree(
   min_n = tune(),
   learn_rate = tune(),
   loss_reduction = tune()
-) %>%
-  set_engine("xgboost") %>%
+) |>
+  set_engine("xgboost") |>
   set_mode("regression")
 
 # Penalized Regression
 glmnet_spec <- linear_reg(
   penalty = tune(),
   mixture = tune()
-) %>%
+) |>
   set_engine("glmnet")
 ```
 
@@ -292,19 +292,19 @@ glmnet_spec <- linear_reg(
 
 ```r
 # Bundle recipe + model
-rf_wflow <- workflow() %>%
-  add_recipe(ames_rec) %>%
+rf_wflow <- workflow() |>
+  add_recipe(ames_rec) |>
   add_model(rf_spec)
 
 # Alternative: formula interface (skips recipe)
-rf_wflow_formula <- workflow() %>%
-  add_formula(Sale_Price ~ Lot_Area + Neighborhood) %>%
+rf_wflow_formula <- workflow() |>
+  add_formula(Sale_Price ~ Lot_Area + Neighborhood) |>
   add_model(rf_spec)
 
 # Add case weights if needed
-rf_wflow_weighted <- workflow() %>%
-  add_recipe(ames_rec) %>%
-  add_model(rf_spec) %>%
+rf_wflow_weighted <- workflow() |>
+  add_recipe(ames_rec) |>
+  add_model(rf_spec) |>
   add_case_weights(weight_column)
 ```
 
@@ -318,14 +318,14 @@ rf_wflow_weighted <- workflow() %>%
 
 ```r
 # Fit and evaluate on test set
-ames_fit <- rf_wflow %>%
+ames_fit <- rf_wflow |>
   fit(data = ames_train)
 
 # Predict on test set
 ames_pred <- augment(ames_fit, new_data = ames_test)
 
 # Calculate metrics
-ames_pred %>%
+ames_pred |>
   metrics(truth = Sale_Price, estimate = .pred)
 ```
 
@@ -368,7 +368,7 @@ time_folds <- rolling_origin(
 
 ```r
 # Fit across resamples without tuning
-rf_res <- rf_wflow %>%
+rf_res <- rf_wflow |>
   fit_resamples(
     resamples = ames_folds,
     metrics = metric_set(rmse, rsq, mae),
@@ -379,7 +379,7 @@ rf_res <- rf_wflow %>%
 collect_metrics(rf_res)
 
 # Plot predictions vs truth
-collect_predictions(rf_res) %>%
+collect_predictions(rf_res) |>
   ggplot(aes(x = Sale_Price, y = .pred)) +
   geom_abline(lty = 2) +
   geom_point(alpha = 0.3) +
@@ -397,7 +397,7 @@ rf_grid <- grid_latin_hypercube(
 )
 
 # Tune with grid search
-rf_tuned <- rf_wflow %>%
+rf_tuned <- rf_wflow |>
   tune_grid(
     resamples = ames_folds,
     grid = rf_grid,
@@ -431,7 +431,7 @@ ctrl_bayes <- control_bayes(
 )
 
 # Define parameter ranges
-xgb_params <- extract_parameter_set_dials(xgb_wflow) %>%
+xgb_params <- extract_parameter_set_dials(xgb_wflow) |>
   update(
     trees = trees(range = c(100, 2000)),
     learn_rate = learn_rate(range = c(-3, -0.5))
@@ -439,7 +439,7 @@ xgb_params <- extract_parameter_set_dials(xgb_wflow) %>%
 
 # Bayesian tuning
 set.seed(456)
-xgb_bayes <- xgb_wflow %>%
+xgb_bayes <- xgb_wflow |>
   tune_bayes(
     resamples = ames_folds,
     param_info = xgb_params,
@@ -473,7 +473,7 @@ wf_set <- workflow_set(
 )
 
 # Tune all workflows
-wf_results <- wf_set %>%
+wf_results <- wf_set |>
   workflow_map(
     fn = "tune_grid",
     resamples = ames_folds,
@@ -493,18 +493,18 @@ autoplot(wf_results, metric = "rmse")
 
 ```r
 # Finalize workflow with best parameters
-final_wflow <- rf_wflow %>%
+final_wflow <- rf_wflow |>
   finalize_workflow(best_rmse)
 
 # Fit on training data and evaluate on test set
-final_fit <- final_wflow %>%
+final_fit <- final_wflow |>
   last_fit(ames_split, metrics = metric_set(rmse, rsq, mae))
 
 # Test set metrics
 collect_metrics(final_fit)
 
 # Test set predictions
-collect_predictions(final_fit) %>%
+collect_predictions(final_fit) |>
   ggplot(aes(x = Sale_Price, y = .pred)) +
   geom_abline(lty = 2) +
   geom_point(alpha = 0.5) +
@@ -522,15 +522,15 @@ final_model <- extract_workflow(final_fit)
 library(vip)
 
 # Extract fitted model and visualize importance
-final_fit %>%
-  extract_fit_parsnip() %>%
+final_fit |>
+  extract_fit_parsnip() |>
   vip(num_features = 20, geom = "point")
 
 # For linear models, examine coefficients
-glmnet_fit %>%
-  extract_fit_parsnip() %>%
-  tidy() %>%
-  filter(term != "(Intercept)") %>%
+glmnet_fit |>
+  extract_fit_parsnip() |>
+  tidy() |>
+  filter(term != "(Intercept)") |>
   ggplot(aes(x = estimate, y = reorder(term, estimate))) +
   geom_col()
 ```
@@ -541,17 +541,17 @@ glmnet_fit %>%
 library(stacks)
 
 # Collect candidate models from tuning results
-model_st <- stacks() %>%
-  add_candidates(rf_tuned) %>%
-  add_candidates(xgb_tuned) %>%
+model_st <- stacks() |>
+  add_candidates(rf_tuned) |>
+  add_candidates(xgb_tuned) |>
   add_candidates(glmnet_tuned)
 
 # Fit meta-learner (blend predictions)
-ensemble_fit <- model_st %>%
+ensemble_fit <- model_st |>
   blend_predictions(
     penalty = 10^(-6:-1),
     mixture = c(0, 0.5, 1)
-  ) %>%
+  ) |>
   fit_members()
 
 # Examine member weights
@@ -567,15 +567,15 @@ predict(ensemble_fit, new_data = ames_test)
 library(themis)
 
 # Add imbalance correction to recipe
-balanced_rec <- recipe(class ~ ., data = train_data) %>%
+balanced_rec <- recipe(class ~ ., data = train_data) |>
   # Upsample minority class
-  step_upsample(class, over_ratio = 0.8) %>%
+  step_upsample(class, over_ratio = 0.8) |>
   # OR downsample majority class
-  # step_downsample(class, under_ratio = 1.2) %>%
+  # step_downsample(class, under_ratio = 1.2) |>
   # OR SMOTE (synthetic examples)
-  # step_smote(class, over_ratio = 0.8) %>%
+  # step_smote(class, over_ratio = 0.8) |>
   # OR ROSE
-  # step_rose(class) %>%
+  # step_rose(class) |>
   step_normalize(all_numeric_predictors())
 
 # Themis steps must come BEFORE dummy variables
@@ -587,12 +587,12 @@ balanced_rec <- recipe(class ~ ., data = train_data) %>%
 library(probably)
 
 # Estimate calibration from resamples
-cal_obj <- rf_res %>%
-  collect_predictions() %>%
+cal_obj <- rf_res |>
+  collect_predictions() |>
   cal_estimate_beta(truth = class, estimate = dplyr::starts_with(".pred_"))
 
 # Apply calibration to new predictions
-calibrated_preds <- augment(rf_fit, new_data = test_data) %>%
+calibrated_preds <- augment(rf_fit, new_data = test_data) |>
   cal_apply(cal_obj)
 
 # Visualize calibration
@@ -613,7 +613,7 @@ predictions <- predict(model, new_data = new_houses)
 predict_sale_price <- function(new_data) {
   model <- readRDS("models/ames_rf_model.rds")
 
-  pred <- predict(model, new_data = new_data) %>%
+  pred <- predict(model, new_data = new_data) |>
     bind_cols(
       predict(model, new_data = new_data, type = "conf_int")
     )
@@ -716,28 +716,28 @@ train <- training(split)
 test <- testing(split)
 
 # 2. Recipe
-rec <- recipe(outcome ~ ., data = train) %>%
-  step_impute_median(all_numeric_predictors()) %>%
-  step_novel(all_nominal_predictors()) %>%
-  step_dummy(all_nominal_predictors()) %>%
-  step_zv(all_predictors()) %>%
+rec <- recipe(outcome ~ ., data = train) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_novel(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_zv(all_predictors()) |>
   step_normalize(all_numeric_predictors())
 
 # 3. Model
-spec <- rand_forest(mtry = tune(), min_n = tune()) %>%
-  set_engine("ranger") %>%
+spec <- rand_forest(mtry = tune(), min_n = tune()) |>
+  set_engine("ranger") |>
   set_mode("classification")
 
 # 4. Workflow
-wflow <- workflow() %>%
-  add_recipe(rec) %>%
+wflow <- workflow() |>
+  add_recipe(rec) |>
   add_model(spec)
 
 # 5. Resample
 folds <- vfold_cv(train, v = 10, strata = outcome)
 
 # 6. Tune
-results <- wflow %>%
+results <- wflow |>
   tune_grid(
     resamples = folds,
     grid = grid_latin_hypercube(mtry(), min_n(), size = 20)

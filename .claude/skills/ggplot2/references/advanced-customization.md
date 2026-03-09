@@ -28,7 +28,7 @@ Advanced techniques from R Graph Gallery for sophisticated plot customization be
 library(ggrepel)
 
 # Prepare data with labels only for final year
-data <- data %>%
+data <- data |>
   mutate(name_lab = if_else(year == max(year), name, NA_character_))
 
 ggplot(data, aes(x = year, y = value, color = name)) +
@@ -67,8 +67,8 @@ ggplot(data, aes(x = year, y = value, color = name)) +
 
 ```r
 # Calculate midpoints for each area segment
-data_midpoints <- data %>%
-  group_by(year) %>%
+data_midpoints <- data |>
+  group_by(year) |>
   mutate(
     cumsum = cumsum(value),
     y_pos = cumsum - value/2  # Middle of each segment
@@ -927,7 +927,7 @@ scale_color_viridis_c(
 scale_color_grey(start = 0.2, end = 0.8)
 
 # Mixed: grey for most, color for highlights
-data_plot <- data %>%
+data_plot <- data |>
   mutate(color_var = ifelse(category %in% c("A", "B"), category, "Other"))
 
 ggplot(data_plot, aes(x, y, color = color_var)) +
@@ -980,8 +980,8 @@ ggplot(data, aes(x = reorder(category, value), y = value)) +
 **Text rotation for circular plots**:
 ```r
 # Calculate angles for readable text
-data <- data %>%
-  arrange(desc(value)) %>%
+data <- data |>
+  arrange(desc(value)) |>
   mutate(
     id = row_number(),
     angle = 90 - 360 * (id - 0.5) / n(),
@@ -1235,7 +1235,7 @@ ggplot(data, aes(x, y)) +
 
 ```r
 # Highlight specific groups
-data_plot <- data %>%
+data_plot <- data |>
   mutate(
     highlight = category %in% c("A", "D"),
     color_var = ifelse(highlight, category, "Other"),
@@ -1310,7 +1310,7 @@ ggplot(data, aes(x = date, y = value)) +
 
 ```r
 # Complete highlighting example
-data_plot <- data %>%
+data_plot <- data |>
   mutate(
     is_highlight = category %in% c("A", "D"),
     point_color = case_when(

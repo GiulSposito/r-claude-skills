@@ -31,7 +31,7 @@ data <- tibble(
 )
 
 # Check class balance
-data %>% count(category)
+data |> count(category)
 
 # Train/test split (stratified by outcome)
 set.seed(123)
@@ -40,59 +40,59 @@ train_data <- training(data_split)
 test_data <- testing(data_split)
 
 # Verify stratification
-train_data %>% count(category) %>% mutate(prop = n / sum(n))
-test_data %>% count(category) %>% mutate(prop = n / sum(n))
+train_data |> count(category) |> mutate(prop = n / sum(n))
+test_data |> count(category) |> mutate(prop = n / sum(n))
 ```
 
 ### 2. Text Preprocessing Recipe
 
 ```r
 # Basic text recipe
-text_recipe <- recipe(category ~ text, data = train_data) %>%
+text_recipe <- recipe(category ~ text, data = train_data) |>
   # Tokenization
-  step_tokenize(text) %>%
+  step_tokenize(text) |>
 
   # Cleaning
-  step_stopwords(text, stopword_source = "snowball") %>%
-  step_tokenfilter(text, max_tokens = 1000, min_times = 5) %>%
+  step_stopwords(text, stopword_source = "snowball") |>
+  step_tokenfilter(text, max_tokens = 1000, min_times = 5) |>
 
   # Feature generation
-  step_tfidf(text) %>%
+  step_tfidf(text) |>
 
   # Normalization
   step_normalize(all_predictors())
 
 # Prep and check
 text_prep <- prep(text_recipe)
-bake(text_prep, new_data = NULL) %>% glimpse()
+bake(text_prep, new_data = NULL) |> glimpse()
 ```
 
 ### 3. Model Specification
 
 ```r
 # Logistic regression
-logistic_spec <- logistic_reg() %>%
-  set_engine("glmnet") %>%
+logistic_spec <- logistic_reg() |>
+  set_engine("glmnet") |>
   set_mode("classification")
 
 # Naive Bayes
-nb_spec <- naive_Bayes() %>%
-  set_engine("naivebayes") %>%
+nb_spec <- naive_Bayes() |>
+  set_engine("naivebayes") |>
   set_mode("classification")
 
 # SVM
-svm_spec <- svm_linear() %>%
-  set_engine("LiblineaR") %>%
+svm_spec <- svm_linear() |>
+  set_engine("LiblineaR") |>
   set_mode("classification")
 
 # Random Forest
-rf_spec <- rand_forest(trees = 500) %>%
-  set_engine("ranger", importance = "impurity") %>%
+rf_spec <- rand_forest(trees = 500) |>
+  set_engine("ranger", importance = "impurity") |>
   set_mode("classification")
 
 # XGBoost
-xgb_spec <- boost_tree(trees = 500) %>%
-  set_engine("xgboost") %>%
+xgb_spec <- boost_tree(trees = 500) |>
+  set_engine("xgboost") |>
   set_mode("classification")
 ```
 
@@ -100,24 +100,24 @@ xgb_spec <- boost_tree(trees = 500) %>%
 
 ```r
 # Create workflows for each model
-logistic_wf <- workflow() %>%
-  add_recipe(text_recipe) %>%
+logistic_wf <- workflow() |>
+  add_recipe(text_recipe) |>
   add_model(logistic_spec)
 
-nb_wf <- workflow() %>%
-  add_recipe(text_recipe) %>%
+nb_wf <- workflow() |>
+  add_recipe(text_recipe) |>
   add_model(nb_spec)
 
-svm_wf <- workflow() %>%
-  add_recipe(text_recipe) %>%
+svm_wf <- workflow() |>
+  add_recipe(text_recipe) |>
   add_model(svm_spec)
 
-rf_wf <- workflow() %>%
-  add_recipe(text_recipe) %>%
+rf_wf <- workflow() |>
+  add_recipe(text_recipe) |>
   add_model(rf_spec)
 
-xgb_wf <- workflow() %>%
-  add_recipe(text_recipe) %>%
+xgb_wf <- workflow() |>
+  add_recipe(text_recipe) |>
   add_model(xgb_spec)
 ```
 
@@ -147,21 +147,21 @@ xgb_fit <- fit_resamples(xgb_wf, resamples = cv_folds)
 ```r
 # Collect and compare metrics
 model_comparison <- bind_rows(
-  collect_metrics(logistic_fit) %>% mutate(model = "Logistic"),
-  collect_metrics(nb_fit) %>% mutate(model = "Naive Bayes"),
-  collect_metrics(svm_fit) %>% mutate(model = "SVM"),
-  collect_metrics(rf_fit) %>% mutate(model = "Random Forest"),
-  collect_metrics(xgb_fit) %>% mutate(model = "XGBoost")
+  collect_metrics(logistic_fit) |> mutate(model = "Logistic"),
+  collect_metrics(nb_fit) |> mutate(model = "Naive Bayes"),
+  collect_metrics(svm_fit) |> mutate(model = "SVM"),
+  collect_metrics(rf_fit) |> mutate(model = "Random Forest"),
+  collect_metrics(xgb_fit) |> mutate(model = "XGBoost")
 )
 
 # Best performers
-model_comparison %>%
-  filter(.metric == "accuracy") %>%
+model_comparison |>
+  filter(.metric == "accuracy") |>
   arrange(desc(mean))
 
 # Visualize comparison
-model_comparison %>%
-  filter(.metric %in% c("accuracy", "roc_auc")) %>%
+model_comparison |>
+  filter(.metric %in% c("accuracy", "roc_auc")) |>
   ggplot(aes(mean, reorder(model, mean), fill = model)) +
   geom_col(show.legend = FALSE) +
   geom_errorbar(aes(xmin = mean - std_err, xmax = mean + std_err), width = 0.2) +
@@ -182,12 +182,12 @@ final_fit <- last_fit(best_wf, data_split)
 collect_metrics(final_fit)
 
 # Confusion matrix
-collect_predictions(final_fit) %>%
+collect_predictions(final_fit) |>
   conf_mat(truth = category, estimate = .pred_class)
 
 # ROC curve
-collect_predictions(final_fit) %>%
-  roc_curve(truth = category, .pred_positive) %>%
+collect_predictions(final_fit) |>
+  roc_curve(truth = category, .pred_positive) |>
   autoplot()
 ```
 
@@ -203,8 +203,8 @@ saveRDS(final_model, "text_classifier_model.rds")
 # Prediction function
 predict_category <- function(text, model) {
   new_data <- tibble(text = text)
-  predict(model, new_data, type = "prob") %>%
-    bind_cols(predict(model, new_data)) %>%
+  predict(model, new_data, type = "prob") |>
+    bind_cols(predict(model, new_data)) |>
     bind_cols(new_data)
 }
 
@@ -218,30 +218,30 @@ predict_category("This is an amazing product!", final_model)
 
 ```r
 # Words (default)
-recipe(category ~ text, data = train) %>%
+recipe(category ~ text, data = train) |>
   step_tokenize(text)
 
 # N-grams (unigrams + bigrams)
-recipe(category ~ text, data = train) %>%
+recipe(category ~ text, data = train) |>
   step_tokenize(text, token = "ngrams", options = list(n = 2, n_min = 1))
 
 # Character n-grams (good for short text, typos)
-recipe(category ~ text, data = train) %>%
+recipe(category ~ text, data = train) |>
   step_tokenize(text, token = "character_shingles", options = list(n = 3))
 
 # Skip-grams (capture long-distance dependencies)
-recipe(category ~ text, data = train) %>%
+recipe(category ~ text, data = train) |>
   step_tokenize(text, token = "skip_ngrams", options = list(n = 2, k = 1))
 ```
 
 ### Token Filtering
 
 ```r
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
 
   # Remove stop words
-  step_stopwords(text, stopword_source = "snowball") %>%
+  step_stopwords(text, stopword_source = "snowball") |>
 
   # Token frequency filtering
   step_tokenfilter(
@@ -250,7 +250,7 @@ recipe(category ~ text, data = train) %>%
     min_times = 5,       # Must appear >= 5 times
     max_times = Inf,     # No upper limit
     percentage = FALSE   # Use counts not percentages
-  ) %>%
+  ) |>
 
   # Stemming
   step_stem(text)
@@ -260,25 +260,25 @@ recipe(category ~ text, data = train) %>%
 
 ```r
 # TF-IDF (most common)
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
   step_tfidf(text)
 
 # Term frequency only
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
   step_tf(text)
 
 # Feature hashing (memory efficient)
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
   step_texthash(text, num_terms = 512)
 
 # Word embeddings (pre-trained)
 glove_embeddings <- read_rds("glove_embeddings.rds")
 
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
   step_word_embeddings(text, embeddings = glove_embeddings)
 ```
 
@@ -288,22 +288,22 @@ recipe(category ~ text, data = train) %>%
 
 ```r
 # Downsampling (reduce majority class)
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
-  step_tfidf(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
+  step_tfidf(text) |>
   step_downsample(category)
 
 # Upsampling (duplicate minority class)
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
-  step_tfidf(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
+  step_tfidf(text) |>
   step_upsample(category, over_ratio = 1)
 
 # SMOTE (synthetic minority oversampling)
 library(themis)
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
-  step_tfidf(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
+  step_tfidf(text) |>
   step_smote(category)
 ```
 
@@ -313,8 +313,8 @@ recipe(category ~ text, data = train) %>%
 # Domain-specific stop words
 custom_stops <- c("product", "item", "company", "service")
 
-recipe(category ~ text, data = train) %>%
-  step_tokenize(text) %>%
+recipe(category ~ text, data = train) |>
+  step_tokenize(text) |>
   step_stopwords(text, custom_stopword_source = custom_stops)
 ```
 
@@ -322,10 +322,10 @@ recipe(category ~ text, data = train) %>%
 
 ```r
 # Combine features from multiple text sources
-recipe(category ~ title + body + tags, data = train) %>%
-  step_tokenize(title, body, tags) %>%
-  step_stopwords(title, body, tags) %>%
-  step_tfidf(title, body, tags) %>%
+recipe(category ~ title + body + tags, data = train) |>
+  step_tokenize(title, body, tags) |>
+  step_stopwords(title, body, tags) |>
+  step_tfidf(title, body, tags) |>
   step_normalize(all_predictors())
 ```
 
@@ -333,16 +333,16 @@ recipe(category ~ title + body + tags, data = train) %>%
 
 ```r
 # Combine text and numeric/categorical features
-recipe(category ~ text + price + rating + brand, data = train) %>%
+recipe(category ~ text + price + rating + brand, data = train) |>
   # Text preprocessing
-  step_tokenize(text) %>%
-  step_tfidf(text) %>%
+  step_tokenize(text) |>
+  step_tfidf(text) |>
 
   # Categorical preprocessing
-  step_dummy(brand) %>%
+  step_dummy(brand) |>
 
   # Numeric preprocessing
-  step_normalize(price, rating) %>%
+  step_normalize(price, rating) |>
 
   # Final normalization
   step_normalize(all_predictors())
@@ -373,12 +373,12 @@ All binary classifiers extend to multi-class (one-vs-rest or multinomial).
 
 ```r
 # Define tuning grid
-svm_spec_tune <- svm_linear(cost = tune()) %>%
-  set_engine("LiblineaR") %>%
+svm_spec_tune <- svm_linear(cost = tune()) |>
+  set_engine("LiblineaR") |>
   set_mode("classification")
 
-svm_wf_tune <- workflow() %>%
-  add_recipe(text_recipe) %>%
+svm_wf_tune <- workflow() |>
+  add_recipe(text_recipe) |>
   add_model(svm_spec_tune)
 
 # Grid search
@@ -438,20 +438,20 @@ fit_resamples(
 predictions <- collect_predictions(final_fit)
 
 # Overall
-predictions %>%
+predictions |>
   conf_mat(truth = category, estimate = .pred_class)
 
 # Per-class metrics
-predictions %>%
-  group_by(category) %>%
+predictions |>
+  group_by(category) |>
   metrics(truth = category, estimate = .pred_class)
 
 # Macro-averaged (unweighted average across classes)
-predictions %>%
+predictions |>
   f_meas(truth = category, estimate = .pred_class, estimator = "macro")
 
 # Weighted average (by class frequency)
-predictions %>%
+predictions |>
   f_meas(truth = category, estimate = .pred_class, estimator = "macro_weighted")
 ```
 
@@ -464,9 +464,9 @@ predictions %>%
 logistic_final <- fit(logistic_wf, train_data)
 
 # Get coefficients
-tidy(logistic_final) %>%
-  filter(term != "(Intercept)") %>%
-  slice_max(abs(estimate), n = 20) %>%
+tidy(logistic_final) |>
+  filter(term != "(Intercept)") |>
+  slice_max(abs(estimate), n = 20) |>
   ggplot(aes(estimate, reorder(term, estimate))) +
   geom_col() +
   labs(title = "Top 20 Predictive Features", x = "Coefficient", y = "Term")
@@ -480,8 +480,8 @@ rf_final <- fit(rf_wf, train_data)
 
 # Extract variable importance
 library(vip)
-rf_final %>%
-  extract_fit_engine() %>%
+rf_final |>
+  extract_fit_engine() |>
   vip(num_features = 20) +
   labs(title = "Top 20 Important Features")
 ```
@@ -519,7 +519,7 @@ production_model <- readRDS("model.rds")
 
 # Batch prediction
 new_texts <- tibble(text = c("Great product!", "Disappointing quality"))
-predictions <- predict(production_model, new_texts, type = "prob") %>%
+predictions <- predict(production_model, new_texts, type = "prob") |>
   bind_cols(predict(production_model, new_texts))
 
 # Single prediction API
@@ -551,8 +551,8 @@ prediction_log <- tibble(
 )
 
 # Monitor prediction distribution
-prediction_log %>%
-  count(prediction) %>%
+prediction_log |>
+  count(prediction) |>
   mutate(prop = n / sum(n))
 
 # Monitor confidence distribution
@@ -562,11 +562,11 @@ ggplot(prediction_log, aes(confidence)) +
   labs(title = "Prediction Confidence Distribution")
 
 # Accuracy over time (when labels available)
-prediction_log %>%
-  filter(!is.na(true_label)) %>%
-  mutate(correct = prediction == true_label) %>%
-  group_by(date = as.Date(timestamp)) %>%
-  summarise(accuracy = mean(correct)) %>%
+prediction_log |>
+  filter(!is.na(true_label)) |>
+  mutate(correct = prediction == true_label) |>
+  group_by(date = as.Date(timestamp)) |>
+  summarise(accuracy = mean(correct)) |>
   ggplot(aes(date, accuracy)) +
   geom_line() +
   geom_smooth(se = FALSE) +
@@ -591,7 +591,7 @@ updated_train <- bind_rows(train_data, new_labeled_data)
 updated_model <- fit(best_wf, updated_train)
 
 # Evaluate on held-out test
-updated_metrics <- augment(updated_model, test_data) %>%
+updated_metrics <- augment(updated_model, test_data) |>
   metrics(truth = category, estimate = .pred_class)
 
 # Deploy if improved
@@ -613,14 +613,14 @@ if (updated_metrics$accuracy > current_accuracy) {
 **Solutions**:
 ```r
 # 1. Check data quality
-train_data %>% count(category)  # Imbalance?
-train_data %>% sample_n(50) %>% View()  # Label errors?
+train_data |> count(category)  # Imbalance?
+train_data |> sample_n(50) |> View()  # Label errors?
 
 # 2. Try different feature representations
 # TF-IDF vs embeddings vs hashing
 
 # 3. Handle imbalance
-recipe(...) %>% step_smote(category)
+recipe(...) |> step_smote(category)
 
 # 4. Try more complex models
 # Logistic → SVM → Random Forest → XGBoost
@@ -680,10 +680,10 @@ fit_resamples(..., control = control_resamples(parallel_over = "everything"))
 | Task | Code Pattern |
 |------|--------------|
 | Train/test split | `initial_split(data, strata = outcome)` |
-| Text recipe | `recipe() %>% step_tokenize() %>% step_tfidf()` |
+| Text recipe | `recipe() |> step_tokenize() |> step_tfidf()` |
 | Cross-validation | `vfold_cv(train, v = 10, strata = outcome)` |
 | Fit models | `fit_resamples(workflow, resamples)` |
-| Compare models | `collect_metrics() %>% arrange(desc(mean))` |
+| Compare models | `collect_metrics() |> arrange(desc(mean))` |
 | Final evaluation | `last_fit(workflow, split)` |
 | Confusion matrix | `conf_mat(truth, estimate)` |
 | Save model | `saveRDS(model, "model.rds")` |

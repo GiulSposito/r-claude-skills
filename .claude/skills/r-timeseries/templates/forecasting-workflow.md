@@ -15,16 +15,16 @@ library(tidyverse)
 raw_data <- read_csv("your_data.csv")
 
 # Convert to tsibble
-ts_data <- raw_data %>%
-  mutate(Month = yearmonth(date_column)) %>%  # Adjust time function as needed
+ts_data <- raw_data |>
+  mutate(Month = yearmonth(date_column)) |>  # Adjust time function as needed
   as_tsibble(index = Month, key = group_var)  # Optional: add key for multiple series
 
 # Check for gaps
 scan_gaps(ts_data)
 
 # Fill gaps if needed
-ts_data <- ts_data %>%
-  fill_gaps() %>%
+ts_data <- ts_data |>
+  fill_gaps() |>
   tidyr::fill(value, .direction = "down")
 ```
 
@@ -32,28 +32,28 @@ ts_data <- ts_data %>%
 
 ```r
 # Time plot
-ts_data %>% autoplot(value) +
+ts_data |> autoplot(value) +
   labs(title = "Time Series Plot", y = "Value")
 
 # Seasonal plot
-ts_data %>% gg_season(value, labels = "both") +
+ts_data |> gg_season(value, labels = "both") +
   labs(title = "Seasonal Pattern")
 
 # Subseries plot
-ts_data %>% gg_subseries(value) +
+ts_data |> gg_subseries(value) +
   labs(title = "Seasonal Subseries")
 
 # ACF/PACF
-ts_data %>% gg_tsdisplay(value, plot_type = "partial")
+ts_data |> gg_tsdisplay(value, plot_type = "partial")
 
 # Decomposition
-ts_data %>%
-  model(stl = STL(value)) %>%
-  components() %>%
+ts_data |>
+  model(stl = STL(value)) |>
+  components() |>
   autoplot()
 
 # Check seasonality strength
-ts_data %>%
+ts_data |>
   features(value, feat_stl)
 ```
 
@@ -61,8 +61,8 @@ ts_data %>%
 
 ```r
 # Split data (e.g., last 12 months as test)
-train_data <- ts_data %>% filter(Month < yearmonth("2023-01"))
-test_data <- ts_data %>% filter(Month >= yearmonth("2023-01"))
+train_data <- ts_data |> filter(Month < yearmonth("2023-01"))
+test_data <- ts_data |> filter(Month >= yearmonth("2023-01"))
 
 # Verify split
 cat("Train:", min(train_data$Month), "to", max(train_data$Month), "\n")
@@ -73,7 +73,7 @@ cat("Test:", min(test_data$Month), "to", max(test_data$Month), "\n")
 
 ```r
 # Fit multiple candidate models
-fit <- train_data %>%
+fit <- train_data |>
   model(
     # Simple benchmarks
     mean = MEAN(value),
@@ -95,25 +95,25 @@ fit <- train_data %>%
   )
 
 # Quick accuracy check
-fit %>% accuracy() %>% arrange(MASE)
+fit |> accuracy() |> arrange(MASE)
 ```
 
 ## Phase 5: Diagnostics
 
 ```r
 # Check residuals for best performers
-fit %>% select(arima_auto) %>% gg_tsresiduals()
-fit %>% select(ets_auto) %>% gg_tsresiduals()
+fit |> select(arima_auto) |> gg_tsresiduals()
+fit |> select(ets_auto) |> gg_tsresiduals()
 
 # Ljung-Box test
-augment(fit) %>%
-  filter(.model %in% c("arima_auto", "ets_auto")) %>%
+augment(fit) |>
+  filter(.model %in% c("arima_auto", "ets_auto")) |>
   features(.innov, ljung_box, lag = 24, dof = 0)
 
 # Information criteria
-fit %>%
-  glance() %>%
-  select(.model, AICc, BIC) %>%
+fit |>
+  glance() |>
+  select(.model, AICc, BIC) |>
   arrange(AICc)
 ```
 
@@ -121,11 +121,11 @@ fit %>%
 
 ```r
 # Create CV folds
-ts_cv <- train_data %>%
+ts_cv <- train_data |>
   stretch_tsibble(.init = 24, .step = 3)
 
 # Fit on CV folds
-cv_fit <- ts_cv %>%
+cv_fit <- ts_cv |>
   model(
     ets = ETS(value),
     arima = ARIMA(value)
@@ -133,16 +133,16 @@ cv_fit <- ts_cv %>%
 
 # Generate forecasts
 h_forecast <- 12  # Forecast horizon
-cv_fc <- cv_fit %>% forecast(h = h_forecast)
+cv_fc <- cv_fit |> forecast(h = h_forecast)
 
 # Evaluate
-cv_results <- cv_fc %>%
-  accuracy(train_data) %>%
-  group_by(.model) %>%
+cv_results <- cv_fc |>
+  accuracy(train_data) |>
+  group_by(.model) |>
   summarise(
     mean_MASE = mean(MASE),
     mean_RMSE = mean(RMSE)
-  ) %>%
+  ) |>
   arrange(mean_MASE)
 
 print(cv_results)
@@ -152,11 +152,11 @@ print(cv_results)
 
 ```r
 # Select best model based on CV or information criteria
-best_model_name <- cv_results %>%
-  slice(1) %>%
+best_model_name <- cv_results |>
+  slice(1) |>
   pull(.model)
 
-best_model <- fit %>% select(all_of(best_model_name))
+best_model <- fit |> select(all_of(best_model_name))
 
 # Display model
 report(best_model)
@@ -167,10 +167,10 @@ report(best_model)
 ```r
 # Forecast test period
 h_test <- nrow(test_data)
-fc_test <- best_model %>% forecast(h = h_test)
+fc_test <- best_model |> forecast(h = h_test)
 
 # Visualize
-fc_test %>%
+fc_test |>
   autoplot(train_data, level = c(80, 95)) +
   autolayer(test_data, color = "black") +
   labs(title = "Forecast vs Actual",
@@ -182,24 +182,24 @@ fc_test %>%
 
 ```r
 # Calculate accuracy on test set
-test_accuracy <- fc_test %>%
+test_accuracy <- fc_test |>
   accuracy(test_data)
 
 print(test_accuracy)
 
 # Compare to naive benchmark
-naive_fc <- train_data %>%
-  model(naive = SNAIVE(value)) %>%
+naive_fc <- train_data |>
+  model(naive = SNAIVE(value)) |>
   forecast(h = h_test)
 
-naive_accuracy <- naive_fc %>%
+naive_accuracy <- naive_fc |>
   accuracy(test_data)
 
 # Comparison
 bind_rows(
-  test_accuracy %>% mutate(type = "Selected Model"),
-  naive_accuracy %>% mutate(type = "Benchmark")
-) %>%
+  test_accuracy |> mutate(type = "Selected Model"),
+  naive_accuracy |> mutate(type = "Benchmark")
+) |>
   select(type, MASE, RMSE, MAE)
 ```
 
@@ -207,23 +207,23 @@ bind_rows(
 
 ```r
 # Refit on full data for production
-final_model <- ts_data %>%
+final_model <- ts_data |>
   model(best = !!best_model[[1]][[1]])  # Extract model specification
 
 # Generate future forecasts
 h_future <- 12  # Next 12 periods
-final_fc <- final_model %>% forecast(h = h_future)
+final_fc <- final_model |> forecast(h = h_future)
 
 # Visualize
-final_fc %>%
+final_fc |>
   autoplot(ts_data, level = c(80, 95)) +
   labs(title = "Final Forecast",
        y = "Value",
        subtitle = paste("Model:", best_model_name))
 
 # Extract forecast table
-forecast_table <- final_fc %>%
-  as_tibble() %>%
+forecast_table <- final_fc |>
+  as_tibble() |>
   select(Month, .mean, contains("80%"), contains("95%"))
 
 # Export forecasts
@@ -244,7 +244,7 @@ production_model <- readRDS("production_forecast_model.rds")
 # (code depends on your data pipeline)
 
 # Refit periodically (e.g., monthly)
-updated_model <- ts_data_with_new_obs %>%
+updated_model <- ts_data_with_new_obs |>
   model(best = !!production_model[[1]][[1]])
 
 # Save updated model
@@ -271,7 +271,7 @@ Before finalizing your forecast:
 
 ### For Non-Seasonal Data
 ```r
-fit <- train_data %>%
+fit <- train_data |>
   model(
     naive = NAIVE(value),
     drift = RW(value ~ drift()),
@@ -282,7 +282,7 @@ fit <- train_data %>%
 
 ### For Multiple Seasonality
 ```r
-fit <- train_data %>%
+fit <- train_data |>
   model(
     tbats = TBATS(value),
     prophet = prophet(value)
@@ -291,7 +291,7 @@ fit <- train_data %>%
 
 ### For External Predictors
 ```r
-fit <- train_data %>%
+fit <- train_data |>
   model(
     tslm = TSLM(value ~ trend() + season() + external_var),
     arimax = ARIMA(value ~ external_var)
@@ -300,9 +300,9 @@ fit <- train_data %>%
 
 ### For Hierarchical Forecasting
 ```r
-fit <- hierarchical_data %>%
-  aggregate_key(hierarchy_structure, value = sum(value)) %>%
-  model(ets = ETS(value)) %>%
+fit <- hierarchical_data |>
+  aggregate_key(hierarchy_structure, value = sum(value)) |>
+  model(ets = ETS(value)) |>
   reconcile(mint_shrink = min_trace(method = "mint_shrink"))
 ```
 

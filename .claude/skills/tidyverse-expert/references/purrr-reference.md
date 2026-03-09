@@ -84,12 +84,12 @@ map_int(list(1, 2, 3), ~ as.integer(.x))
 map_lgl(list(1, NA, 3), is.na)
 # Returns: c(FALSE, TRUE, FALSE)
 
-# map_dfr - Returns data frame (row-bind)
-map_dfr(1:3, ~ tibble(x = .x, y = .x * 2))
+# map() with list_rbind() - Returns data frame (row-bind)
+map(1:3, ~ tibble(x = .x, y = .x * 2)) |> list_rbind()
 # Returns: tibble with 3 rows
 
-# map_dfc - Returns data frame (column-bind)
-map_dfc(1:3, ~ tibble(!!paste0("col", .x) := .x))
+# map() with list_cbind() - Returns data frame (column-bind)
+map(1:3, ~ tibble(!!paste0("col", .x) := .x)) |> list_cbind()
 # Returns: tibble with 3 columns
 
 # Type safety - error if wrong type
@@ -103,8 +103,8 @@ map_dbl(list(1, "a", 3), ~ .x)
 - `map_chr()` - Text extraction, formatting
 - `map_int()` - Counting, discrete values
 - `map_lgl()` - Tests, boolean operations
-- `map_dfr()` - Combining data frames vertically
-- `map_dfc()` - Combining data frames horizontally
+- `map() |> list_rbind()` - Combining data frames vertically
+- `map() |> list_cbind()` - Combining data frames horizontally
 
 ---
 
@@ -220,11 +220,12 @@ imap(results, ~ set_names(.x, paste0("result_", .y)))
 # With data frames
 iris |>
   select(where(is.numeric)) |>
-  imap_dfr(~ tibble(
+  imap(~ tibble(
     column = .y,
     mean = mean(.x),
     sd = sd(.x)
-  ))
+  )) |>
+  list_rbind()
 ```
 
 ---
@@ -854,6 +855,8 @@ models |>
 | Apply function | `map()` | `map(x, log)` |
 | Return numeric | `map_dbl()` | `map_dbl(x, mean)` |
 | Return character | `map_chr()` | `map_chr(x, "name")` |
+| Row-bind data frames | `map() |> list_rbind()` | `map(x, f) |> list_rbind()` |
+| Column-bind data frames | `map() |> list_cbind()` | `map(x, f) |> list_cbind()` |
 | Two inputs | `map2()` | `map2(x, y, `+`)` |
 | Many inputs | `pmap()` | `pmap(list(x, y, z), sum)` |
 | With index/name | `imap()` | `imap(x, paste)` |

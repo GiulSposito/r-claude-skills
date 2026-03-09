@@ -10,23 +10,23 @@ Complete reference for cleaning and preparing text data for analysis.
 library(tidytext)
 
 # Words (default)
-data %>% unnest_tokens(word, text_column)
+data |> unnest_tokens(word, text_column)
 
 # N-grams
-data %>% unnest_tokens(bigram, text_column, token = "ngrams", n = 2)
-data %>% unnest_tokens(trigram, text_column, token = "ngrams", n = 3)
+data |> unnest_tokens(bigram, text_column, token = "ngrams", n = 2)
+data |> unnest_tokens(trigram, text_column, token = "ngrams", n = 3)
 
 # Sentences
-data %>% unnest_tokens(sentence, text_column, token = "sentences")
+data |> unnest_tokens(sentence, text_column, token = "sentences")
 
 # Characters
-data %>% unnest_tokens(character, text_column, token = "characters")
+data |> unnest_tokens(character, text_column, token = "characters")
 
 # Lines
-data %>% unnest_tokens(line, text_column, token = "lines")
+data |> unnest_tokens(line, text_column, token = "lines")
 
 # Custom regex pattern
-data %>% unnest_tokens(
+data |> unnest_tokens(
   word,
   text_column,
   token = "regex",
@@ -38,13 +38,13 @@ data %>% unnest_tokens(
 
 ```r
 # Keep punctuation
-data %>% unnest_tokens(word, text_column, strip_punct = FALSE)
+data |> unnest_tokens(word, text_column, strip_punct = FALSE)
 
 # Keep numbers
-data %>% unnest_tokens(word, text_column, strip_numeric = FALSE)
+data |> unnest_tokens(word, text_column, strip_numeric = FALSE)
 
 # Custom token pattern (hashtags)
-data %>% unnest_tokens(
+data |> unnest_tokens(
   hashtag,
   text_column,
   token = "regex",
@@ -52,7 +52,7 @@ data %>% unnest_tokens(
 )
 
 # Email addresses
-data %>% unnest_tokens(
+data |> unnest_tokens(
   email,
   text_column,
   token = "regex",
@@ -70,13 +70,13 @@ library(tidytext)
 # Default English stop words
 data("stop_words")
 
-tidy_text %>%
+tidy_text |>
   anti_join(stop_words, by = "word")
 
 # Specific lexicon
-stop_words %>% filter(lexicon == "snowball")  # 175 words
-stop_words %>% filter(lexicon == "SMART")     # 571 words
-stop_words %>% filter(lexicon == "onix")      # 404 words
+stop_words |> filter(lexicon == "snowball")  # 175 words
+stop_words |> filter(lexicon == "SMART")     # 571 words
+stop_words |> filter(lexicon == "onix")      # 404 words
 ```
 
 ### Custom Stop Words
@@ -87,13 +87,13 @@ custom_stops <- tibble(
   word = c("company", "product", "customer", "service")
 )
 
-tidy_text %>%
-  anti_join(stop_words, by = "word") %>%
+tidy_text |>
+  anti_join(stop_words, by = "word") |>
   anti_join(custom_stops, by = "word")
 
 # Combine with built-in
 all_stops <- bind_rows(stop_words, custom_stops)
-tidy_text %>% anti_join(all_stops, by = "word")
+tidy_text |> anti_join(all_stops, by = "word")
 ```
 
 ### Selective Stop Word Removal
@@ -102,10 +102,10 @@ tidy_text %>% anti_join(all_stops, by = "word")
 # Keep negation words
 negation_words <- c("not", "no", "never", "none", "nobody", "nothing")
 
-custom_stops <- stop_words %>%
+custom_stops <- stop_words |>
   filter(!word %in% negation_words)
 
-tidy_text %>% anti_join(custom_stops, by = "word")
+tidy_text |> anti_join(custom_stops, by = "word")
 ```
 
 ## Text Cleaning
@@ -114,11 +114,11 @@ tidy_text %>% anti_join(custom_stops, by = "word")
 
 ```r
 # Remove numbers
-tidy_text %>%
+tidy_text |>
   filter(!str_detect(word, "\\d+"))
 
 # Remove punctuation-only tokens
-tidy_text %>%
+tidy_text |>
   filter(str_detect(word, "[a-zA-Z]"))
 
 # Remove URLs
@@ -181,12 +181,12 @@ wordStem("running")  # → "run"
 wordStem("better")   # → "better"
 
 # Stem tidy text
-tidy_text %>%
+tidy_text |>
   mutate(stem = wordStem(word, language = "english"))
 
 # Group by stems
-tidy_text %>%
-  mutate(stem = wordStem(word)) %>%
+tidy_text |>
+  mutate(stem = wordStem(word)) |>
   count(document_id, stem)
 ```
 
@@ -196,8 +196,8 @@ tidy_text %>%
 # Via textrecipes (requires spaCy installation)
 library(textrecipes)
 
-recipe(~ text, data = data) %>%
-  step_tokenize(text, engine = "spacyr") %>%
+recipe(~ text, data = data) |>
+  step_tokenize(text, engine = "spacyr") |>
   step_lemma(text)
 
 # Note: spaCy must be installed:
@@ -221,21 +221,21 @@ recipe(~ text, data = data) %>%
 
 ```r
 # Bigrams
-bigrams <- data %>%
+bigrams <- data |>
   unnest_tokens(bigram, text, token = "ngrams", n = 2)
 
 # Separate bigrams
-bigrams %>%
-  separate(bigram, into = c("word1", "word2"), sep = " ")
+bigrams |>
+  separate_wider_delim(bigram, delim = " ", names = c("word1", "word2"))
 
 # Filter bigrams with stop words
-bigrams_separated <- bigrams %>%
-  separate(bigram, into = c("word1", "word2"), sep = " ") %>%
+bigrams_separated <- bigrams |>
+  separate_wider_delim(bigram, delim = " ", names = c("word1", "word2")) |>
   filter(!word1 %in% stop_words$word,
          !word2 %in% stop_words$word)
 
 # Recombine
-bigrams_filtered <- bigrams_separated %>%
+bigrams_filtered <- bigrams_separated |>
   unite(bigram, word1, word2, sep = " ")
 ```
 
@@ -243,20 +243,20 @@ bigrams_filtered <- bigrams_separated %>%
 
 ```r
 # Most common bigrams
-bigrams %>%
+bigrams |>
   count(bigram, sort = TRUE)
 
 # Bigrams starting with specific word
-bigrams_separated %>%
-  filter(word1 == "data") %>%
+bigrams_separated |>
+  filter(word1 == "data") |>
   count(word2, sort = TRUE)
 
 # Network of word connections
 library(igraph)
 library(ggraph)
 
-bigram_graph <- bigrams_separated %>%
-  filter(n > 20) %>%
+bigram_graph <- bigrams_separated |>
+  filter(n > 20) |>
   graph_from_data_frame()
 
 ggraph(bigram_graph, layout = "fr") +
@@ -271,21 +271,21 @@ ggraph(bigram_graph, layout = "fr") +
 
 ```r
 # Remove rare words (appear < 5 times)
-word_counts <- tidy_text %>%
-  count(word) %>%
+word_counts <- tidy_text |>
+  count(word) |>
   filter(n >= 5)
 
-tidy_text_filtered <- tidy_text %>%
+tidy_text_filtered <- tidy_text |>
   semi_join(word_counts, by = "word")
 
 # Remove very common words (appear in > 90% of documents)
-doc_freq <- tidy_text %>%
-  distinct(document_id, word) %>%
-  count(word) %>%
-  mutate(doc_prop = n / n_distinct(tidy_text$document_id)) %>%
+doc_freq <- tidy_text |>
+  distinct(document_id, word) |>
+  count(word) |>
+  mutate(doc_prop = n / n_distinct(tidy_text$document_id)) |>
   filter(doc_prop < 0.9)
 
-tidy_text %>%
+tidy_text |>
   semi_join(doc_freq, by = "word")
 ```
 
@@ -293,16 +293,16 @@ tidy_text %>%
 
 ```r
 # Keep words appearing in 2-50% of documents
-idf <- tidy_text %>%
-  distinct(document_id, word) %>%
-  count(word) %>%
+idf <- tidy_text |>
+  distinct(document_id, word) |>
+  count(word) |>
   mutate(
     n_docs = n_distinct(tidy_text$document_id),
     doc_freq = n / n_docs
-  ) %>%
+  ) |>
   filter(doc_freq >= 0.02, doc_freq <= 0.50)
 
-tidy_text %>%
+tidy_text |>
   semi_join(idf, by = "word")
 ```
 
@@ -310,7 +310,7 @@ tidy_text %>%
 
 ```r
 # Remove very short/long words
-tidy_text %>%
+tidy_text |>
   filter(nchar(word) >= 3, nchar(word) <= 15)
 ```
 
@@ -322,21 +322,21 @@ tidy_text %>%
 library(textrecipes)
 library(tidymodels)
 
-text_recipe <- recipe(outcome ~ text, data = train) %>%
+text_recipe <- recipe(outcome ~ text, data = train) |>
   # 1. Tokenization
-  step_tokenize(text) %>%
+  step_tokenize(text) |>
 
   # 2. Filtering
-  step_stopwords(text, stopword_source = "snowball") %>%
-  step_stem(text) %>%
+  step_stopwords(text, stopword_source = "snowball") |>
+  step_stem(text) |>
   step_tokenfilter(
     text,
     max_tokens = 1000,  # Keep top 1000 tokens
     min_times = 5       # Must appear >= 5 times
-  ) %>%
+  ) |>
 
   # 3. Feature generation
-  step_tfidf(text) %>%
+  step_tfidf(text) |>
 
   # 4. Normalization
   step_normalize(all_predictors())

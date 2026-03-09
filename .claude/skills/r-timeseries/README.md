@@ -34,24 +34,24 @@ library(feasts)
 library(tidyverse)
 
 # 1. Prepare data
-ts_data <- data %>%
-  mutate(Month = yearmonth(date)) %>%
+ts_data <- data |>
+  mutate(Month = yearmonth(date)) |>
   as_tsibble(index = Month)
 
 # 2. Explore
-ts_data %>% autoplot(value)
-ts_data %>% gg_season(value)
+ts_data |> autoplot(value)
+ts_data |> gg_season(value)
 
 # 3. Fit models
-fit <- ts_data %>%
+fit <- ts_data |>
   model(
     ets = ETS(value),
     arima = ARIMA(value)
   )
 
 # 4. Forecast
-fc <- fit %>% forecast(h = 12)
-fc %>% autoplot(ts_data)
+fc <- fit |> forecast(h = 12)
+fc |> autoplot(ts_data)
 ```
 
 ## Key Features
@@ -108,27 +108,27 @@ fc %>% autoplot(ts_data)
 
 ### Seasonal Decomposition
 ```r
-data %>%
-  model(STL(value)) %>%
-  components() %>%
+data |>
+  model(STL(value)) |>
+  components() |>
   autoplot()
 ```
 
 ### Model Comparison
 ```r
-fit %>%
-  accuracy() %>%
+fit |>
+  accuracy() |>
   arrange(MASE)
 ```
 
 ### Time Series Cross-Validation
 ```r
-ts_cv <- data %>%
+ts_cv <- data |>
   stretch_tsibble(.init = 60, .step = 3)
 
-cv_fit <- ts_cv %>% model(ets = ETS(value))
-cv_fc <- cv_fit %>% forecast(h = 12)
-cv_fc %>% accuracy(data)
+cv_fit <- ts_cv |> model(ets = ETS(value))
+cv_fc <- cv_fit |> forecast(h = 12)
+cv_fc |> accuracy(data)
 ```
 
 ## Integration with Other Skills

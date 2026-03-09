@@ -8,7 +8,7 @@ Complete reference for forecasting methods in the fable ecosystem.
 Forecasts all future values as the average of historical data.
 
 ```r
-fit <- data %>% model(mean_model = MEAN(value))
+fit <- data |> model(mean_model = MEAN(value))
 ```
 
 **Use when**: No trend, no seasonality, random fluctuations
@@ -17,7 +17,7 @@ fit <- data %>% model(mean_model = MEAN(value))
 All forecasts equal to the last observed value.
 
 ```r
-fit <- data %>% model(naive = NAIVE(value))
+fit <- data |> model(naive = NAIVE(value))
 ```
 
 **Use when**: Random walk data, no clear patterns
@@ -27,7 +27,7 @@ fit <- data %>% model(naive = NAIVE(value))
 Forecasts equal to the last observation from the same season.
 
 ```r
-fit <- data %>% model(snaive = SNAIVE(value))
+fit <- data |> model(snaive = SNAIVE(value))
 ```
 
 **Use when**: Strong seasonality, no trend
@@ -37,7 +37,7 @@ fit <- data %>% model(snaive = SNAIVE(value))
 Naive forecast plus average historical change (linear trend).
 
 ```r
-fit <- data %>% model(drift = RW(value ~ drift()))
+fit <- data |> model(drift = RW(value ~ drift()))
 ```
 
 **Use when**: Linear trend, no seasonality
@@ -55,14 +55,14 @@ ETS decomposes forecasting into three components:
 
 ### Automatic Selection
 ```r
-fit <- data %>% model(ets = ETS(value))
+fit <- data |> model(ets = ETS(value))
 ```
 
 Automatically selects best combination based on AICc.
 
 ### Manual Specification
 ```r
-fit <- data %>% model(
+fit <- data |> model(
   ets_aan = ETS(value ~ error("A") + trend("A") + season("N")),
   ets_mam = ETS(value ~ error("M") + trend("A") + season("M")),
   ets_aad = ETS(value ~ error("A") + trend("Ad") + season("N"))
@@ -102,14 +102,14 @@ ETS(value ~ error("A") + trend("Ad") + season("N"))
 
 ### Automatic Selection
 ```r
-fit <- data %>% model(arima = ARIMA(value))
+fit <- data |> model(arima = ARIMA(value))
 ```
 
 Uses unit root tests and AICc to select orders.
 
 ### Manual Specification
 ```r
-fit <- data %>% model(
+fit <- data |> model(
   arima_110 = ARIMA(value ~ pdq(1,1,0)),
   arima_seasonal = ARIMA(value ~ pdq(1,1,1) + PDQ(1,1,1)),
   arima_with_drift = ARIMA(value ~ pdq(0,1,0) + PDQ(0,1,1) + 1)
@@ -124,15 +124,15 @@ fit <- data %>% model(
 gg_tsdisplay(data, value, plot_type = "partial")
 
 # Statistical tests
-data %>% features(value, unitroot_kpss)    # p < 0.05 = non-stationary
-data %>% features(value, unitroot_ndiffs)  # Number of differences needed
-data %>% features(value, unitroot_nsdiffs) # Seasonal differences needed
+data |> features(value, unitroot_kpss)    # p < 0.05 = non-stationary
+data |> features(value, unitroot_ndiffs)  # Number of differences needed
+data |> features(value, unitroot_nsdiffs) # Seasonal differences needed
 ```
 
 **Apply differencing**:
 ```r
-data %>% mutate(diff_value = difference(value, lag = 1))       # First difference
-data %>% mutate(seasonal_diff = difference(value, lag = 12))  # Seasonal difference
+data |> mutate(diff_value = difference(value, lag = 1))       # First difference
+data |> mutate(seasonal_diff = difference(value, lag = 12))  # Seasonal difference
 ```
 
 ### ACF/PACF Patterns for Identification
@@ -160,7 +160,7 @@ data %>% mutate(seasonal_diff = difference(value, lag = 12))  # Seasonal differe
 
 ### Time Series Linear Model (TSLM)
 ```r
-fit <- data %>%
+fit <- data |>
   model(tslm = TSLM(value ~ trend() + season()))
 ```
 
@@ -175,7 +175,7 @@ fit <- data %>%
 ARIMA with external regressors.
 
 ```r
-fit <- data %>%
+fit <- data |>
   model(
     arimax = ARIMA(value ~ temperature + holiday)
   )
@@ -199,7 +199,7 @@ fit <- data %>%
 Developed by Facebook for business time series.
 
 ```r
-fit <- data %>% model(prophet = prophet(value))
+fit <- data |> model(prophet = prophet(value))
 ```
 
 **Strengths**:
@@ -212,7 +212,7 @@ fit <- data %>% model(prophet = prophet(value))
 
 ### Neural Network Autoregression (NNETAR)
 ```r
-fit <- data %>% model(nnetar = NNETAR(value))
+fit <- data |> model(nnetar = NNETAR(value))
 ```
 
 **Strengths**:
@@ -231,7 +231,7 @@ fit <- data %>% model(nnetar = NNETAR(value))
 Multiple seasonality with Box-Cox transformation, ARMA errors, Trend, and Seasonal components.
 
 ```r
-fit <- data %>% model(tbats = TBATS(value))
+fit <- data |> model(tbats = TBATS(value))
 ```
 
 **Use when**: Multiple seasonal patterns (e.g., daily + weekly + yearly)
@@ -240,7 +240,7 @@ fit <- data %>% model(tbats = TBATS(value))
 Multivariate time series (multiple related series).
 
 ```r
-fit <- data %>%
+fit <- data |>
   model(var = VAR(cbind(series1, series2, series3)))
 ```
 
@@ -283,7 +283,7 @@ fit <- data %>%
 Lower values indicate better fit.
 
 ```r
-fit %>% glance() %>% arrange(AICc)
+fit |> glance() |> arrange(AICc)
 ```
 
 ---
@@ -294,15 +294,15 @@ Combine multiple models for robust forecasts.
 
 ```r
 # Average forecasts from multiple models
-fit <- data %>%
+fit <- data |>
   model(
     ets = ETS(value),
     arima = ARIMA(value),
     snaive = SNAIVE(value)
   )
 
-fc <- fit %>%
-  forecast(h = 12) %>%
+fc <- fit |>
+  forecast(h = 12) |>
   summarise(.mean = mean(.mean))  # Average across models
 ```
 
@@ -321,17 +321,17 @@ library(fable)
 library(tsibble)
 library(feasts)
 
-ts_data <- data %>%
-  mutate(Month = yearmonth(date)) %>%
+ts_data <- data |>
+  mutate(Month = yearmonth(date)) |>
   as_tsibble(index = Month)
 
 # 2. Explore
-ts_data %>% autoplot(value)
-ts_data %>% gg_season(value)
-ts_data %>% gg_tsdisplay(value, plot_type = "partial")
+ts_data |> autoplot(value)
+ts_data |> gg_season(value)
+ts_data |> gg_tsdisplay(value, plot_type = "partial")
 
 # 3. Fit multiple models
-fit <- ts_data %>%
+fit <- ts_data |>
   model(
     naive = NAIVE(value),
     snaive = SNAIVE(value),
@@ -341,19 +341,19 @@ fit <- ts_data %>%
   )
 
 # 4. Check diagnostics
-fit %>% select(arima) %>% gg_tsresiduals()
+fit |> select(arima) |> gg_tsresiduals()
 
 # 5. Compare accuracy
-fit %>% accuracy()
+fit |> accuracy()
 
 # 6. Generate forecasts
-fc <- fit %>% forecast(h = 12)
+fc <- fit |> forecast(h = 12)
 
 # 7. Visualize
-fc %>% autoplot(ts_data, level = 95)
+fc |> autoplot(ts_data, level = 95)
 
 # 8. Evaluate (if test data available)
-fc %>% accuracy(test_data)
+fc |> accuracy(test_data)
 ```
 
 ---

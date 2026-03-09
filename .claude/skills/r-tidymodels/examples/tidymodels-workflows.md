@@ -33,7 +33,7 @@ glimpse(ames)
 # 2,930 × 74
 
 # Quick EDA
-ames %>%
+ames |>
   ggplot(aes(x = Sale_Price)) +
   geom_histogram(bins = 50) +
   scale_x_log10() +
@@ -53,15 +53,15 @@ cat("Test set:", nrow(ames_test), "observations\n")
 
 # === 3. CREATE PREPROCESSING RECIPE ===
 
-ames_rec <- recipe(Sale_Price ~ ., data = ames_train) %>%
+ames_rec <- recipe(Sale_Price ~ ., data = ames_train) |>
 
   # Remove ID variable
-  update_role(starts_with("Order"), new_role = "ID") %>%
-  update_role(starts_with("PID"), new_role = "ID") %>%
+  update_role(starts_with("Order"), new_role = "ID") |>
+  update_role(starts_with("PID"), new_role = "ID") |>
 
   # Handle missing data
-  step_impute_median(all_numeric_predictors()) %>%
-  step_impute_mode(all_nominal_predictors()) %>%
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
 
   # Feature engineering
   step_mutate(
@@ -71,37 +71,37 @@ ames_rec <- recipe(Sale_Price ~ ., data = ames_train) %>%
     Total_Bathrooms = Full_Bath + 0.5 * Half_Bath + Bsmt_Full_Bath + 0.5 * Bsmt_Half_Bath,
     Total_SF = Gr_Liv_Area + Total_Bsmt_SF,
     Total_Porch_SF = Open_Porch_SF + Enclosed_Porch + Three_season_porch + Screen_Porch
-  ) %>%
+  ) |>
 
   # Log transform outcome (right-skewed)
-  step_log(Sale_Price, base = 10) %>%
+  step_log(Sale_Price, base = 10) |>
 
   # Log transform skewed predictors
-  step_log(Lot_Area, Gr_Liv_Area, base = 10, offset = 1) %>%
+  step_log(Lot_Area, Gr_Liv_Area, base = 10, offset = 1) |>
 
   # Interactions
-  step_interact(terms = ~ Gr_Liv_Area:Overall_Qual) %>%
-  step_interact(terms = ~ House_Age:Overall_Qual) %>%
+  step_interact(terms = ~ Gr_Liv_Area:Overall_Qual) |>
+  step_interact(terms = ~ House_Age:Overall_Qual) |>
 
   # Handle categorical variables
-  step_novel(all_nominal_predictors()) %>%
-  step_unknown(all_nominal_predictors()) %>%
-  step_other(Neighborhood, threshold = 0.01) %>%
-  step_other(MS_SubClass, threshold = 0.01) %>%
-  step_dummy(all_nominal_predictors()) %>%
+  step_novel(all_nominal_predictors()) |>
+  step_unknown(all_nominal_predictors()) |>
+  step_other(Neighborhood, threshold = 0.01) |>
+  step_other(MS_SubClass, threshold = 0.01) |>
+  step_dummy(all_nominal_predictors()) |>
 
   # Filter predictors
-  step_zv(all_predictors()) %>%
-  step_nzv(all_predictors()) %>%
+  step_zv(all_predictors()) |>
+  step_nzv(all_predictors()) |>
 
   # Normalize
-  step_normalize(all_numeric_predictors()) %>%
+  step_normalize(all_numeric_predictors()) |>
 
   # Remove correlations
   step_corr(all_numeric_predictors(), threshold = 0.85)
 
 # Preview recipe
-ames_rec %>% prep() %>% bake(new_data = NULL) %>% glimpse()
+ames_rec |> prep() |> bake(new_data = NULL) |> glimpse()
 
 # === 4. SPECIFY MODELS ===
 
@@ -110,8 +110,8 @@ rf_spec <- rand_forest(
   mtry = tune(),
   trees = 1000,
   min_n = tune()
-) %>%
-  set_engine("ranger", importance = "impurity") %>%
+) |>
+  set_engine("ranger", importance = "impurity") |>
   set_mode("regression")
 
 # XGBoost
@@ -121,29 +121,29 @@ xgb_spec <- boost_tree(
   min_n = tune(),
   learn_rate = tune(),
   loss_reduction = tune()
-) %>%
-  set_engine("xgboost") %>%
+) |>
+  set_engine("xgboost") |>
   set_mode("regression")
 
 # Elastic Net
 glmnet_spec <- linear_reg(
   penalty = tune(),
   mixture = tune()
-) %>%
+) |>
   set_engine("glmnet")
 
 # === 5. CREATE WORKFLOWS ===
 
-rf_wflow <- workflow() %>%
-  add_recipe(ames_rec) %>%
+rf_wflow <- workflow() |>
+  add_recipe(ames_rec) |>
   add_model(rf_spec)
 
-xgb_wflow <- workflow() %>%
-  add_recipe(ames_rec) %>%
+xgb_wflow <- workflow() |>
+  add_recipe(ames_rec) |>
   add_model(xgb_spec)
 
-glmnet_wflow <- workflow() %>%
-  add_recipe(ames_rec) %>%
+glmnet_wflow <- workflow() |>
+  add_recipe(ames_rec) |>
   add_model(glmnet_spec)
 
 # === 6. SETUP RESAMPLING ===
@@ -165,7 +165,7 @@ rf_grid <- grid_latin_hypercube(
   size = 20
 )
 
-rf_res <- rf_wflow %>%
+rf_res <- rf_wflow |>
   tune_grid(
     resamples = ames_folds,
     grid = rf_grid,
@@ -175,14 +175,14 @@ rf_res <- rf_wflow %>%
 
 # XGBoost - Bayesian Optimization
 set.seed(9)
-xgb_params <- extract_parameter_set_dials(xgb_wflow) %>%
+xgb_params <- extract_parameter_set_dials(xgb_wflow) |>
   update(
     trees = trees(range = c(100, 2000)),
     tree_depth = tree_depth(range = c(3, 8)),
     learn_rate = learn_rate(range = c(-3, -0.5))
   )
 
-xgb_res <- xgb_wflow %>%
+xgb_res <- xgb_wflow |>
   tune_bayes(
     resamples = ames_folds,
     param_info = xgb_params,
@@ -200,7 +200,7 @@ glmnet_grid <- grid_latin_hypercube(
   size = 20
 )
 
-glmnet_res <- glmnet_wflow %>%
+glmnet_res <- glmnet_wflow |>
   tune_grid(
     resamples = ames_folds,
     grid = glmnet_grid,
@@ -232,7 +232,7 @@ tibble(
     show_best(xgb_res, metric = "rsq", n = 1)$mean,
     show_best(glmnet_res, metric = "rsq", n = 1)$mean
   )
-) %>%
+) |>
   arrange(RMSE)
 
 # === 10. SELECT BEST MODEL ===
@@ -244,10 +244,10 @@ print(best_rf)
 
 # === 11. FINALIZE AND TEST ===
 
-final_wflow <- rf_wflow %>%
+final_wflow <- rf_wflow |>
   finalize_workflow(best_rf)
 
-final_fit <- final_wflow %>%
+final_fit <- final_wflow |>
   last_fit(ames_split, metrics = reg_metrics)
 
 # Test set metrics
@@ -255,8 +255,8 @@ cat("\nTest Set Performance:\n")
 collect_metrics(final_fit)
 
 # Predictions vs actual
-final_fit %>%
-  collect_predictions() %>%
+final_fit |>
+  collect_predictions() |>
   ggplot(aes(x = 10^Sale_Price, y = 10^.pred)) +
   geom_abline(lty = 2, color = "gray50", size = 1) +
   geom_point(alpha = 0.5) +
@@ -270,9 +270,9 @@ final_fit %>%
   )
 
 # Residual plot
-final_fit %>%
-  collect_predictions() %>%
-  mutate(residuals = Sale_Price - .pred) %>%
+final_fit |>
+  collect_predictions() |>
+  mutate(residuals = Sale_Price - .pred) |>
   ggplot(aes(x = .pred, y = residuals)) +
   geom_point(alpha = 0.5) +
   geom_hline(yintercept = 0, color = "red", linetype = 2) +
@@ -283,8 +283,8 @@ final_fit %>%
   )
 
 # Variable importance
-final_fit %>%
-  extract_fit_parsnip() %>%
+final_fit |>
+  extract_fit_parsnip() |>
   vip(num_features = 20, geom = "point") +
   labs(title = "Top 20 Most Important Features")
 
@@ -297,20 +297,20 @@ saveRDS(final_model, "ames_price_model.rds")
 predict_house_price <- function(new_houses, model_path = "ames_price_model.rds") {
   model <- readRDS(model_path)
 
-  predictions <- predict(model, new_data = new_houses) %>%
-    mutate(.pred_dollars = 10^.pred) %>%
-    bind_cols(predict(model, new_data = new_houses, type = "conf_int")) %>%
+  predictions <- predict(model, new_data = new_houses) |>
+    mutate(.pred_dollars = 10^.pred) |>
+    bind_cols(predict(model, new_data = new_houses, type = "conf_int")) |>
     mutate(
       .pred_lower_dollars = 10^.pred_lower,
       .pred_upper_dollars = 10^.pred_upper
-    ) %>%
+    ) |>
     select(starts_with(".pred"))
 
   bind_cols(new_houses, predictions)
 }
 
 # Test prediction function
-sample_houses <- ames_test %>% slice_sample(n = 5)
+sample_houses <- ames_test |> slice_sample(n = 5)
 predict_house_price(sample_houses)
 ```
 
@@ -362,30 +362,30 @@ val_set <- validation_split(hotel_train, prop = 0.80, strata = children)
 
 library(timeDate)  # For holidays
 
-hotel_rec <- recipe(children ~ ., data = hotel_train) %>%
+hotel_rec <- recipe(children ~ ., data = hotel_train) |>
 
   # Date features
-  step_date(arrival_date, features = c("dow", "month", "year")) %>%
-  step_holiday(arrival_date, holidays = timeDate::listHolidays("US")) %>%
-  step_rm(arrival_date) %>%
+  step_date(arrival_date, features = c("dow", "month", "year")) |>
+  step_holiday(arrival_date, holidays = timeDate::listHolidays("US")) |>
+  step_rm(arrival_date) |>
 
   # Feature engineering
   step_mutate(
     total_stay = stays_in_week_nights + stays_in_weekend_nights,
     is_repeated_guest = if_else(is_repeated_guest == 1, "yes", "no"),
     has_special_request = if_else(total_of_special_requests > 0, "yes", "no")
-  ) %>%
+  ) |>
 
   # Handle class imbalance
-  step_downsample(children, under_ratio = 1.2, seed = 42) %>%
+  step_downsample(children, under_ratio = 1.2, seed = 42) |>
 
   # Handle categorical
-  step_novel(all_nominal_predictors()) %>%
-  step_other(all_nominal_predictors(), threshold = 0.01) %>%
-  step_dummy(all_nominal_predictors()) %>%
+  step_novel(all_nominal_predictors()) |>
+  step_other(all_nominal_predictors(), threshold = 0.01) |>
+  step_dummy(all_nominal_predictors()) |>
 
   # Remove zero variance
-  step_zv(all_predictors()) %>%
+  step_zv(all_predictors()) |>
 
   # Normalize
   step_normalize(all_numeric_predictors())
@@ -393,8 +393,8 @@ hotel_rec <- recipe(children ~ ., data = hotel_train) %>%
 # === 4. SPECIFY MODELS ===
 
 # Penalized Logistic Regression
-lr_spec <- logistic_reg(penalty = tune(), mixture = 1) %>%
-  set_engine("glmnet") %>%
+lr_spec <- logistic_reg(penalty = tune(), mixture = 1) |>
+  set_engine("glmnet") |>
   set_mode("classification")
 
 # Random Forest
@@ -402,18 +402,18 @@ rf_spec <- rand_forest(
   mtry = tune(),
   trees = 1000,
   min_n = tune()
-) %>%
-  set_engine("ranger", importance = "impurity") %>%
+) |>
+  set_engine("ranger", importance = "impurity") |>
   set_mode("classification")
 
 # === 5. CREATE WORKFLOWS ===
 
-lr_wflow <- workflow() %>%
-  add_recipe(hotel_rec) %>%
+lr_wflow <- workflow() |>
+  add_recipe(hotel_rec) |>
   add_model(lr_spec)
 
-rf_wflow <- workflow() %>%
-  add_recipe(hotel_rec) %>%
+rf_wflow <- workflow() |>
+  add_recipe(hotel_rec) |>
   add_model(rf_spec)
 
 # === 6. SETUP RESAMPLING ===
@@ -441,7 +441,7 @@ lr_grid <- grid_latin_hypercube(
   size = 30
 )
 
-lr_res <- lr_wflow %>%
+lr_res <- lr_wflow |>
   tune_grid(
     resamples = hotel_folds,
     grid = lr_grid,
@@ -457,7 +457,7 @@ rf_grid <- grid_latin_hypercube(
   size = 25
 )
 
-rf_res <- rf_wflow %>%
+rf_res <- rf_wflow |>
   tune_grid(
     resamples = hotel_folds,
     grid = rf_grid,
@@ -479,17 +479,17 @@ autoplot(rf_res, metric = "roc_auc")
 best_lr <- select_best(lr_res, metric = "roc_auc")
 best_rf <- select_best(rf_res, metric = "roc_auc")
 
-lr_roc <- lr_res %>%
-  collect_predictions(parameters = best_lr) %>%
-  roc_curve(truth = children, .pred_children) %>%
+lr_roc <- lr_res |>
+  collect_predictions(parameters = best_lr) |>
+  roc_curve(truth = children, .pred_children) |>
   mutate(model = "Logistic Regression")
 
-rf_roc <- rf_res %>%
-  collect_predictions(parameters = best_rf) %>%
-  roc_curve(truth = children, .pred_children) %>%
+rf_roc <- rf_res |>
+  collect_predictions(parameters = best_rf) |>
+  roc_curve(truth = children, .pred_children) |>
   mutate(model = "Random Forest")
 
-bind_rows(lr_roc, rf_roc) %>%
+bind_rows(lr_roc, rf_roc) |>
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
   geom_path(size = 1.2) +
   geom_abline(lty = 2, color = "gray50") +
@@ -500,10 +500,10 @@ bind_rows(lr_roc, rf_roc) %>%
 # === 10. FINALIZE BEST MODEL ===
 
 # Random Forest wins
-final_wflow <- rf_wflow %>%
+final_wflow <- rf_wflow |>
   finalize_workflow(best_rf)
 
-final_fit <- final_wflow %>%
+final_fit <- final_wflow |>
   last_fit(hotel_split, metrics = class_metrics)
 
 # === 11. FINAL EVALUATION ===
@@ -512,20 +512,20 @@ final_fit <- final_wflow %>%
 collect_metrics(final_fit)
 
 # Confusion matrix
-final_fit %>%
-  collect_predictions() %>%
-  conf_mat(truth = children, estimate = .pred_class) %>%
+final_fit |>
+  collect_predictions() |>
+  conf_mat(truth = children, estimate = .pred_class) |>
   autoplot(type = "heatmap")
 
 # Confusion matrix with metrics
-final_fit %>%
-  collect_predictions() %>%
-  conf_mat(truth = children, estimate = .pred_class) %>%
+final_fit |>
+  collect_predictions() |>
+  conf_mat(truth = children, estimate = .pred_class) |>
   summary()
 
 # Variable importance
-final_fit %>%
-  extract_fit_parsnip() %>%
+final_fit |>
+  extract_fit_parsnip() |>
   vip(num_features = 15)
 
 # === 12. THRESHOLD OPTIMIZATION ===
@@ -533,8 +533,8 @@ final_fit %>%
 library(probably)
 
 # Find optimal threshold
-threshold_data <- final_fit %>%
-  collect_predictions() %>%
+threshold_data <- final_fit |>
+  collect_predictions() |>
   probably::threshold_perf(
     truth = children,
     estimate = .pred_children,
@@ -543,8 +543,8 @@ threshold_data <- final_fit %>%
   )
 
 # Visualize threshold impact
-threshold_data %>%
-  filter(.metric != "distance") %>%
+threshold_data |>
+  filter(.metric != "distance") |>
   ggplot(aes(x = .threshold, y = .estimate, color = .metric)) +
   geom_line(size = 1) +
   theme_minimal() +
@@ -555,9 +555,9 @@ threshold_data %>%
   )
 
 # Best threshold for F1 score
-best_threshold <- threshold_data %>%
-  filter(.metric == "f_meas") %>%
-  filter(.estimate == max(.estimate)) %>%
+best_threshold <- threshold_data |>
+  filter(.metric == "f_meas") |>
+  filter(.estimate == max(.estimate)) |>
   pull(.threshold)
 
 cat("Optimal threshold:", best_threshold, "\n")
@@ -596,7 +596,7 @@ glimpse(beans)
 # 13,611 × 17
 
 # Class distribution
-beans %>% count(class, sort = TRUE)
+beans |> count(class, sort = TRUE)
 # class              n
 # <fct>          <int>
 # Dermason        3546
@@ -616,18 +616,18 @@ bean_test <- testing(bean_split)
 
 # === 3. CREATE RECIPE ===
 
-bean_rec <- recipe(class ~ ., data = bean_train) %>%
+bean_rec <- recipe(class ~ ., data = bean_train) |>
 
   # Feature engineering (ratios often useful)
   step_mutate(
     aspect_ratio = major_axis_length / minor_axis_length,
     roundness_ratio = roundness / compactness,
     extent_solidity_ratio = extent / solidity
-  ) %>%
+  ) |>
 
   # Normalize (important for multiclass)
-  step_YeoJohnson(all_numeric_predictors()) %>%
-  step_normalize(all_numeric_predictors()) %>%
+  step_YeoJohnson(all_numeric_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
 
   # Remove highly correlated
   step_corr(all_numeric_predictors(), threshold = 0.9)
@@ -635,8 +635,8 @@ bean_rec <- recipe(class ~ ., data = bean_train) %>%
 # === 4. SPECIFY MODELS ===
 
 # Multinomial Logistic Regression
-multinom_spec <- multinom_reg(penalty = tune(), mixture = tune()) %>%
-  set_engine("glmnet") %>%
+multinom_spec <- multinom_reg(penalty = tune(), mixture = tune()) |>
+  set_engine("glmnet") |>
   set_mode("classification")
 
 # Random Forest
@@ -644,8 +644,8 @@ rf_spec <- rand_forest(
   mtry = tune(),
   trees = 1000,
   min_n = tune()
-) %>%
-  set_engine("ranger", importance = "impurity") %>%
+) |>
+  set_engine("ranger", importance = "impurity") |>
   set_mode("classification")
 
 # Neural Network
@@ -653,22 +653,22 @@ nn_spec <- mlp(
   hidden_units = tune(),
   penalty = tune(),
   epochs = 100
-) %>%
-  set_engine("nnet") %>%
+) |>
+  set_engine("nnet") |>
   set_mode("classification")
 
 # === 5. CREATE WORKFLOWS ===
 
-multinom_wflow <- workflow() %>%
-  add_recipe(bean_rec) %>%
+multinom_wflow <- workflow() |>
+  add_recipe(bean_rec) |>
   add_model(multinom_spec)
 
-rf_wflow <- workflow() %>%
-  add_recipe(bean_rec) %>%
+rf_wflow <- workflow() |>
+  add_recipe(bean_rec) |>
   add_model(rf_spec)
 
-nn_wflow <- workflow() %>%
-  add_recipe(bean_rec) %>%
+nn_wflow <- workflow() |>
+  add_recipe(bean_rec) |>
   add_model(nn_spec)
 
 # === 6. SETUP RESAMPLING ===
@@ -695,7 +695,7 @@ multinom_grid <- grid_latin_hypercube(
   size = 20
 )
 
-multinom_res <- multinom_wflow %>%
+multinom_res <- multinom_wflow |>
   tune_grid(
     resamples = bean_folds,
     grid = multinom_grid,
@@ -710,7 +710,7 @@ rf_grid <- grid_latin_hypercube(
   size = 20
 )
 
-rf_res <- rf_wflow %>%
+rf_res <- rf_wflow |>
   tune_grid(
     resamples = bean_folds,
     grid = rf_grid,
@@ -725,7 +725,7 @@ nn_grid <- grid_latin_hypercube(
   size = 20
 )
 
-nn_res <- nn_wflow %>%
+nn_res <- nn_wflow |>
   tune_grid(
     resamples = bean_folds,
     grid = nn_grid,
@@ -743,10 +743,10 @@ show_best(nn_res, metric = "roc_auc")
 # Random Forest wins
 best_rf <- select_best(rf_res, metric = "roc_auc")
 
-final_wflow <- rf_wflow %>%
+final_wflow <- rf_wflow |>
   finalize_workflow(best_rf)
 
-final_fit <- final_wflow %>%
+final_fit <- final_wflow |>
   last_fit(bean_split, metrics = multi_metrics)
 
 # === 11. EVALUATE ===
@@ -754,25 +754,25 @@ final_fit <- final_wflow %>%
 collect_metrics(final_fit)
 
 # Multiclass confusion matrix
-final_fit %>%
-  collect_predictions() %>%
-  conf_mat(truth = class, estimate = .pred_class) %>%
+final_fit |>
+  collect_predictions() |>
+  conf_mat(truth = class, estimate = .pred_class) |>
   autoplot(type = "heatmap")
 
 # Per-class performance
-final_fit %>%
-  collect_predictions() %>%
-  group_by(class) %>%
+final_fit |>
+  collect_predictions() |>
+  group_by(class) |>
   summarise(
     accuracy = mean(.pred_class == class),
     n = n()
-  ) %>%
+  ) |>
   arrange(accuracy)
 
 # Per-class ROC curves
-final_fit %>%
-  collect_predictions() %>%
-  roc_curve(truth = class, .pred_BARBUNYA:.pred_SIRA) %>%
+final_fit |>
+  collect_predictions() |>
+  roc_curve(truth = class, .pred_BARBUNYA:.pred_SIRA) |>
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = .level)) +
   geom_path(size = 1) +
   geom_abline(lty = 2, color = "gray50") +
@@ -837,24 +837,24 @@ credit_test <- testing(credit_split)
 
 # === 3. CREATE RECIPE WITH SMOTE ===
 
-credit_rec <- recipe(default ~ ., data = credit_train) %>%
+credit_rec <- recipe(default ~ ., data = credit_train) |>
 
   # Remove ID
-  update_role(customer_id, new_role = "ID") %>%
+  update_role(customer_id, new_role = "ID") |>
 
   # Feature engineering
   step_mutate(
     debt_to_income = debt_ratio * 100,
     high_risk = if_else(debt_ratio > 0.4 & employment_status == "unemployed", "yes", "no")
-  ) %>%
+  ) |>
 
   # Handle class imbalance with SMOTE
-  step_smote(default, over_ratio = 0.5, neighbors = 5) %>%
+  step_smote(default, over_ratio = 0.5, neighbors = 5) |>
 
   # Categorical encoding
-  step_novel(all_nominal_predictors()) %>%
-  step_dummy(all_nominal_predictors()) %>%
-  step_zv(all_predictors()) %>%
+  step_novel(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_zv(all_predictors()) |>
 
   # Normalize
   step_normalize(all_numeric_predictors())
@@ -862,8 +862,8 @@ credit_rec <- recipe(default ~ ., data = credit_train) %>%
 # === 4. SPECIFY MODELS ===
 
 # Logistic with L1 (Lasso)
-lasso_spec <- logistic_reg(penalty = tune(), mixture = 1) %>%
-  set_engine("glmnet") %>%
+lasso_spec <- logistic_reg(penalty = tune(), mixture = 1) |>
+  set_engine("glmnet") |>
   set_mode("classification")
 
 # Random Forest
@@ -871,8 +871,8 @@ rf_spec <- rand_forest(
   mtry = tune(),
   trees = 1000,
   min_n = tune()
-) %>%
-  set_engine("ranger", importance = "impurity") %>%
+) |>
+  set_engine("ranger", importance = "impurity") |>
   set_mode("classification")
 
 # XGBoost
@@ -881,22 +881,22 @@ xgb_spec <- boost_tree(
   tree_depth = tune(),
   learn_rate = tune(),
   min_n = tune()
-) %>%
-  set_engine("xgboost", scale_pos_weight = 19) %>%  # Weight for imbalance
+) |>
+  set_engine("xgboost", scale_pos_weight = 19) |>  # Weight for imbalance
   set_mode("classification")
 
 # === 5. CREATE WORKFLOWS ===
 
-lasso_wflow <- workflow() %>%
-  add_recipe(credit_rec) %>%
+lasso_wflow <- workflow() |>
+  add_recipe(credit_rec) |>
   add_model(lasso_spec)
 
-rf_wflow <- workflow() %>%
-  add_recipe(credit_rec) %>%
+rf_wflow <- workflow() |>
+  add_recipe(credit_rec) |>
   add_model(rf_spec)
 
-xgb_wflow <- workflow() %>%
-  add_recipe(credit_rec) %>%
+xgb_wflow <- workflow() |>
+  add_recipe(credit_rec) |>
   add_model(xgb_spec)
 
 # === 6. RESAMPLING ===
@@ -918,7 +918,7 @@ imbal_metrics <- metric_set(
 
 # Lasso
 set.seed(678)
-lasso_res <- lasso_wflow %>%
+lasso_res <- lasso_wflow |>
   tune_grid(
     resamples = credit_folds,
     grid = 20,
@@ -927,7 +927,7 @@ lasso_res <- lasso_wflow %>%
 
 # Random Forest
 set.seed(678)
-rf_res <- rf_wflow %>%
+rf_res <- rf_wflow |>
   tune_grid(
     resamples = credit_folds,
     grid = 15,
@@ -936,7 +936,7 @@ rf_res <- rf_wflow %>%
 
 # XGBoost
 set.seed(678)
-xgb_res <- xgb_wflow %>%
+xgb_res <- xgb_wflow |>
   tune_grid(
     resamples = credit_folds,
     grid = 15,
@@ -953,10 +953,10 @@ show_best(xgb_res, metric = "pr_auc")
 
 best_xgb <- select_best(xgb_res, metric = "pr_auc")
 
-final_wflow <- xgb_wflow %>%
+final_wflow <- xgb_wflow |>
   finalize_workflow(best_xgb)
 
-final_fit <- final_wflow %>%
+final_fit <- final_wflow |>
   last_fit(credit_split, metrics = imbal_metrics)
 
 # === 11. EVALUATE ON IMBALANCED TEST SET ===
@@ -964,14 +964,14 @@ final_fit <- final_wflow %>%
 collect_metrics(final_fit)
 
 # Confusion matrix
-final_fit %>%
-  collect_predictions() %>%
+final_fit |>
+  collect_predictions() |>
   conf_mat(truth = default, estimate = .pred_class)
 
 # PR curve (more informative than ROC for imbalanced)
-final_fit %>%
-  collect_predictions() %>%
-  pr_curve(truth = default, .pred_yes) %>%
+final_fit |>
+  collect_predictions() |>
+  pr_curve(truth = default, .pred_yes) |>
   ggplot(aes(x = recall, y = precision)) +
   geom_path(size = 1.2) +
   theme_minimal() +
@@ -981,7 +981,7 @@ final_fit %>%
 
 # Predictions may not be well-calibrated
 cal_plot_breaks(
-  final_fit %>% collect_predictions(),
+  final_fit |> collect_predictions(),
   truth = default,
   estimate = .pred_yes
 )
@@ -989,8 +989,8 @@ cal_plot_breaks(
 # === 13. THRESHOLD OPTIMIZATION ===
 
 # Find threshold that balances precision and recall
-threshold_perf <- final_fit %>%
-  collect_predictions() %>%
+threshold_perf <- final_fit |>
+  collect_predictions() |>
   threshold_perf(
     truth = default,
     estimate = .pred_yes,
@@ -999,15 +999,15 @@ threshold_perf <- final_fit %>%
   )
 
 # Visualize
-threshold_perf %>%
+threshold_perf |>
   ggplot(aes(x = .threshold, y = .estimate, color = .metric)) +
   geom_line(size = 1) +
   facet_wrap(~.metric, scales = "free_y") +
   theme_minimal()
 
 # Optimal for F1
-best_f1_threshold <- threshold_perf %>%
-  filter(.metric == "f_meas") %>%
+best_f1_threshold <- threshold_perf |>
+  filter(.metric == "f_meas") |>
   filter(.estimate == max(.estimate))
 
 cat("Optimal threshold:", best_f1_threshold$.threshold, "\n")
@@ -1023,11 +1023,11 @@ cost_matrix <- tibble(
 )
 
 # Calculate expected cost with optimal threshold
-predictions_with_threshold <- final_fit %>%
-  collect_predictions() %>%
+predictions_with_threshold <- final_fit |>
+  collect_predictions() |>
   mutate(.pred_class_optimal = if_else(.pred_yes >= best_f1_threshold$.threshold, "yes", "no"))
 
-predictions_with_threshold %>%
+predictions_with_threshold |>
   mutate(
     cost = case_when(
       default == "yes" & .pred_class_optimal == "yes" ~ 0,
@@ -1035,7 +1035,7 @@ predictions_with_threshold %>%
       default == "no" & .pred_class_optimal == "yes" ~ 100,
       default == "no" & .pred_class_optimal == "no" ~ 0
     )
-  ) %>%
+  ) |>
   summarise(
     total_cost = sum(cost),
     avg_cost_per_customer = mean(cost),

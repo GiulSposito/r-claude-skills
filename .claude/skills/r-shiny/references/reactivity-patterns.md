@@ -65,7 +65,7 @@ state$x <- state$x + 1  # Direct assignment for reactiveValues
 ```r
 # ✅ Expensive computation used multiple times
 filtered_data <- reactive({
-  data %>% filter(category == input$cat)  # Computed once
+  data |> filter(category == input$cat)  # Computed once
 })
 
 output$plot <- renderPlot({ plot(filtered_data()) })
@@ -88,13 +88,13 @@ raw_data <- reactive({
 })
 
 cleaned_data <- reactive({
-  raw_data() %>%
-    filter(!is.na(value)) %>%
+  raw_data() |>
+    filter(!is.na(value)) |>
     mutate(value = as.numeric(value))
 })
 
 filtered_data <- reactive({
-  cleaned_data() %>%
+  cleaned_data() |>
     filter(
       date >= input$start,
       date <= input$end,
@@ -103,8 +103,8 @@ filtered_data <- reactive({
 })
 
 summarized <- reactive({
-  filtered_data() %>%
-    group_by(category) %>%
+  filtered_data() |>
+    group_by(category) |>
     summarize(mean = mean(value), n = n())
 })
 ```
@@ -126,7 +126,7 @@ result <- reactive({
 # Only react after user stops typing for 500ms
 search_term_debounced <- reactive({
   input$search
-}) %>% debounce(500)
+}) |> debounce(500)
 
 results <- reactive({
   search_database(search_term_debounced())
@@ -138,7 +138,7 @@ results <- reactive({
 # Update at most once per second
 mouse_position_throttled <- reactive({
   list(x = input$plot_hover$x, y = input$plot_hover$y)
-}) %>% throttle(1000)
+}) |> throttle(1000)
 ```
 
 ### 3. Reactive Endpoints (Observers & Outputs)
@@ -297,7 +297,7 @@ observeEvent(input$file, {
 })
 
 observe({
-  state$filtered <- state$data %>%
+  state$filtered <- state$data |>
     filter(category == input$category)
 })
 
@@ -471,7 +471,7 @@ result <- reactive({
 # Modern approach: use bindCache()
 result <- reactive({
   expensive_computation(input$param1, input$param2)
-}) %>% bindCache(input$param1, input$param2)
+}) |> bindCache(input$param1, input$param2)
 ```
 
 ## Debugging Reactivity
@@ -520,19 +520,19 @@ observeEvent(input$increment, {
 ```r
 # Problem: multiple dependencies cause multiple runs
 reactive({
-  data() %>%
-    filter(category == input$cat) %>%
-    filter(value > input$threshold) %>%
+  data() |>
+    filter(category == input$cat) |>
+    filter(value > input$threshold) |>
     arrange(input$sort_by)
 })
 
 # Solution: debounce or use action button
 filtered <- reactive({
-  data() %>%
-    filter(category == input$cat) %>%
-    filter(value > input$threshold) %>%
+  data() |>
+    filter(category == input$cat) |>
+    filter(value > input$threshold) |>
     arrange(input$sort_by)
-}) %>% debounce(1000)
+}) |> debounce(1000)
 ```
 
 ### Print Debugging for Reactivity
@@ -546,7 +546,7 @@ data <- reactive({
 
 filtered <- reactive({
   message(glue::glue("filtered() executing with category = {input$category}"))
-  data() %>% filter(category == input$category)
+  data() |> filter(category == input$category)
 })
 
 observe({

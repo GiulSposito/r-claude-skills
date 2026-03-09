@@ -60,7 +60,7 @@ shinyApp(ui, server)
 ```r
 # Good: Computed once, used multiple times
 filtered <- reactive({
-  data %>% filter(category == input$category)
+  data |> filter(category == input$category)
 })
 
 output$plot <- renderPlot({ plot(filtered()) })
@@ -483,7 +483,7 @@ When users select column names dynamically, use tidy evaluation:
 ```r
 # dplyr operations with user-selected columns
 filtered <- reactive({
-  data() %>%
+  data() |>
     filter(.data[[input$filter_col]] > input$threshold)
 })
 
@@ -495,7 +495,7 @@ output$plot <- renderPlot({
 
 # select() operations
 selected_cols <- reactive({
-  data() %>% select(all_of(input$columns))
+  data() |> select(all_of(input$columns))
 })
 ```
 
@@ -507,12 +507,12 @@ selected_cols <- reactive({
 # Cache expensive computations
 expensive_result <- reactive({
   expensive_function(input$param1, input$param2)
-}) %>% bindCache(input$param1, input$param2)
+}) |> bindCache(input$param1, input$param2)
 
 # Cache outputs (shared across users!)
 output$plot <- renderPlot({
   plot(complex_data())
-}) %>% bindCache(input$dataset, input$options)
+}) |> bindCache(input$dataset, input$options)
 ```
 
 ### Preprocessing Data
@@ -524,7 +524,7 @@ large_dataset <- read_rds("data/large_file.rds")
 server <- function(input, output, session) {
   # Data already loaded, just filter
   filtered <- reactive({
-    large_dataset %>% filter(category == input$cat)
+    large_dataset |> filter(category == input$cat)
   })
 }
 ```
@@ -663,16 +663,16 @@ DESCRIPTION        # Optional: package structure
 ```r
 # BEFORE: Long reactive with complex logic
 filtered_data <- reactive({
-  raw_data() %>%
-    filter(date >= input$start, date <= input$end) %>%
+  raw_data() |>
+    filter(date >= input$start, date <= input$end) |>
     mutate(
       category = case_when(
         value < 10 ~ "low",
         value < 50 ~ "medium",
         TRUE ~ "high"
       )
-    ) %>%
-    group_by(category) %>%
+    ) |>
+    group_by(category) |>
     summarize(
       mean = mean(value),
       sd = sd(value),
@@ -682,16 +682,16 @@ filtered_data <- reactive({
 
 # AFTER: Extracted to separate function
 categorize_and_summarize <- function(data, start_date, end_date) {
-  data %>%
-    filter(date >= start_date, date <= end_date) %>%
+  data |>
+    filter(date >= start_date, date <= end_date) |>
     mutate(
       category = case_when(
         value < 10 ~ "low",
         value < 50 ~ "medium",
         TRUE ~ "high"
       )
-    ) %>%
-    group_by(category) %>%
+    ) |>
+    group_by(category) |>
     summarize(
       mean = mean(value),
       sd = sd(value),

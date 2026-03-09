@@ -52,7 +52,7 @@ shinyloadtest::load_runs("run1")
 expensive_data <- reactive({
   Sys.sleep(2)  # Simulated expensive operation
   process_data(input$param1, input$param2)
-}) %>% bindCache(input$param1, input$param2)
+}) |> bindCache(input$param1, input$param2)
 
 # First user with params (A, B): 2 seconds
 # Second user with params (A, B): instant (cached)
@@ -66,7 +66,7 @@ output$plot <- renderPlot({
   ggplot(filtered_data(), aes(x = var1, y = var2)) +
     geom_point() +
     theme_minimal()
-}) %>% bindCache(input$var1, input$var2, input$filter)
+}) |> bindCache(input$var1, input$var2, input$filter)
 
 # Plots cached across all users with same parameters
 ```
@@ -115,14 +115,14 @@ large_dataset <- readRDS("data/large_file.rds")
 lookup_table <- read.csv("data/lookup.csv")
 
 # Pre-process at startup
-processed_data <- large_dataset %>%
-  mutate(date = as.Date(date)) %>%
+processed_data <- large_dataset |>
+  mutate(date = as.Date(date)) |>
   filter(!is.na(value))
 
 server <- function(input, output, session) {
   # Just filter pre-loaded data
   filtered <- reactive({
-    processed_data %>%
+    processed_data |>
       filter(category == input$category)
   })
 }
@@ -137,8 +137,8 @@ library(dplyr)
 
 raw <- fetch_from_database()
 
-processed <- raw %>%
-  group_by(category, date) %>%
+processed <- raw |>
+  group_by(category, date) |>
   summarize(
     total = sum(value),
     mean = mean(value),
@@ -179,7 +179,7 @@ tabsetPanel(
 # Don't process entire dataset if showing top 10
 top_products <- reactive({
   # Use slice_max instead of arrange + head
-  sales_data() %>%
+  sales_data() |>
     slice_max(revenue, n = 10)
 })
 
@@ -197,7 +197,7 @@ output$table <- renderDataTable(
 # Wait for user to stop typing
 search_term <- reactive({
   input$search
-}) %>% debounce(500)  # 500ms delay
+}) |> debounce(500)  # 500ms delay
 
 results <- reactive({
   search_database(search_term())
@@ -206,7 +206,7 @@ results <- reactive({
 # Throttle for continuous inputs
 mouse_pos <- reactive({
   c(input$plot_hover$x, input$plot_hover$y)
-}) %>% throttle(100)  # Max once per 100ms
+}) |> throttle(100)  # Max once per 100ms
 ```
 
 ### Async Programming
@@ -390,8 +390,8 @@ result <- dbGetQuery(
 
 # ✅ SAFE: Use dbplyr for complex queries
 library(dplyr)
-result <- tbl(con, "users") %>%
-  filter(id == !!input$user_id) %>%
+result <- tbl(con, "users") |>
+  filter(id == !!input$user_id) |>
   collect()
 ```
 
@@ -513,7 +513,7 @@ output$table <- renderDataTable({
 
 # ✅ GOOD: Filter sensitive columns
 output$table <- renderDataTable({
-  full_user_data %>%
+  full_user_data |>
     select(-email, -password_hash, -ssn, -credit_card)
 })
 ```

@@ -316,7 +316,7 @@ expensive_result <- reactive({
 # ✅ CORRECT: Cache across users
 expensive_result <- reactive({
   complex_analysis(input$params)
-}) %>% bindCache(input$params)  # User 1: slow, Users 2+: instant
+}) |> bindCache(input$params)  # User 1: slow, Users 2+: instant
 ```
 
 ## Testing Pitfalls

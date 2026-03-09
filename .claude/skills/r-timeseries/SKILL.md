@@ -89,17 +89,17 @@ library(feasts)
 library(tidyverse)
 
 # 1. Prepare data
-ts_data <- data %>%
-  mutate(Month = yearmonth(date)) %>%
+ts_data <- data |>
+  mutate(Month = yearmonth(date)) |>
   as_tsibble(index = Month)
 
 # 2. Explore
-ts_data %>% autoplot(value)
-ts_data %>% gg_season(value)
-ts_data %>% gg_tsdisplay(value, plot_type = "partial")
+ts_data |> autoplot(value)
+ts_data |> gg_season(value)
+ts_data |> gg_tsdisplay(value, plot_type = "partial")
 
 # 3. Fit models
-fit <- ts_data %>%
+fit <- ts_data |>
   model(
     mean = MEAN(value),
     naive = NAIVE(value),
@@ -109,17 +109,17 @@ fit <- ts_data %>%
   )
 
 # 4. Check diagnostics
-fit %>% select(arima) %>% gg_tsresiduals()
+fit |> select(arima) |> gg_tsresiduals()
 
 # 5. Compare accuracy
-fit %>% accuracy()
+fit |> accuracy()
 
 # 6. Forecast
-fc <- fit %>% forecast(h = 12)
-fc %>% autoplot(ts_data)
+fc <- fit |> forecast(h = 12)
+fc |> autoplot(ts_data)
 
 # 7. Evaluate
-fc %>% accuracy(test_data)
+fc |> accuracy(test_data)
 ```
 
 ## Model Selection Decision Framework
@@ -152,8 +152,8 @@ fc %>% accuracy(test_data)
 library(tsibble)
 library(lubridate)
 
-ts_data <- data %>%
-  mutate(Month = yearmonth(date_column)) %>%
+ts_data <- data |>
+  mutate(Month = yearmonth(date_column)) |>
   as_tsibble(index = Month, key = group_var)
 
 # Time class functions by frequency
@@ -168,16 +168,16 @@ as_datetime()   # Sub-daily data
 
 ```r
 # Filter
-ts_data %>% filter(condition)
+ts_data |> filter(condition)
 
 # Aggregate
-ts_data %>%
-  index_by(Year = year(Month)) %>%
+ts_data |>
+  index_by(Year = year(Month)) |>
   summarise(total = sum(value))
 
 # Fill gaps
-ts_data %>%
-  fill_gaps() %>%
+ts_data |>
+  fill_gaps() |>
   tidyr::fill(value, .direction = "down")
 
 # Check for gaps
@@ -200,9 +200,9 @@ gg_subseries(ts_data, value)
 gg_tsdisplay(ts_data, value, plot_type = "partial")
 
 # Decomposition
-ts_data %>%
-  model(stl = STL(value)) %>%
-  components() %>%
+ts_data |>
+  model(stl = STL(value)) |>
+  components() |>
   autoplot()
 ```
 
@@ -258,12 +258,12 @@ model(
 ### Residual Diagnostics
 ```r
 # Visual diagnostics
-fit %>%
-  select(model_name) %>%
+fit |>
+  select(model_name) |>
   gg_tsresiduals()
 
 # Ljung-Box test (should be non-significant)
-augment(fit) %>%
+augment(fit) |>
   features(.innov, ljung_box, lag = 24, dof = 0)
 
 # Residuals should be:
@@ -276,18 +276,18 @@ augment(fit) %>%
 ### Model Comparison
 ```r
 # Training set accuracy
-fit %>% accuracy()
+fit |> accuracy()
 
 # Information criteria (lower is better)
-fit %>% glance()  # AIC, AICc, BIC
+fit |> glance()  # AIC, AICc, BIC
 
 # Cross-validation
-ts_cv <- ts_data %>%
+ts_cv <- ts_data |>
   stretch_tsibble(.init = 60, .step = 1)
 
-cv_fit <- ts_cv %>% model(arima = ARIMA(value))
-cv_fc <- cv_fit %>% forecast(h = 12)
-cv_fc %>% accuracy(ts_data)
+cv_fit <- ts_cv |> model(arima = ARIMA(value))
+cv_fc <- cv_fit |> forecast(h = 12)
+cv_fc |> accuracy(ts_data)
 ```
 
 ## Forecast Evaluation Metrics
@@ -299,9 +299,9 @@ cv_fc %>% accuracy(ts_data)
 
 ```r
 # Calculate accuracy
-forecast_results %>%
-  accuracy(actual_data) %>%
-  select(.model, MAE, RMSE, MASE) %>%
+forecast_results |>
+  accuracy(actual_data) |>
+  select(.model, MAE, RMSE, MASE) |>
   arrange(MASE)
 ```
 
@@ -310,27 +310,27 @@ forecast_results %>%
 ### Box-Cox Transformation
 ```r
 # Stabilize variance
-lambda <- ts_data %>%
-  features(value, features = guerrero) %>%
+lambda <- ts_data |>
+  features(value, features = guerrero) |>
   pull(lambda_guerrero)
 
-fit <- ts_data %>%
+fit <- ts_data |>
   model(ARIMA(box_cox(value, lambda)))
 ```
 
 ### Differencing
 ```r
 # Remove trend (first difference)
-ts_data %>% mutate(diff_value = difference(value))
+ts_data |> mutate(diff_value = difference(value))
 
 # Remove seasonality (seasonal difference)
-ts_data %>% mutate(seasonal_diff = difference(value, lag = 12))
+ts_data |> mutate(seasonal_diff = difference(value, lag = 12))
 
 # Determine number of differences needed
-ts_data %>%
+ts_data |>
   features(value, unitroot_ndiffs)  # Non-seasonal
 
-ts_data %>%
+ts_data |>
   features(value, unitroot_nsdiffs) # Seasonal
 ```
 
@@ -343,8 +343,8 @@ gg_season(ts_data, value)
 gg_subseries(ts_data, value)
 
 # Statistical test
-ts_data %>%
-  features(value, feat_stl) %>%
+ts_data |>
+  features(value, feat_stl) |>
   select(seasonal_strength_year)  # > 0.64 suggests strong seasonality
 ```
 
@@ -366,8 +366,8 @@ prophet(value)  # Flexible seasonality
 scan_gaps(ts_data)
 
 # Fill gaps with interpolation
-ts_data %>%
-  fill_gaps() %>%
+ts_data |>
+  fill_gaps() |>
   mutate(value = na.interp(value))
 ```
 
@@ -385,8 +385,8 @@ autoplot(ts_data, value)
 ### Pattern: Structural Breaks
 ```r
 # Split data at break point
-train_data <- ts_data %>% filter(Month < break_date)
-test_data <- ts_data %>% filter(Month >= break_date)
+train_data <- ts_data |> filter(Month < break_date)
+test_data <- ts_data |> filter(Month >= break_date)
 
 # Or use intervention variables in regression
 ```
@@ -480,7 +480,7 @@ library(tidyverse)  # Data manipulation
 
 ### Quick Model Comparison Template
 ```r
-fit <- ts_data %>%
+fit <- ts_data |>
   model(
     naive = NAIVE(value),
     snaive = SNAIVE(value),
@@ -488,10 +488,10 @@ fit <- ts_data %>%
     arima = ARIMA(value)
   )
 
-fit %>% accuracy() %>% arrange(MASE)
-best_model <- fit %>% select(arima)  # Or best performer
-forecast <- best_model %>% forecast(h = 12)
-forecast %>% autoplot(ts_data)
+fit |> accuracy() |> arrange(MASE)
+best_model <- fit |> select(arima)  # Or best performer
+forecast <- best_model |> forecast(h = 12)
+forecast |> autoplot(ts_data)
 ```
 
 ## Integration with Other Skills

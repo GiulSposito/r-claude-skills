@@ -45,7 +45,7 @@ transactions <- tibble(
   product_id = sample(1:500, n_transactions, replace = TRUE),
   quantity = sample(1:5, n_transactions, replace = TRUE),
   unit_price = round(runif(n_transactions, 10, 200), 2)
-) %>%
+) |>
   mutate(
     total_amount = quantity * unit_price,
     # Occasionally missing data
@@ -62,8 +62,8 @@ products <- tibble(
 )
 
 # Returns data (5% return rate)
-returns <- transactions %>%
-  sample_frac(0.05) %>%
+returns <- transactions |>
+  sample_frac(0.05) |>
   transmute(
     return_id = row_number(),
     transaction_id,
@@ -76,16 +76,16 @@ returns <- transactions %>%
 # ============================================================================
 
 # Integrate all data sources
-full_data <- transactions %>%
+full_data <- transactions |>
   # Join customer information
-  left_join(customers, by = "customer_id") %>%
+  left_join(customers, by = "customer_id") |>
   # Join product details
-  left_join(products, by = "product_id") %>%
+  left_join(products, by = "product_id") |>
   # Flag returned transactions
   left_join(
-    returns %>% select(transaction_id, return_amount, return_date),
+    returns |> select(transaction_id, return_amount, return_date),
     by = "transaction_id"
-  ) %>%
+  ) |>
   mutate(
     # Handle missing prices (impute with median by category)
     unit_price = if_else(
@@ -114,8 +114,8 @@ full_data <- transactions %>%
 # Calculate Recency, Frequency, Monetary (RFM) scores
 analysis_date <- max(full_data$transaction_date)
 
-customer_metrics <- full_data %>%
-  group_by(customer_id, signup_date, age, state, segment) %>%
+customer_metrics <- full_data |>
+  group_by(customer_id, signup_date, age, state, segment) |>
   summarise(
     # Recency: days since last purchase
     recency = as.numeric(difftime(analysis_date,
@@ -141,7 +141,7 @@ customer_metrics <- full_data %>%
     last_purchase_date = max(transaction_date),
 
     .groups = "drop"
-  ) %>%
+  ) |>
   mutate(
     # Calculate customer lifetime value (CLV) estimate
     # Simple formula: average order value * purchase frequency * tenure
@@ -181,8 +181,8 @@ customer_metrics <- full_data %>%
 # ============================================================================
 
 # Overall segment summary
-segment_summary <- customer_metrics %>%
-  group_by(customer_segment) %>%
+segment_summary <- customer_metrics |>
+  group_by(customer_segment) |>
   summarise(
     customer_count = n(),
     pct_of_customers = n() / nrow(customer_metrics) * 100,
@@ -193,59 +193,59 @@ segment_summary <- customer_metrics %>%
     avg_recency = mean(recency),
     avg_return_rate = mean(return_rate),
     .groups = "drop"
-  ) %>%
+  ) |>
   arrange(desc(total_revenue))
 
 # Churn risk analysis
-churn_analysis <- customer_metrics %>%
-  group_by(churn_risk, customer_segment) %>%
+churn_analysis <- customer_metrics |>
+  group_by(churn_risk, customer_segment) |>
   summarise(
     n_customers = n(),
     total_revenue_at_risk = sum(monetary),
     avg_previous_frequency = mean(frequency),
     .groups = "drop"
-  ) %>%
-  filter(churn_risk == TRUE) %>%
+  ) |>
+  filter(churn_risk == TRUE) |>
   arrange(desc(total_revenue_at_risk))
 
 # Geographic analysis
-state_performance <- full_data %>%
-  group_by(state) %>%
+state_performance <- full_data |>
+  group_by(state) |>
   summarise(
     total_customers = n_distinct(customer_id),
     total_revenue = sum(net_amount),
     avg_revenue_per_customer = total_revenue / total_customers,
     return_rate = mean(is_returned) * 100,
     .groups = "drop"
-  ) %>%
-  arrange(desc(total_revenue)) %>%
+  ) |>
+  arrange(desc(total_revenue)) |>
   slice_head(n = 10)  # Top 10 states
 
 # ============================================================================
 # STEP 5: Cohort analysis (customer acquisition cohorts)
 # ============================================================================
 
-cohort_analysis <- full_data %>%
+cohort_analysis <- full_data |>
   mutate(
     # Define cohort by signup month
     cohort_month = floor_date(signup_date, "month"),
     # Calculate months since signup for each transaction
     months_since_signup = interval(signup_date, transaction_date) %/% months(1)
-  ) %>%
-  group_by(cohort_month, months_since_signup) %>%
+  ) |>
+  group_by(cohort_month, months_since_signup) |>
   summarise(
     unique_customers = n_distinct(customer_id),
     total_revenue = sum(net_amount),
     avg_revenue_per_customer = total_revenue / unique_customers,
     .groups = "drop"
-  ) %>%
+  ) |>
   # Calculate retention rate relative to month 0
-  group_by(cohort_month) %>%
+  group_by(cohort_month) |>
   mutate(
     cohort_size = first(unique_customers),
     retention_rate = (unique_customers / cohort_size) * 100
-  ) %>%
-  ungroup() %>%
+  ) |>
+  ungroup() |>
   filter(months_since_signup <= 12)  # First year only
 
 # ============================================================================
@@ -253,20 +253,20 @@ cohort_analysis <- full_data %>%
 # ============================================================================
 
 # Find frequently purchased together categories
-category_affinity <- full_data %>%
+category_affinity <- full_data |>
   # Get all transactions with multiple items
-  group_by(transaction_id) %>%
-  filter(n_distinct(category) > 1) %>%
+  group_by(transaction_id) |>
+  filter(n_distinct(category) > 1) |>
   # Create category pairs
   reframe(
     categories = list(unique(category))
-  ) %>%
-  rowwise() %>%
+  ) |>
+  rowwise() |>
   reframe(
     category_pair = combn(categories, 2, simplify = FALSE)
-  ) %>%
-  unnest_wider(category_pair, names_sep = "_") %>%
-  count(category_pair_1, category_pair_2, sort = TRUE, name = "frequency") %>%
+  ) |>
+  unnest_wider(category_pair, names_sep = "_") |>
+  count(category_pair_1, category_pair_2, sort = TRUE, name = "frequency") |>
   slice_head(n = 10)
 
 # ============================================================================
@@ -276,17 +276,17 @@ category_affinity <- full_data %>%
 cat("\n===== CUSTOMER TRANSACTION ANALYSIS SUMMARY =====\n\n")
 
 cat("1. SEGMENT PERFORMANCE:\n")
-print(segment_summary %>% select(customer_segment, customer_count,
+print(segment_summary |> select(customer_segment, customer_count,
                                  pct_of_revenue, avg_clv), n = Inf)
 
 cat("\n2. CHURN RISK SUMMARY:\n")
-print(churn_analysis %>% slice_head(n = 5))
+print(churn_analysis |> slice_head(n = 5))
 
 cat("\n3. TOP PERFORMING STATES:\n")
-print(state_performance %>% slice_head(n = 5))
+print(state_performance |> slice_head(n = 5))
 
 cat("\n4. MOST FREQUENTLY CO-PURCHASED CATEGORIES:\n")
-print(category_affinity %>% slice_head(n = 5))
+print(category_affinity |> slice_head(n = 5))
 
 cat("\n5. KEY METRICS:\n")
 cat(sprintf("  - Total Customers: %d\n", nrow(customer_metrics)))
@@ -364,32 +364,32 @@ core_questions <- tibble(
                          "work_life_balance", "compensation", "recognition",
                          "team_collaboration", "company_values", "resources",
                          "recommendation"), times = n_respondents)
-) %>%
-  left_join(demographics %>% select(respondent_id, tenure_years),
-            by = "respondent_id") %>%
-  rowwise() %>%
+) |>
+  left_join(demographics |> select(respondent_id, tenure_years),
+            by = "respondent_id") |>
+  rowwise() |>
   mutate(
     response = generate_response(0.5, tenure_years, 1)
-  ) %>%
+  ) |>
   select(-tenure_years)
 
 # Manager-specific questions (Q11-Q15) - only for those with managers
-manager_questions <- demographics %>%
-  filter(role_level != "Senior Leader") %>%
-  select(respondent_id, tenure_years) %>%
+manager_questions <- demographics |>
+  filter(role_level != "Senior Leader") |>
+  select(respondent_id, tenure_years) |>
   crossing(tibble(
     question_id = paste0("Q", 11:15),
     question_topic = c("manager_communication", "manager_feedback",
                        "manager_development", "manager_trust", "manager_fairness")
-  )) %>%
-  rowwise() %>%
+  )) |>
+  rowwise() |>
   mutate(
     response = generate_response(0.55, tenure_years, 1)
-  ) %>%
+  ) |>
   select(-tenure_years)
 
 # Combine all responses
-all_responses <- bind_rows(core_questions, manager_questions) %>%
+all_responses <- bind_rows(core_questions, manager_questions) |>
   # Randomly introduce 5% missing data
   mutate(
     response = if_else(runif(n()) < 0.05, NA_integer_, response)
@@ -400,8 +400,8 @@ all_responses <- bind_rows(core_questions, manager_questions) %>%
 # ============================================================================
 
 # Check response completeness
-response_quality <- all_responses %>%
-  group_by(respondent_id) %>%
+response_quality <- all_responses |>
+  group_by(respondent_id) |>
   summarise(
     questions_answered = sum(!is.na(response)),
     questions_total = n(),
@@ -410,8 +410,8 @@ response_quality <- all_responses %>%
   )
 
 # Identify incomplete responses (< 80% completion)
-incomplete_respondents <- response_quality %>%
-  filter(completion_rate < 80) %>%
+incomplete_respondents <- response_quality |>
+  filter(completion_rate < 80) |>
   pull(respondent_id)
 
 cat(sprintf("Found %d respondents with <80%% completion rate\n",
@@ -422,17 +422,17 @@ cat(sprintf("Found %d respondents with <80%% completion rate\n",
 # ============================================================================
 
 # Pivot to wide format for composite score calculation
-responses_wide <- all_responses %>%
-  filter(!respondent_id %in% incomplete_respondents) %>%  # Exclude incomplete
+responses_wide <- all_responses |>
+  filter(!respondent_id %in% incomplete_respondents) |>  # Exclude incomplete
   pivot_wider(
     names_from = question_topic,
     values_from = response,
     id_cols = respondent_id
-  ) %>%
+  ) |>
   left_join(demographics, by = "respondent_id")
 
 # Calculate composite indices
-engagement_scores <- responses_wide %>%
+engagement_scores <- responses_wide |>
   mutate(
     # Overall Engagement Index (mean of core 10 questions)
     engagement_index = rowMeans(
@@ -480,19 +480,19 @@ engagement_scores <- responses_wide %>%
 # ============================================================================
 
 # Overall engagement by segment
-segment_engagement <- engagement_scores %>%
-  group_by(department, role_level) %>%
+segment_engagement <- engagement_scores |>
+  group_by(department, role_level) |>
   summarise(
     n_respondents = n(),
     avg_engagement = mean(engagement_index, na.rm = TRUE),
     pct_favorable = mean(favorable_pct, na.rm = TRUE),
     pct_unfavorable = mean(unfavorable_pct, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
+  ) |>
   arrange(desc(avg_engagement))
 
 # Tenure analysis
-tenure_analysis <- engagement_scores %>%
+tenure_analysis <- engagement_scores |>
   mutate(
     tenure_band = case_when(
       tenure_years < 1 ~ "< 1 year",
@@ -503,8 +503,8 @@ tenure_analysis <- engagement_scores %>%
     ),
     tenure_band = fct_relevel(tenure_band, "< 1 year", "1-3 years",
                               "3-5 years", "5-10 years", "10+ years")
-  ) %>%
-  group_by(tenure_band) %>%
+  ) |>
+  group_by(tenure_band) |>
   summarise(
     n = n(),
     avg_engagement = mean(engagement_index),
@@ -513,8 +513,8 @@ tenure_analysis <- engagement_scores %>%
   )
 
 # Remote status comparison
-remote_comparison <- engagement_scores %>%
-  group_by(remote_status) %>%
+remote_comparison <- engagement_scores |>
+  group_by(remote_status) |>
   summarise(
     n = n(),
     engagement = mean(engagement_index),
@@ -528,44 +528,44 @@ remote_comparison <- engagement_scores %>%
 # ============================================================================
 
 # Calculate correlation of each question with overall engagement
-driver_analysis <- engagement_scores %>%
+driver_analysis <- engagement_scores |>
   select(respondent_id, engagement_index,
-         job_satisfaction:recognition, team_collaboration:recommendation) %>%
+         job_satisfaction:recognition, team_collaboration:recommendation) |>
   pivot_longer(
     cols = -c(respondent_id, engagement_index),
     names_to = "driver",
     values_to = "score"
-  ) %>%
-  group_by(driver) %>%
+  ) |>
+  group_by(driver) |>
   summarise(
     correlation = cor(score, engagement_index, use = "complete.obs"),
     avg_score = mean(score * 20, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
+  ) |>
   arrange(desc(correlation))
 
 # Identify top drivers (highest correlation) and opportunity areas (low score)
-top_drivers <- driver_analysis %>%
-  slice_max(correlation, n = 5) %>%
+top_drivers <- driver_analysis |>
+  slice_max(correlation, n = 5) |>
   mutate(type = "Top Driver")
 
-opportunity_areas <- driver_analysis %>%
-  slice_min(avg_score, n = 5) %>%
+opportunity_areas <- driver_analysis |>
+  slice_min(avg_score, n = 5) |>
   mutate(type = "Opportunity Area")
 
 # ============================================================================
 # STEP 6: Calculate Net Promoter Score (NPS)
 # ============================================================================
 
-nps_summary <- engagement_scores %>%
-  count(nps_category) %>%
+nps_summary <- engagement_scores |>
+  count(nps_category) |>
   mutate(
     pct = n / sum(n) * 100
-  ) %>%
+  ) |>
   pivot_wider(names_from = nps_category, values_from = c(n, pct))
 
 # Calculate overall NPS
-nps_score <- engagement_scores %>%
+nps_score <- engagement_scores |>
   summarise(
     promoters = mean(nps_category == "Promoter", na.rm = TRUE) * 100,
     detractors = mean(nps_category == "Detractor", na.rm = TRUE) * 100,
@@ -586,18 +586,18 @@ cat(sprintf("  - Favorable Response Rate: %.1f%%\n",
 cat(sprintf("  - Net Promoter Score (NPS): %.1f\n", nps_score$nps))
 
 cat("\n2. TOP PERFORMING SEGMENTS:\n")
-print(segment_engagement %>% slice_head(n = 5) %>%
+print(segment_engagement |> slice_head(n = 5) |>
       select(department, role_level, avg_engagement, pct_favorable))
 
 cat("\n3. BOTTOM PERFORMING SEGMENTS:\n")
-print(segment_engagement %>% slice_tail(n = 5) %>%
+print(segment_engagement |> slice_tail(n = 5) |>
       select(department, role_level, avg_engagement, pct_unfavorable))
 
 cat("\n4. KEY DRIVERS OF ENGAGEMENT:\n")
-print(top_drivers %>% select(driver, correlation, avg_score))
+print(top_drivers |> select(driver, correlation, avg_score))
 
 cat("\n5. OPPORTUNITY AREAS (Lowest Scores):\n")
-print(opportunity_areas %>% select(driver, avg_score, correlation))
+print(opportunity_areas |> select(driver, avg_score, correlation))
 
 cat("\n6. ENGAGEMENT BY TENURE:\n")
 print(tenure_analysis)
@@ -640,7 +640,7 @@ sales_data <- crossing(
   date = dates,
   store_id = 1:10,
   product_sku = paste0("SKU", str_pad(1:50, 3, pad = "0"))
-) %>%
+) |>
   mutate(
     # Extract date features
     year = year(date),
@@ -680,7 +680,7 @@ sales_data <- crossing(
 
     # Calculate revenue
     revenue = sales_units * price
-  ) %>%
+  ) |>
   # Introduce realistic data issues
   mutate(
     # Random missing values (2%)
@@ -710,8 +710,8 @@ holidays <- tibble(
 # ============================================================================
 
 # Detect and handle outliers using IQR method
-sales_cleaned <- sales_data %>%
-  group_by(product_sku) %>%
+sales_cleaned <- sales_data |>
+  group_by(product_sku) |>
   mutate(
     # Calculate IQR for outlier detection
     q1 = quantile(sales_units, 0.25, na.rm = TRUE),
@@ -730,13 +730,13 @@ sales_cleaned <- sales_data %>%
       sales_units > upper_bound ~ upper_bound,
       TRUE ~ sales_units
     )
-  ) %>%
+  ) |>
   ungroup()
 
 # Impute missing values using forward fill within product
-sales_cleaned <- sales_cleaned %>%
-  group_by(product_sku, store_id) %>%
-  arrange(date) %>%
+sales_cleaned <- sales_cleaned |>
+  group_by(product_sku, store_id) |>
+  arrange(date) |>
   mutate(
     # Fill missing with previous value, then next value if still missing
     sales_units_clean = coalesce(
@@ -746,7 +746,7 @@ sales_cleaned <- sales_cleaned %>%
       median(sales_units_clean, na.rm = TRUE)
     ),
     revenue = sales_units_clean * price
-  ) %>%
+  ) |>
   ungroup()
 
 cat(sprintf("Outliers detected and handled: %d rows\n",
@@ -757,8 +757,8 @@ cat(sprintf("Outliers detected and handled: %d rows\n",
 # ============================================================================
 
 # Join holiday information
-sales_features <- sales_cleaned %>%
-  left_join(holidays, by = "date") %>%
+sales_features <- sales_cleaned |>
+  left_join(holidays, by = "date") |>
   mutate(
     is_holiday = !is.na(holiday_name),
     # Days before/after major holidays
@@ -788,17 +788,17 @@ sales_features <- sales_cleaned %>%
 
     # Interaction features
     weekend_holiday = is_weekend & is_holiday
-  ) %>%
+  ) |>
   # Add store/product level aggregations
-  group_by(store_id) %>%
+  group_by(store_id) |>
   mutate(
     store_avg_daily_sales = mean(sales_units_clean, na.rm = TRUE)
-  ) %>%
-  group_by(product_sku) %>%
+  ) |>
+  group_by(product_sku) |>
   mutate(
     product_avg_daily_sales = mean(sales_units_clean, na.rm = TRUE),
     product_cv = sd(sales_units_clean, na.rm = TRUE) / mean(sales_units_clean, na.rm = TRUE)
-  ) %>%
+  ) |>
   ungroup()
 
 # ============================================================================
@@ -806,8 +806,8 @@ sales_features <- sales_cleaned %>%
 # ============================================================================
 
 # Daily aggregation (across all stores and products)
-daily_total <- sales_features %>%
-  group_by(date) %>%
+daily_total <- sales_features |>
+  group_by(date) |>
   summarise(
     total_sales = sum(sales_units_clean, na.rm = TRUE),
     total_revenue = sum(revenue, na.rm = TRUE),
@@ -817,9 +817,9 @@ daily_total <- sales_features %>%
   )
 
 # Weekly aggregation
-weekly_summary <- sales_features %>%
-  mutate(week_start = floor_date(date, "week")) %>%
-  group_by(week_start, product_sku) %>%
+weekly_summary <- sales_features |>
+  mutate(week_start = floor_date(date, "week")) |>
+  group_by(week_start, product_sku) |>
   summarise(
     weekly_sales = sum(sales_units_clean, na.rm = TRUE),
     weekly_revenue = sum(revenue, na.rm = TRUE),
@@ -828,7 +828,7 @@ weekly_summary <- sales_features %>%
   )
 
 # Monthly aggregation by product category
-monthly_category <- sales_features %>%
+monthly_category <- sales_features |>
   mutate(
     month_start = floor_date(date, "month"),
     category = case_when(
@@ -837,8 +837,8 @@ monthly_category <- sales_features %>%
       as.integer(str_extract(product_sku, "\\d+")) <= 40 ~ "Home Goods",
       TRUE ~ "Other"
     )
-  ) %>%
-  group_by(month_start, category) %>%
+  ) |>
+  group_by(month_start, category) |>
   summarise(
     monthly_sales = sum(sales_units_clean, na.rm = TRUE),
     monthly_revenue = sum(revenue, na.rm = TRUE),
@@ -851,30 +851,30 @@ monthly_category <- sales_features %>%
 # ============================================================================
 
 # Calculate seasonal indices by month and weekday
-seasonal_patterns <- sales_features %>%
-  group_by(month, weekday) %>%
+seasonal_patterns <- sales_features |>
+  group_by(month, weekday) |>
   summarise(
     avg_sales = mean(sales_units_clean, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
+  ) |>
   mutate(
     overall_avg = mean(avg_sales),
     seasonal_index = avg_sales / overall_avg
   )
 
 # Year-over-year comparison
-yoy_comparison <- sales_features %>%
-  mutate(month_year = floor_date(date, "month")) %>%
-  group_by(month_year) %>%
+yoy_comparison <- sales_features |>
+  mutate(month_year = floor_date(date, "month")) |>
+  group_by(month_year) |>
   summarise(
     monthly_total = sum(sales_units_clean, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
+  ) |>
   mutate(
     year = year(month_year),
     month = month(month_year, label = TRUE),
     yoy_growth = (monthly_total - lag(monthly_total, 12)) / lag(monthly_total, 12) * 100
-  ) %>%
+  ) |>
   filter(year >= 2022)  # Need full previous year for comparison
 
 # ============================================================================
@@ -892,9 +892,9 @@ cat(sprintf("  - Outliers detected: %d (%.2f%%)\n",
             mean(sales_cleaned$is_outlier, na.rm = TRUE) * 100))
 
 cat("\n2. SALES TRENDS:\n")
-print(daily_total %>%
-      mutate(year = year(date)) %>%
-      group_by(year) %>%
+print(daily_total |>
+      mutate(year = year(date)) |>
+      group_by(year) |>
       summarise(
         total_sales = sum(total_sales),
         avg_daily_sales = mean(total_sales),
@@ -902,14 +902,14 @@ print(daily_total %>%
       ))
 
 cat("\n3. STRONGEST SEASONAL PATTERNS:\n")
-print(seasonal_patterns %>%
-      arrange(desc(seasonal_index)) %>%
+print(seasonal_patterns |>
+      arrange(desc(seasonal_index)) |>
       slice_head(n = 5))
 
 cat("\n4. TOP GROWING PRODUCTS (YoY):\n")
-print(yoy_comparison %>%
-      arrange(desc(yoy_growth)) %>%
-      slice_head(n = 5) %>%
+print(yoy_comparison |>
+      arrange(desc(yoy_growth)) |>
+      slice_head(n = 5) |>
       select(month_year, month, yoy_growth))
 
 cat("\n5. FEATURE ENGINEERING SUMMARY:\n")
@@ -918,7 +918,7 @@ cat(sprintf("  - Created %d moving averages\n", 2))
 cat(sprintf("  - Holiday flags: %d days marked\n", sum(sales_features$is_holiday)))
 
 # Final modeling-ready dataset
-model_ready_data <- sales_features %>%
+model_ready_data <- sales_features |>
   select(
     # Identifiers
     date, store_id, product_sku,
@@ -936,7 +936,7 @@ model_ready_data <- sales_features %>%
     yoy_growth, price,
     # Aggregated features
     store_avg_daily_sales, product_avg_daily_sales, product_cv
-  ) %>%
+  ) |>
   # Remove rows with NA in critical lag features (can't model without them)
   filter(date >= as.Date("2022-01-01"))  # Need full year of history
 

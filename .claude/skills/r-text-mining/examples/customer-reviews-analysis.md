@@ -34,12 +34,12 @@ glimpse(reviews)
 summary(reviews)
 
 # Check for missing text
-reviews %>%
-  filter(is.na(text) | text == "") %>%
+reviews |>
+  filter(is.na(text) | text == "") |>
   nrow()
 
 # Create binary sentiment from rating
-reviews <- reviews %>%
+reviews <- reviews |>
   mutate(
     sentiment = case_when(
       rating >= 4 ~ "positive",
@@ -57,16 +57,16 @@ ggplot(reviews, aes(rating)) +
   labs(title = "Rating Distribution", x = "Rating", y = "Count")
 
 # Sentiment over time
-reviews %>%
-  count(month = floor_date(date, "month"), sentiment) %>%
+reviews |>
+  count(month = floor_date(date, "month"), sentiment) |>
   ggplot(aes(month, n, fill = sentiment)) +
   geom_col(position = "fill") +
   scale_fill_manual(values = c("red", "gray", "green")) +
   labs(title = "Sentiment Trend Over Time", y = "Proportion")
 
 # Text length distribution
-reviews %>%
-  mutate(text_length = str_length(text)) %>%
+reviews |>
+  mutate(text_length = str_length(text)) |>
   ggplot(aes(text_length)) +
   geom_histogram(bins = 50, fill = "steelblue") +
   labs(title = "Review Length Distribution", x = "Characters", y = "Count")
@@ -74,13 +74,13 @@ reviews %>%
 # 3. TOKENIZATION ----
 
 # Tokenize to tidy format
-tidy_reviews <- reviews %>%
+tidy_reviews <- reviews |>
   unnest_tokens(word, text)
 
 # Most common words (before cleaning)
-tidy_reviews %>%
-  count(word, sort = TRUE) %>%
-  slice_head(n = 20) %>%
+tidy_reviews |>
+  count(word, sort = TRUE) |>
+  slice_head(n = 20) |>
   ggplot(aes(n, reorder(word, n))) +
   geom_col(fill = "steelblue") +
   labs(title = "Top 20 Words (Raw)", x = "Frequency", y = NULL)
@@ -88,15 +88,15 @@ tidy_reviews %>%
 # 4. TEXT CLEANING ----
 
 # Remove stop words and clean
-tidy_reviews_clean <- tidy_reviews %>%
-  anti_join(stop_words, by = "word") %>%
-  filter(!str_detect(word, "\\d+")) %>%  # Remove numbers
-  filter(nchar(word) >= 3) %>%           # Remove short words
+tidy_reviews_clean <- tidy_reviews |>
+  anti_join(stop_words, by = "word") |>
+  filter(!str_detect(word, "\\d+")) |>  # Remove numbers
+  filter(nchar(word) >= 3) |>           # Remove short words
   filter(!word %in% c("product", "item", "bought", "purchase"))  # Custom stops
 
 # Most common words (after cleaning)
-top_words <- tidy_reviews_clean %>%
-  count(word, sort = TRUE) %>%
+top_words <- tidy_reviews_clean |>
+  count(word, sort = TRUE) |>
   slice_head(n = 20)
 
 ggplot(top_words, aes(n, reorder(word, n))) +
@@ -106,22 +106,22 @@ ggplot(top_words, aes(n, reorder(word, n))) +
 # 5. SENTIMENT ANALYSIS ----
 
 # Sentiment using Bing lexicon
-word_sentiment <- tidy_reviews_clean %>%
+word_sentiment <- tidy_reviews_clean |>
   inner_join(get_sentiments("bing"), by = "word")
 
 # Overall sentiment distribution
-word_sentiment %>%
-  count(sentiment) %>%
+word_sentiment |>
+  count(sentiment) |>
   ggplot(aes(sentiment, n, fill = sentiment)) +
   geom_col() +
   scale_fill_manual(values = c("red", "green")) +
   labs(title = "Overall Word Sentiment", y = "Word Count")
 
 # Top positive/negative words
-word_sentiment %>%
-  count(word, sentiment, sort = TRUE) %>%
-  group_by(sentiment) %>%
-  slice_head(n = 15) %>%
+word_sentiment |>
+  count(word, sentiment, sort = TRUE) |>
+  group_by(sentiment) |>
+  slice_head(n = 15) |>
   ggplot(aes(n, reorder_within(word, n, sentiment), fill = sentiment)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~sentiment, scales = "free") +
@@ -130,16 +130,16 @@ word_sentiment %>%
   labs(title = "Top Sentiment Words", x = "Frequency", y = NULL)
 
 # Sentiment scores per review
-review_sentiment <- word_sentiment %>%
-  count(review_id, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+review_sentiment <- word_sentiment |>
+  count(review_id, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
   mutate(
     sentiment_score = positive - negative,
     sentiment_ratio = positive / (positive + negative)
   )
 
 # Join back to original data
-reviews_with_sentiment <- reviews %>%
+reviews_with_sentiment <- reviews |>
   left_join(review_sentiment, by = "review_id")
 
 # Compare sentiment score vs rating
@@ -152,7 +152,7 @@ ggplot(reviews_with_sentiment, aes(factor(rating), sentiment_score)) +
 cor(reviews_with_sentiment$rating, reviews_with_sentiment$sentiment_score, use = "complete.obs")
 
 # Mismatched reviews (high rating but negative sentiment)
-mismatched <- reviews_with_sentiment %>%
+mismatched <- reviews_with_sentiment |>
   filter((rating >= 4 & sentiment_score < -5) | (rating <= 2 & sentiment_score > 5))
 
 cat("Mismatched reviews:", nrow(mismatched), "/", nrow(reviews), "\n")
@@ -160,19 +160,19 @@ cat("Mismatched reviews:", nrow(mismatched), "/", nrow(reviews), "\n")
 # 6. BIGRAM ANALYSIS ----
 
 # Extract bigrams
-review_bigrams <- reviews %>%
-  unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
-  separate(bigram, into = c("word1", "word2"), sep = " ", remove = FALSE)
+review_bigrams <- reviews |>
+  unnest_tokens(bigram, text, token = "ngrams", n = 2) |>
+  separate_wider_delim(bigram, delim = " ", names = c("word1", "word2"), cols_remove = FALSE)
 
 # Common bigrams (after removing stop words)
-bigrams_clean <- review_bigrams %>%
+bigrams_clean <- review_bigrams |>
   filter(!word1 %in% stop_words$word,
-         !word2 %in% stop_words$word) %>%
+         !word2 %in% stop_words$word) |>
   count(bigram, sort = TRUE)
 
 # Top bigrams
-bigrams_clean %>%
-  slice_head(n = 20) %>%
+bigrams_clean |>
+  slice_head(n = 20) |>
   ggplot(aes(n, reorder(bigram, n))) +
   geom_col(fill = "purple") +
   labs(title = "Top 20 Bigrams", x = "Frequency", y = NULL)
@@ -180,15 +180,15 @@ bigrams_clean %>%
 # Bigrams with negation
 negation_words <- c("not", "no", "never", "without")
 
-negated_words <- review_bigrams %>%
-  filter(word1 %in% negation_words) %>%
-  inner_join(get_sentiments("afinn"), by = c("word2" = "word")) %>%
-  count(word1, word2, value, sort = TRUE) %>%
+negated_words <- review_bigrams |>
+  filter(word1 %in% negation_words) |>
+  inner_join(get_sentiments("afinn"), by = c("word2" = "word")) |>
+  count(word1, word2, value, sort = TRUE) |>
   mutate(contribution = n * value * -1)  # Flip sentiment
 
 # Most impactful negations
-negated_words %>%
-  slice_max(abs(contribution), n = 20) %>%
+negated_words |>
+  slice_max(abs(contribution), n = 20) |>
   ggplot(aes(contribution, reorder(paste(word1, word2), contribution))) +
   geom_col() +
   labs(title = "Sentiment Contribution of Negated Words", x = "Contribution", y = NULL)
@@ -196,15 +196,15 @@ negated_words %>%
 # 7. TOPIC MODELING (LDA) ----
 
 # Prepare for LDA
-review_dtm <- tidy_reviews_clean %>%
-  count(review_id, word) %>%
+review_dtm <- tidy_reviews_clean |>
+  count(review_id, word) |>
   cast_dtm(review_id, word, n)
 
 # Choose k (number of topics)
 # Try multiple values
 k_values <- c(3, 5, 8, 10)
 
-lda_models <- tibble(k = k_values) %>%
+lda_models <- tibble(k = k_values) |>
   mutate(
     model = map(k, ~LDA(review_dtm, k = .x, control = list(seed = 123))),
     perplexity = map_dbl(model, perplexity, newdata = review_dtm)
@@ -224,14 +224,14 @@ lda_final <- LDA(review_dtm, k = k_final, control = list(seed = 123))
 topics <- tidy(lda_final, matrix = "beta")
 
 # Top terms per topic
-top_terms_per_topic <- topics %>%
-  group_by(topic) %>%
-  slice_max(beta, n = 10) %>%
+top_terms_per_topic <- topics |>
+  group_by(topic) |>
+  slice_max(beta, n = 10) |>
   ungroup()
 
 # Visualize topics
-top_terms_per_topic %>%
-  mutate(term = reorder_within(term, beta, topic)) %>%
+top_terms_per_topic |>
+  mutate(term = reorder_within(term, beta, topic)) |>
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~topic, scales = "free", ncol = 2) +
@@ -249,31 +249,31 @@ topic_labels <- tribble(
 )
 
 # Document-topic assignments
-doc_topics <- tidy(lda_final, matrix = "gamma") %>%
+doc_topics <- tidy(lda_final, matrix = "gamma") |>
   left_join(topic_labels, by = "topic")
 
 # Dominant topic per review
-review_topics <- doc_topics %>%
-  group_by(document) %>%
-  slice_max(gamma, n = 1) %>%
-  ungroup() %>%
+review_topics <- doc_topics |>
+  group_by(document) |>
+  slice_max(gamma, n = 1) |>
+  ungroup() |>
   mutate(review_id = as.numeric(document))
 
 # Join with original data
-reviews_with_topics <- reviews %>%
+reviews_with_topics <- reviews |>
   left_join(review_topics, by = "review_id")
 
 # Topic distribution
-reviews_with_topics %>%
-  count(label) %>%
+reviews_with_topics |>
+  count(label) |>
   ggplot(aes(n, reorder(label, n))) +
   geom_col(fill = "orange") +
   labs(title = "Review Count by Topic", x = "Count", y = "Topic")
 
 # Topic by sentiment
-reviews_with_topics %>%
-  filter(!is.na(label)) %>%
-  count(label, sentiment) %>%
+reviews_with_topics |>
+  filter(!is.na(label)) |>
+  count(label, sentiment) |>
   ggplot(aes(label, n, fill = sentiment)) +
   geom_col(position = "fill") +
   coord_flip() +
@@ -284,9 +284,9 @@ reviews_with_topics %>%
 
 # Goal: Predict sentiment from text
 # Prepare data
-classification_data <- reviews %>%
-  filter(sentiment != "neutral") %>%  # Binary classification
-  select(review_id, text, sentiment) %>%
+classification_data <- reviews |>
+  filter(sentiment != "neutral") |>  # Binary classification
+  select(review_id, text, sentiment) |>
   mutate(sentiment = factor(sentiment))
 
 # Train/test split
@@ -296,33 +296,33 @@ train_data <- training(data_split)
 test_data <- testing(data_split)
 
 # Check balance
-train_data %>% count(sentiment)
+train_data |> count(sentiment)
 
 # Text recipe
-text_recipe <- recipe(sentiment ~ text, data = train_data) %>%
-  step_tokenize(text) %>%
-  step_stopwords(text) %>%
-  step_tokenfilter(text, max_tokens = 1000, min_times = 5) %>%
-  step_tfidf(text) %>%
+text_recipe <- recipe(sentiment ~ text, data = train_data) |>
+  step_tokenize(text) |>
+  step_stopwords(text) |>
+  step_tokenfilter(text, max_tokens = 1000, min_times = 5) |>
+  step_tfidf(text) |>
   step_normalize(all_predictors())
 
 # Model specs
-nb_spec <- naive_Bayes() %>%
-  set_engine("naivebayes") %>%
+nb_spec <- naive_Bayes() |>
+  set_engine("naivebayes") |>
   set_mode("classification")
 
-svm_spec <- svm_linear() %>%
-  set_engine("LiblineaR") %>%
+svm_spec <- svm_linear() |>
+  set_engine("LiblineaR") |>
   set_mode("classification")
 
-rf_spec <- rand_forest(trees = 500) %>%
-  set_engine("ranger") %>%
+rf_spec <- rand_forest(trees = 500) |>
+  set_engine("ranger") |>
   set_mode("classification")
 
 # Workflows
-nb_wf <- workflow() %>% add_recipe(text_recipe) %>% add_model(nb_spec)
-svm_wf <- workflow() %>% add_recipe(text_recipe) %>% add_model(svm_spec)
-rf_wf <- workflow() %>% add_recipe(text_recipe) %>% add_model(rf_spec)
+nb_wf <- workflow() |> add_recipe(text_recipe) |> add_model(nb_spec)
+svm_wf <- workflow() |> add_recipe(text_recipe) |> add_model(svm_spec)
+rf_wf <- workflow() |> add_recipe(text_recipe) |> add_model(rf_spec)
 
 # Cross-validation
 cv_folds <- vfold_cv(train_data, v = 5, strata = sentiment)
@@ -334,14 +334,14 @@ rf_fit <- fit_resamples(rf_wf, resamples = cv_folds)
 
 # Compare
 model_comparison <- bind_rows(
-  collect_metrics(nb_fit) %>% mutate(model = "Naive Bayes"),
-  collect_metrics(svm_fit) %>% mutate(model = "SVM"),
-  collect_metrics(rf_fit) %>% mutate(model = "Random Forest")
+  collect_metrics(nb_fit) |> mutate(model = "Naive Bayes"),
+  collect_metrics(svm_fit) |> mutate(model = "SVM"),
+  collect_metrics(rf_fit) |> mutate(model = "Random Forest")
 )
 
 # Best model
-model_comparison %>%
-  filter(.metric == "accuracy") %>%
+model_comparison |>
+  filter(.metric == "accuracy") |>
   arrange(desc(mean))
 
 # Final evaluation
@@ -351,12 +351,12 @@ final_fit <- last_fit(svm_wf, data_split)  # SVM was best
 collect_metrics(final_fit)
 
 # Confusion matrix
-collect_predictions(final_fit) %>%
+collect_predictions(final_fit) |>
   conf_mat(truth = sentiment, estimate = .pred_class)
 
 # ROC curve
-collect_predictions(final_fit) %>%
-  roc_curve(truth = sentiment, .pred_positive) %>%
+collect_predictions(final_fit) |>
+  roc_curve(truth = sentiment, .pred_positive) |>
   autoplot() +
   labs(title = "ROC Curve - Sentiment Classification")
 
@@ -365,33 +365,33 @@ collect_predictions(final_fit) %>%
 cat("\\n=== ANALYSIS SUMMARY ===\\n")
 
 # Overall sentiment
-sentiment_summary <- reviews %>%
-  count(sentiment) %>%
+sentiment_summary <- reviews |>
+  count(sentiment) |>
   mutate(pct = scales::percent(n / sum(n)))
 
 cat("\\nSentiment Distribution:\\n")
 print(sentiment_summary)
 
 # Topic summary
-topic_summary <- reviews_with_topics %>%
-  filter(!is.na(label)) %>%
-  count(label, sort = TRUE) %>%
+topic_summary <- reviews_with_topics |>
+  filter(!is.na(label)) |>
+  count(label, sort = TRUE) |>
   mutate(pct = scales::percent(n / sum(n)))
 
 cat("\\nMain Topics:\\n")
 print(topic_summary)
 
 # Common complaints (negative reviews + topic)
-complaints <- reviews_with_topics %>%
-  filter(sentiment == "negative", !is.na(label)) %>%
+complaints <- reviews_with_topics |>
+  filter(sentiment == "negative", !is.na(label)) |>
   count(label, sort = TRUE)
 
 cat("\\nMain Complaint Areas:\\n")
 print(complaints)
 
 # Positive highlights
-highlights <- reviews_with_topics %>%
-  filter(sentiment == "positive", !is.na(label)) %>%
+highlights <- reviews_with_topics |>
+  filter(sentiment == "positive", !is.na(label)) |>
   count(label, sort = TRUE)
 
 cat("\\nPositive Highlights:\\n")
@@ -409,9 +409,9 @@ cat("\\n=== BUSINESS RECOMMENDATIONS ===\\n")
 
 # 1. Priority issues
 cat("\\n1. PRIORITY ISSUES (from negative reviews):\\n")
-negative_topics <- reviews_with_topics %>%
-  filter(sentiment == "negative", !is.na(label)) %>%
-  count(label, sort = TRUE) %>%
+negative_topics <- reviews_with_topics |>
+  filter(sentiment == "negative", !is.na(label)) |>
+  count(label, sort = TRUE) |>
   slice_head(n = 3)
 
 for (i in 1:nrow(negative_topics)) {
@@ -421,9 +421,9 @@ for (i in 1:nrow(negative_topics)) {
 
 # 2. Maintain strengths
 cat("\\n2. MAINTAIN STRENGTHS (from positive reviews):\\n")
-positive_topics <- reviews_with_topics %>%
-  filter(sentiment == "positive", !is.na(label)) %>%
-  count(label, sort = TRUE) %>%
+positive_topics <- reviews_with_topics |>
+  filter(sentiment == "positive", !is.na(label)) |>
+  count(label, sort = TRUE) |>
   slice_head(n = 3)
 
 for (i in 1:nrow(positive_topics)) {
@@ -433,9 +433,9 @@ for (i in 1:nrow(positive_topics)) {
 
 # 3. Key words to address
 cat("\\n3. CRITICAL NEGATIVE WORDS TO ADDRESS:\\n")
-critical_words <- word_sentiment %>%
-  filter(sentiment == "negative") %>%
-  count(word, sort = TRUE) %>%
+critical_words <- word_sentiment |>
+  filter(sentiment == "negative") |>
+  count(word, sort = TRUE) |>
   slice_head(n = 5)
 
 for (i in 1:nrow(critical_words)) {
@@ -459,7 +459,7 @@ write_csv(reviews_with_topics, "reviews_with_topics_and_sentiment.csv")
 
 # Save models
 saveRDS(lda_final, "topic_model.rds")
-saveRDS(final_fit %>% extract_workflow(), "sentiment_classifier.rds")
+saveRDS(final_fit |> extract_workflow(), "sentiment_classifier.rds")
 
 cat("\\nAnalysis complete! Files saved:\\n")
 cat("- sentiment_summary.csv\\n")

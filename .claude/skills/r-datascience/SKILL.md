@@ -112,16 +112,16 @@ summary(data)
 skimr::skim(data)
 
 # 3. Wrangle
-clean_data <- data %>%
-  filter(!is.na(key_var)) %>%
+clean_data <- data |>
+  filter(!is.na(key_var)) |>
   mutate(
     new_var = case_when(
       condition1 ~ value1,
       condition2 ~ value2,
       TRUE ~ default
     )
-  ) %>%
-  group_by(group_var) %>%
+  ) |>
+  group_by(group_var) |>
   summarize(
     mean_val = mean(numeric_var),
     n = n()
@@ -147,20 +147,20 @@ train <- training(data_split)
 test <- testing(data_split)
 
 # 2. Recipe
-rec <- recipe(outcome ~ ., data = train) %>%
-  step_impute_median(all_numeric_predictors()) %>%
-  step_dummy(all_nominal_predictors()) %>%
-  step_normalize(all_numeric_predictors()) %>%
+rec <- recipe(outcome ~ ., data = train) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors())
 
 # 3. Model specification
-rf_spec <- rand_forest(trees = 1000, mtry = tune(), min_n = tune()) %>%
-  set_engine("ranger") %>%
+rf_spec <- rand_forest(trees = 1000, mtry = tune(), min_n = tune()) |>
+  set_engine("ranger") |>
   set_mode("classification")
 
 # 4. Workflow
-rf_wf <- workflow() %>%
-  add_recipe(rec) %>%
+rf_wf <- workflow() |>
+  add_recipe(rec) |>
   add_model(rf_spec)
 
 # 5. Tuning
@@ -181,7 +181,7 @@ final_fit <- last_fit(final_wf, data_split)
 
 # 7. Evaluate
 collect_metrics(final_fit)
-collect_predictions(final_fit) %>%
+collect_predictions(final_fit) |>
   conf_mat(truth = outcome, estimate = .pred_class)
 ```
 
@@ -214,20 +214,20 @@ predict(model, newdata = new_data, interval = "prediction")
 
 ```r
 # Select columns
-data %>% select(var1, var2, starts_with("prefix"))
+data |>select(var1, var2, starts_with("prefix"))
 
 # Filter rows
-data %>% filter(var1 > 10, var2 %in% c("A", "B"))
+data |>filter(var1 > 10, var2 %in% c("A", "B"))
 
 # Create/modify columns
-data %>% mutate(
+data |>mutate(
   new_var = var1 + var2,
   var1_scaled = scale(var1)
 )
 
 # Grouped operations
-data %>%
-  group_by(group) %>%
+data |>
+  group_by(group) |>
   summarize(
     mean_val = mean(value),
     sd_val = sd(value),
@@ -235,17 +235,17 @@ data %>%
   )
 
 # Arrange rows
-data %>% arrange(desc(var1))
+data |>arrange(desc(var1))
 
 # Count occurrences
-data %>% count(category, sort = TRUE)
+data |>count(category, sort = TRUE)
 ```
 
 ### tidyr: Reshaping
 
 ```r
 # Pivot longer (wide to long)
-data %>%
+data |>
   pivot_longer(
     cols = starts_with("year_"),
     names_to = "year",
@@ -253,20 +253,20 @@ data %>%
   )
 
 # Pivot wider (long to wide)
-data %>%
+data |>
   pivot_wider(
     names_from = category,
     values_from = value
   )
 
 # Separate columns
-data %>% separate(col, into = c("part1", "part2"), sep = "_")
+data |>separate_wider_delim(col, delim = "_", names = c("part1", "part2"))
 
 # Unite columns
-data %>% unite(new_col, col1, col2, sep = "_")
+data |>unite(new_col, col1, col2, sep = "_")
 
 # Nesting
-data %>%
+data |>
   nest(data = c(col1, col2))
 ```
 
@@ -307,33 +307,33 @@ train <- training(split)
 test <- testing(split)
 
 # 2. Preprocessing recipe
-rec <- recipe(outcome ~ ., data = train) %>%
+rec <- recipe(outcome ~ ., data = train) |>
   # Missing values
-  step_impute_knn(all_numeric_predictors()) %>%
-  step_unknown(all_nominal_predictors()) %>%
+  step_impute_knn(all_numeric_predictors()) |>
+  step_unknown(all_nominal_predictors()) |>
 
   # Encoding
-  step_dummy(all_nominal_predictors(), one_hot = FALSE) %>%
+  step_dummy(all_nominal_predictors(), one_hot = FALSE) |>
 
   # Transformations
-  step_normalize(all_numeric_predictors()) %>%
-  step_YeoJohnson(all_numeric_predictors()) %>%
+  step_normalize(all_numeric_predictors()) |>
+  step_YeoJohnson(all_numeric_predictors()) |>
 
   # Feature selection
-  step_zv(all_predictors()) %>%
+  step_zv(all_predictors()) |>
   step_corr(all_numeric_predictors(), threshold = 0.9)
 
 # 3. Model specifications
 models <- list(
-  logistic = logistic_reg() %>% set_engine("glm"),
-  ridge = logistic_reg(penalty = tune(), mixture = 0) %>% set_engine("glmnet"),
-  lasso = logistic_reg(penalty = tune(), mixture = 1) %>% set_engine("glmnet"),
-  rf = rand_forest(trees = 1000, mtry = tune()) %>% set_engine("ranger"),
-  xgb = boost_tree(trees = tune(), tree_depth = tune()) %>% set_engine("xgboost")
+  logistic = logistic_reg() |>set_engine("glm"),
+  ridge = logistic_reg(penalty = tune(), mixture = 0) |>set_engine("glmnet"),
+  lasso = logistic_reg(penalty = tune(), mixture = 1) |>set_engine("glmnet"),
+  rf = rand_forest(trees = 1000, mtry = tune()) |>set_engine("ranger"),
+  xgb = boost_tree(trees = tune(), tree_depth = tune()) |>set_engine("xgboost")
 )
 
 # 4. Workflows
-workflows <- map(models, ~workflow() %>% add_recipe(rec) %>% add_model(.x))
+workflows <- map(models, ~workflow() |>add_recipe(rec) |>add_model(.x))
 
 # 5. Cross-validation
 cv_folds <- vfold_cv(train, v = 10, strata = outcome)
@@ -352,8 +352,8 @@ tune_results <- map(workflows[2:5], ~{
 compare_models <- map_df(tune_results, show_best, n = 1, .id = "model")
 
 # 8. Finalize best
-best_model_name <- compare_models %>% slice_max(mean) %>% pull(model)
-best_params <- tune_results[[best_model_name]] %>% select_best(metric = "roc_auc")
+best_model_name <- compare_models |>slice_max(mean) |>pull(model)
+best_params <- tune_results[[best_model_name]] |>select_best(metric = "roc_auc")
 final_wf <- finalize_workflow(workflows[[best_model_name]], best_params)
 
 # 9. Final fit

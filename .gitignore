@@ -39,7 +39,7 @@
 /*_files/
 
 # pkgdown site
-docs/
+# docs/ - COMMENTED OUT to allow project documentation
 /doc/
 /Meta/
 

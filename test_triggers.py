@@ -385,6 +385,37 @@ TRIGGER_TESTS = {
             "Write a bash script",
         ],
     },
+    "quarto": {
+        "positive": [
+            "Crie um relatório com quarto",
+            "Create a quarto report with R",
+            "Preciso fazer um quarto dashboard",
+            "Build a dashboard with quarto",
+            "Como criar uma apresentação quarto?",
+            "Make a quarto presentation",
+            "Quero publicar um site com quarto",
+            "Set up a quarto website",
+            "Renderizar documento quarto",
+            "Render this quarto document",
+            "Como usar quarto com R?",
+            "Working with .qmd files",
+        ],
+        "context": [
+            "library(tidyverse)\n# Create a quarto report analyzing this data",
+            "I need to create reproducible research documents",
+            "How do I make interactive dashboards with R?",
+            "arquivo.qmd - what can I do with this?",
+            "Data storytelling with R visualizations",
+            "Scientific writing with computational content",
+        ],
+        "negative": [
+            "Create a Jupyter notebook",
+            "R Markdown document",
+            "Python quarto setup",
+            "Julia quarto configuration",
+            "Streamlit dashboard",
+        ],
+    },
 }
 
 
@@ -456,7 +487,7 @@ def detect_skills_in_response(response: str) -> List[str]:
         "r-timeseries", "r-text-mining", "r-performance",
         "r-package-development", "r-oop", "r-style-guide",
         "tdd-workflow", "dm-relational", "rlang-patterns",
-        "skillMaker"
+        "skillMaker", "quarto"
     ]
 
     # Check for skill name mentions (exact match or in context)
@@ -466,6 +497,7 @@ def detect_skills_in_response(response: str) -> List[str]:
     skill_exclusions = {
         "r-bayes": ["pymc3", "pymc", "pyro", "turing.jl", "python bayesian"],
         "r-text-mining": ["spacy", "nltk", "textblob", "python nlp"],
+        "quarto": ["python quarto", "julia quarto", "quarto python", "quarto julia"],
     }
 
     for skill in all_skills:
@@ -503,6 +535,7 @@ def detect_skills_in_response(response: str) -> List[str]:
             "dm-relational": ["dm package", "pacote dm", "relational data", "dados relacionais", "primary key", "chave primária", "foreign key", "chave estrangeira", "data model", "modelo de dados", "dm_from_data_frames", "dm_add_pk", "dm_add_fk", "dm_draw", "dm_flatten", "dm_filter", "dm_zoom_to", "database schema", "esquema de banco", "esquema de dados", "multi-table", "múltiplas tabelas", "tabelas relacionadas", "relate tables", "relacionar tabelas", "visualize schema", "visualizar esquema", "create data model", "criar modelo", "work with related data", "trabalhar com dados relacionados", "multiple related tables", "várias tabelas relacionadas", "referential integrity", "integridade referencial", "library(dm)", "my_dm <-", "dm(", "add relationships", "adicionar relações"],
             "rlang-patterns": ["tidy evaluation", "avaliação tidy", "rlang", "metaprogramming in r", "metaprogramming em r", "metaprogramação", "metaprogramação em r", "data-masking", "data masking", "mascaramento de dados", "embrace", "embrace operator", "operador embrace", "{{", "enquo", "!!", "!!!", "injection", "injeção", "inject", "injetar", "dynamic dots", "...", "nse", "non-standard evaluation", "avaliação não padrão", "avaliação não-padrão", "quo", "quos", "sym", "syms", "data_sym", "data_syms", ".data", ".env", "pronouns", "pronomes", "defuse", "defusing", "write functions with tidy eval", "escrever funções com tidy eval", "funções com tidy eval", "usar enquo", "use enquo", "usar embrace", "use embrace", "usar !!", "use !!", "usar !!!", "use !!!", "forward arguments", "encaminhar argumentos", "write function with dplyr", "escrever função com dplyr", "function that uses dplyr", "função que usa dplyr", "function with tidyverse", "função com tidyverse", "write function using tidyverse", "escrever função usando tidyverse", "create function with dplyr verbs", "criar função com verbos dplyr", "function using data-masking", "função usando data-masking"],
             "skillMaker": ["create skill", "skill maker", "criar skill", "novo skill", "new skill", "custom skill", "build skill", "generate skill", "skill generator", "skill development", "skill creation", "skill template", "skill structure", "skill patterns", "claude code skill", "skill personalizado", "claude skill", "skillmaker", "generate a skill", "build a claude", "create a skillmaker", "make a skill"],
+            "quarto": ["quarto report", "quarto dashboard", "quarto presentation", "quarto slides", "quarto website", "quarto book", "quarto blog", "criar relatório", "criar relatorio", "criar dashboard", "criar apresentação", "criar apresentacao", "apresentação quarto", "apresentacao quarto", "site quarto", "blog quarto", "livro quarto", "documento quarto", "render quarto", "renderizar quarto", "publicar quarto", "publish quarto", ".qmd file", "arquivo qmd", ".qmd", "reproducible research", "pesquisa reproduzível", "data storytelling", "storytelling with r", "interactive report", "relatório interativo", "relatorio interativo", "scientific writing with r", "scientific writing with computational", "escrita científica", "reports with r", "relatórios com r", "relatorios com r", "dashboards with r", "presentations with r", "apresentações com r", "apresentacoes com r", "websites with r", "books with r", "livros com r", "revealjs", "quarto format", "formato quarto", "quarto publish", "quarto render", "working with quarto", "trabalhando com quarto", "using quarto", "usando quarto", "quarto in r", "quarto com r", "quarto with r", "quarto e r", "computational content"],
         }
 
         if skill in skill_indicators:

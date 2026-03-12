@@ -1,17 +1,17 @@
 # R Programming Skills for Claude Code
 
-A comprehensive collection of Claude Code skills for R programming, data science, and statistical computing. Transform Claude into an expert R data scientist with **18 production-ready skills** achieving **100% detection accuracy**.
+A comprehensive collection of Claude Code skills for R programming, data science, and statistical computing. Transform Claude into an expert R data scientist with **19 production-ready skills** achieving **100% detection accuracy**.
 
 ## 🎯 Overview
 
-This repository contains **18 production-ready skills** that enhance Claude Code's capabilities for complete data science workflows in R. From data wrangling to machine learning, reproducible research to interactive dashboards, these skills provide expert guidance with **perfect detection accuracy**.
+This repository contains **19 production-ready skills** that enhance Claude Code's capabilities for complete data science workflows in R. From data wrangling to machine learning, reproducible research to interactive dashboards, these skills provide expert guidance with **perfect detection accuracy**.
 
 ### 🏆 Quality Metrics
 
 ```
 ✅ 100% Recall - Never misses a relevant query
 ✅ 100% Precision - Zero false activations
-✅ 18/18 Skills at 100% - Complete perfection
+✅ 19/19 Skills at 100% - Complete perfection
 ✅ 251 Test Cases - All passing
 ✅ Bilingual Support - Portuguese + English
 ```
@@ -24,10 +24,10 @@ This repository contains **18 production-ready skills** that enhance Claude Code
 - r-datascience, tidyverse-expert, tidyverse-patterns, ggplot2, dm-relational
 
 **Publishing & Communication** (reports, dashboards, presentations)
-- **quarto** ⭐ NEW
+- quarto
 
-**Specialized Analysis** (ML, time series, text, Bayesian)
-- r-tidymodels, r-timeseries, r-text-mining, r-bayes
+**Specialized Analysis** (ML, time series, text, Bayesian, feature engineering)
+- r-tidymodels, **r-feature-engineering** ⭐ NEW, r-timeseries, r-text-mining, r-bayes
 
 **Advanced R** (performance, OOP, packages, metaprogramming)
 - r-performance, r-oop, r-package-development, rlang-patterns
@@ -62,7 +62,7 @@ This repository contains **18 production-ready skills** that enhance Claude Code
 
 [→ See complete documentation](docs/)
 
-## 📦 Available Skills (18 Total)
+## 📦 Available Skills (19 Total)
 
 All skills achieve **100% recall and 100% precision** on comprehensive test suites.
 
@@ -101,6 +101,16 @@ All skills achieve **100% recall and 100% precision** on comprehensive test suit
   - Complete ML workflows (recipes, models, tuning)
   - Gradient boosting, random forests, ensembles
   - 100% recall on ML queries
+
+- **[r-feature-engineering](/.claude/skills/r-feature-engineering/)** ⭐ NEW - Strategic feature engineering
+  - Categorical encoding methods (dummy, likelihood, embeddings, hashing)
+  - Numeric transformations (Box-Cox, Yeo-Johnson, PCA, splines)
+  - Interaction detection (4 systematic approaches)
+  - Feature selection (filter, wrapper, embedded methods)
+  - Missing data strategies (MCAR/MAR/MNAR handling)
+  - Based on "Feature Engineering and Selection" by Kuhn & Johnson
+  - 11 files, 6,568 lines of strategic guidance
+  - Bilingual support with quantified case studies
 
 - **[r-bayes](/.claude/skills/r-bayes/)** - Bayesian inference with brms
   - Multilevel models, priors, diagnostics
@@ -262,12 +272,13 @@ library(tidyverse)  # Auto-triggers r-datascience skill
 ## 🏗️ Repository Structure
 
 ```
-.claude/skills/          # 18 production-ready skills
+.claude/skills/          # 19 production-ready skills
 ├── r-datascience/       # Core data science orchestrator
 ├── tidyverse-expert/    # Complete tidyverse (dplyr, tidyr, purrr, stringr, forcats, lubridate)
 ├── tidyverse-patterns/  # Modern dplyr 1.1+ patterns
-├── quarto/              # ⭐ NEW - Professional publishing (reports, dashboards, presentations)
+├── quarto/              # Professional publishing (reports, dashboards, presentations)
 ├── r-tidymodels/        # Machine learning with tidymodels
+├── r-feature-engineering/ # ⭐ NEW - Strategic feature engineering (6,568 lines)
 ├── r-timeseries/        # Time series forecasting (fable/tsibble)
 ├── r-text-mining/       # Text mining and NLP (tidytext)
 ├── r-bayes/             # Bayesian inference (brms)
@@ -369,6 +380,7 @@ MIT License - See [LICENSE](LICENSE) for details
 - [Tidyverse](https://www.tidyverse.org/) - Core data science packages
 - [Tidymodels](https://www.tidymodels.org/) - Machine learning framework
 - [Tidy Modeling with R](https://www.tmwr.org/) - ML book
+- [Feature Engineering and Selection](https://feat.engineering/) - Feature engineering guide
 
 ### Publishing & Reproducibility
 - [Quarto](https://quarto.org/) - Modern scientific publishing system
@@ -390,6 +402,7 @@ MIT License - See [LICENSE](LICENSE) for details
 - Achieved **100% perfection** through systematic optimization using the skillMaker pattern
 - Knowledge extracted from authoritative R resources:
   - R for Data Science by Hadley Wickham & Garrett Grolemund
+  - Feature Engineering and Selection by Max Kuhn & Kjell Johnson
   - Forecasting: Principles and Practice by Rob J Hyndman & George Athanasopoulos
   - Text Mining with R by Julia Silge & David Robinson
   - Tidy Modeling with R by Max Kuhn & Julia Silge
@@ -401,14 +414,14 @@ MIT License - See [LICENSE](LICENSE) for details
 ## 📈 Project Metrics
 
 ```
-Skills: 18 total, 18 perfect (100%)
+Skills: 19 total, 19 perfect (100%)
 Test Cases: 251 passing (100%)
-Lines of Code: 60,000+ across all skills
+Lines of Code: 67,000+ across all skills
 Recall: 100% (was 48.2% at baseline)
 Precision: 100% (was 90.8% at baseline)
 Languages: English + Portuguese
 Validation: Automated (YAML, syntax, triggers)
-Latest Addition: Quarto skill (~7,500 lines)
+Latest Addition: r-feature-engineering (~6,568 lines)
 ```
 
 See [docs/sprints/](docs/sprints/) for detailed improvement journey.

@@ -1,0 +1,224 @@
+{
+  "timestamp": "2026-03-11T07:44:17.187590",
+  "tests_run": 23,
+  "skills": {
+    "quarto": {
+      "positive": [
+        {
+          "prompt": "Crie um relat\u00f3rio com quarto",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Create a quarto report with R",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Preciso fazer um quarto dashboard",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Build a dashboard with quarto",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Como criar uma apresenta\u00e7\u00e3o quarto?",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Make a quarto presentation",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Quero publicar um site com quarto",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Set up a quarto website",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Renderizar documento quarto",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Render this quarto document",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Como usar quarto com R?",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Working with .qmd files",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "context": [
+        {
+          "prompt": "library(tidyverse)\n# Create a quarto report analyzing this data",
+          "expected": "quarto",
+          "detected": [
+            "quarto",
+            "tidyverse-expert",
+            "r-datascience"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "I need to create reproducible research documents",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "How do I make interactive dashboards with R?",
+          "expected": "quarto",
+          "detected": [
+            "quarto",
+            "r-shiny"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "arquivo.qmd - what can I do with this?",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Data storytelling with R visualizations",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        },
+        {
+          "prompt": "Scientific writing with computational content",
+          "expected": "quarto",
+          "detected": [
+            "quarto"
+          ],
+          "success": true,
+          "type": "true_positive"
+        }
+      ],
+      "negative": [
+        {
+          "prompt": "Create a Jupyter notebook",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "R Markdown document",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Python quarto setup",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Julia quarto configuration",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        },
+        {
+          "prompt": "Streamlit dashboard",
+          "expected": null,
+          "detected": [],
+          "success": true,
+          "type": "true_negative"
+        }
+      ],
+      "true_positives": 18,
+      "false_negatives": 0,
+      "true_negatives": 5,
+      "false_positives": 0,
+      "metrics": {
+        "recall": 1.0,
+        "precision": 1.0,
+        "accuracy": 1.0,
+        "f1_score": 1.0
+      }
+    }
+  }
+}

@@ -187,6 +187,7 @@ All skills achieve **100% recall and 100% precision** on comprehensive test suit
 ### Meta
 
 - **[skillMaker](/.claude/skills/skillMaker/)** - Create new skills following best practices
+  - See [SKILL_COMPARISON.md](SKILL_COMPARISON.md) for comparison with Anthropic's skill-creator
 
 ## 🚀 Installation
 
@@ -515,6 +516,7 @@ See [docs/sprints/](docs/sprints/) for detailed improvement journey and [README_
 - [📊 Sprint Reports](docs/sprints/) - Journey from 48% to 100% recall
 - [💡 Improvement Guides](docs/guides/) - Patterns and best practices
 - [🛠️ Validation System](tests/) - Automated quality assurance
+- [⚖️ Skill Creator Comparison](SKILL_COMPARISON.md) - skillMaker vs Anthropic's skill-creator
 
 ---
 

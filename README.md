@@ -30,6 +30,9 @@ This repository contains **25 production-ready skills** that enhance Claude Code
 **Specialized Analysis** (ML, time series, text, Bayesian, feature engineering)
 - r-tidymodels, r-feature-engineering, r-timeseries, r-text-mining, r-bayes, **learning-paradigms** ⭐ NEW
 
+**Big Data & Distributed Computing** 🔥 NEW
+- **r-databricks-sparklyr** - R with Databricks and Apache Spark for big data workflows
+
 **Audio & Deep Learning** ⭐ NEW SUITE
 - **r-bioacoustics** (5,667 lines), **r-deeplearning** (7,562 lines), **r-audio-multiclass**, **keras3** (8,618 lines), **r-tensorflow**, **torch-r** (3,451 lines) 🔥 NEW
 
@@ -182,6 +185,18 @@ All skills achieve **100% recall and 100% precision** on comprehensive test suit
 - **[r-text-mining](/.claude/skills/r-text-mining/)** - Text mining and NLP
   - Sentiment analysis, topic modeling, classification
   - Strong filter: ONLY R (NOT spaCy, NLTK)
+
+- **[r-databricks-sparklyr](/.claude/skills/r-databricks-sparklyr/)** - R with Databricks and Apache Spark 🔥 NEW
+  - Big data processing with sparklyr on Databricks platform
+  - Distributed data manipulation with dplyr → Spark SQL translation (dbplyr)
+  - Spark MLlib machine learning (ml_* functions: regression, classification, clustering)
+  - Delta Lake operations (ACID transactions, time travel, optimization)
+  - Production deployment patterns (notebooks, jobs, scheduling)
+  - Performance optimization (partitioning, broadcast joins, caching)
+  - Complete workflows: ETL pipelines, ML at scale, real-time streaming
+  - 4 comprehensive references (platform, API, translation, advanced topics)
+  - Strong filter: ONLY R + Spark (NOT Python/PySpark, Scala Spark)
+  - Perfect complement to r-datascience (distributed vs local data)
 
 - **[ggplot2](/.claude/skills/ggplot2/)** - Expert data visualization
   - Complete ggplot2 reference with examples
@@ -381,6 +396,39 @@ for (epoch in 1:num_epochs) {
 # Comparison guide: torch vs keras3 decision matrix
 ```
 
+**Big data with R + Databricks + Spark:** 🔥 NEW
+```r
+library(sparklyr)   # Auto-triggers r-databricks-sparklyr skill
+library(dplyr)
+
+# Connect to Databricks
+sc <- spark_connect(method = "databricks")
+
+# Process billions of rows with dplyr syntax
+result <- spark_read_table(sc, "huge_table") %>%
+  filter(date >= "2024-01-01") %>%
+  group_by(category, region) %>%
+  summarize(
+    total_sales = sum(amount),
+    avg_order = mean(amount)
+  ) %>%
+  collect()  # Brings only aggregated result to R
+
+# Machine learning at scale
+model <- ml_random_forest_classifier(
+  training_data,
+  label ~ feature1 + feature2 + feature3
+)
+
+# Delta Lake operations
+spark_df %>%
+  spark_write_delta("dbfs:/gold/output", mode = "overwrite")
+
+# Perfect for: distributed computing, big data ETL, production ML pipelines
+# Complete workflows: platform setup, data manipulation, ML at scale
+# Complements r-datascience (distributed vs local analysis)
+```
+
 ## 🏗️ Repository Structure
 
 ```
@@ -401,6 +449,7 @@ for (epoch in 1:num_epochs) {
 ├── r-timeseries/        # Time series forecasting (fable/tsibble)
 ├── r-text-mining/       # Text mining and NLP (tidytext)
 ├── r-bayes/             # Bayesian inference (brms)
+├── r-databricks-sparklyr/ # 🔥 NEW - R + Databricks + Spark for big data (112KB knowledge)
 ├── ggplot2/             # Data visualization
 ├── r-shiny/             # Shiny app development
 ├── r-performance/       # Performance optimization
@@ -554,12 +603,15 @@ Recall: 100% (was 48.2% at baseline)
 Precision: 100% (was 90.8% at baseline)
 Languages: English + Portuguese
 Validation: Automated (YAML, syntax, triggers)
-Latest Addition: torch-r - PyTorch for R (3,451 lines) 🔥
+Latest Addition: r-databricks-sparklyr - R + Databricks + Spark (112KB) 🔥
 Audio & Deep Learning Suite: 16,680 lines total
   - r-bioacoustics: 5,667 lines
   - r-deeplearning: 7,562 lines
-  - torch-r: 3,451 lines (NEW!)
+  - torch-r: 3,451 lines
   - 4 autonomous agents, 8,000+ lines researched
+Big Data Suite: 112KB knowledge base 🔥 NEW
+  - r-databricks-sparklyr: Platform, API, translation, advanced topics
+  - Complete Spark workflows: ETL, ML at scale, Delta Lake
 ```
 
 See [docs/sprints/](docs/sprints/) for detailed improvement journey and [README_AUDIO_SKILLS.md](/.claude/skills/README_AUDIO_SKILLS.md) for complete audio suite documentation.

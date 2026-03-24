@@ -1,7 +1,7 @@
 ---
 name: r-tidymodels
 description: Expert R data science using tidymodels for machine learning. Use when working with tidymodels, recipes, parsnip, tune, workflows, user mentions "machine learning in R", "ML em R", "predictive modeling", "modelagem preditiva", "modelo de classificação", "classification model", "modelo de regressão", "regression model", "feature engineering", "engenharia de features", "model tuning", "tunear modelo", "tuning", "tunar", "tune boosting", "tune gradient boosting", "xgboost tuning", "random forest tuning", "hyperparameters", "hiperparâmetros", "cross-validation", "validação cruzada", "cv", "recipe steps", "data preprocessing", discusses ML workflows, or model development in R.
-version: 1.3.0
+version: 1.4.0
 user-invocable: false
 allowed-tools: Read, Write, Edit, Bash(Rscript *), Bash(R *), WebFetch
 ---
@@ -25,6 +25,18 @@ This skill provides comprehensive expertise in the tidymodels ecosystem, followi
 3. **Composable Workflows** - Bundle recipes + models for consistency
 4. **Prevention Over Correction** - Framework prevents common pitfalls by design
 5. **Tidy Philosophy** - All outputs work seamlessly with dplyr and ggplot2
+6. **Parallel by Default** - Use parallel processing for tuning and resampling to maximize efficiency
+
+## Proactive Parallelization Guidance
+
+When building ML pipelines, **ALWAYS suggest setting up parallel processing** for operations involving:
+- `tune_grid()` with 10+ grid points
+- `tune_bayes()` with iterative optimization
+- `fit_resamples()` with 5+ folds
+- `workflow_map()` comparing multiple models
+- Any workflow expected to take >30 seconds
+
+**Default recommendation**: Use `doFuture` backend (modern, cross-platform, clean API)
 
 ## Essential Package Ecosystem
 
@@ -389,6 +401,11 @@ collect_predictions(rf_res) |>
 ### Step 3: Hyperparameter Tuning - Grid Search
 
 ```r
+# Setup parallel processing (recommended for grid search)
+library(doFuture)
+registerDoFuture()
+plan(multisession, workers = parallel::detectCores() - 1)
+
 # Define tuning grid (space-filling design recommended)
 rf_grid <- grid_latin_hypercube(
   mtry(range = c(10, 30)),
@@ -396,13 +413,17 @@ rf_grid <- grid_latin_hypercube(
   size = 20
 )
 
-# Tune with grid search
+# Tune with grid search (automatically uses parallel processing)
 rf_tuned <- rf_wflow |>
   tune_grid(
     resamples = ames_folds,
     grid = rf_grid,
     metrics = metric_set(rmse, rsq, mae),
-    control = control_grid(save_pred = TRUE, verbose = TRUE)
+    control = control_grid(
+      save_pred = TRUE,
+      verbose = TRUE,
+      parallel_over = "everything"
+    )
   )
 
 # Examine results
@@ -422,12 +443,15 @@ best_rmse <- select_best(rf_tuned, metric = "rmse")
 ### Step 4: Iterative Tuning (Bayesian Optimization)
 
 ```r
-# Setup Bayesian optimization
+# Parallel processing already set up from previous step
+# (If not, run: registerDoFuture(); plan(multisession, workers = detectCores() - 1))
+
+# Setup Bayesian optimization with parallelization
 ctrl_bayes <- control_bayes(
   no_improve = 10,        # Stop after 10 iterations without improvement
   verbose = TRUE,
   save_pred = TRUE,
-  parallel_over = "everything"
+  parallel_over = "everything"  # Critical for speed
 )
 
 # Define parameter ranges
@@ -437,7 +461,7 @@ xgb_params <- extract_parameter_set_dials(xgb_wflow) |>
     learn_rate = learn_rate(range = c(-3, -0.5))
   )
 
-# Bayesian tuning
+# Bayesian tuning (uses parallel processing automatically)
 set.seed(456)
 xgb_bayes <- xgb_wflow |>
   tune_bayes(
@@ -630,12 +654,13 @@ predict_sale_price <- function(new_data) {
 2. **Stratify splits** - Use `strata` for classification and skewed outcomes
 3. **Use workflows** - Bundle recipe + model for consistency
 4. **Set seeds** - For reproducibility: `set.seed(123)`
-5. **Include preprocessing in validation** - Always use recipes within workflows
-6. **Use role selectors** - `all_numeric_predictors()` instead of hard-coded names
-7. **Handle novel levels** - `step_novel()` before `step_dummy()`
-8. **Normalize after dummies** - Create indicators first, then scale
-9. **Multiple metrics** - Use `metric_set(rmse, rsq, mae)` for comprehensive view
-10. **Visualize tuning** - Use `autoplot()` to understand parameter effects
+5. **Setup parallel processing** - Use `doFuture` or `doParallel` for tuning/resampling
+6. **Include preprocessing in validation** - Always use recipes within workflows
+7. **Use role selectors** - `all_numeric_predictors()` instead of hard-coded names
+8. **Handle novel levels** - `step_novel()` before `step_dummy()`
+9. **Normalize after dummies** - Create indicators first, then scale
+10. **Multiple metrics** - Use `metric_set(rmse, rsq, mae)` for comprehensive view
+11. **Visualize tuning** - Use `autoplot()` to understand parameter effects
 
 ### ❌ DON'T:
 
@@ -683,7 +708,41 @@ metric_set(accuracy, roc_auc, mn_log_loss, bal_accuracy)
 - `bal_accuracy` - Balanced accuracy for imbalanced data
 - `mn_log_loss` - Multinomial log loss
 
-## Parallel Processing
+## Parallel Processing (Always Recommend for Tuning)
+
+### When to Use Parallelization
+
+**ALWAYS suggest parallel processing when the user is:**
+- Running `tune_grid()` with 10+ grid configurations
+- Running `tune_bayes()` with iterative optimization
+- Running `fit_resamples()` with 5+ CV folds
+- Using `workflow_map()` to compare multiple models
+- Building any ML pipeline expected to take >30 seconds
+
+**Ask proactively**: "Would you like me to set up parallel processing? This can speed up tuning by 3-7x depending on available cores."
+
+### Recommended Setup (doFuture - Modern & Cross-Platform)
+
+```r
+library(doFuture)
+
+# Setup parallel processing (works on Windows, Mac, Linux)
+registerDoFuture()
+plan(multisession, workers = parallel::detectCores() - 1)
+
+# All tuning functions automatically use parallel processing
+tuned_results <- tune_grid(
+  workflow,
+  resamples = folds,
+  grid = param_grid,
+  control = control_grid(parallel_over = "everything")
+)
+
+# Clean up (optional - doFuture auto-cleans on session end)
+plan(sequential)
+```
+
+### Alternative Setup (doParallel - Traditional)
 
 ```r
 library(doParallel)
@@ -700,16 +759,52 @@ tuned_results <- tune_grid(
   control = control_grid(parallel_over = "everything")
 )
 
-# Stop cluster when done
+# IMPORTANT: Stop cluster when done
 stopCluster(cl)
 registerDoSEQ()  # Return to sequential
 ```
 
-## Quick Reference
+### Backend Comparison
 
-### Essential Workflow Pattern
+| Backend | Pros | Cons | Best For |
+|---------|------|------|----------|
+| **doFuture** | Modern, cross-platform, auto-cleanup, flexible | Slightly more setup | **Recommended default** |
+| **doParallel (PSOCK)** | Stable, well-tested, cross-platform | Manual cleanup needed | Production stability |
+| **doParallel (fork)** | Lowest overhead, fast | Unix/Mac only | Mac/Linux power users |
+
+### Control Options
 
 ```r
+# Parallelize everything (default recommendation)
+control_grid(parallel_over = "everything")
+
+# Parallelize only resamples (if models are very fast)
+control_grid(parallel_over = "resamples")
+
+# Disable parallelization
+control_grid(parallel_over = NULL)
+```
+
+### Expected Performance Gains
+
+- **10-fold CV with 4 cores** → ~3.5x speedup
+- **Grid search (50 points) with 8 cores** → ~7x speedup
+- **Bayesian tuning (50 iterations) with 8 cores** → ~6x speedup
+- **workflow_map (5 models) with 4 cores** → ~3.8x speedup
+
+## Quick Reference
+
+### Essential Workflow Pattern (With Parallel Processing)
+
+```r
+library(tidymodels)
+library(tidyverse)
+library(doFuture)
+
+# 0. Setup parallel processing (recommended for steps 6-7)
+registerDoFuture()
+plan(multisession, workers = parallel::detectCores() - 1)
+
 # 1. Split
 split <- initial_split(data, prop = 0.8, strata = outcome)
 train <- training(split)
@@ -736,11 +831,12 @@ wflow <- workflow() |>
 # 5. Resample
 folds <- vfold_cv(train, v = 10, strata = outcome)
 
-# 6. Tune
+# 6. Tune (uses parallel processing automatically)
 results <- wflow |>
   tune_grid(
     resamples = folds,
-    grid = grid_latin_hypercube(mtry(), min_n(), size = 20)
+    grid = grid_latin_hypercube(mtry(), min_n(), size = 20),
+    control = control_grid(parallel_over = "everything")
   )
 
 # 7. Select best
@@ -754,6 +850,9 @@ final_fit <- last_fit(final_wflow, split)
 
 # 10. Evaluate
 collect_metrics(final_fit)
+
+# 11. Clean up (optional)
+plan(sequential)
 ```
 
 ## Supporting Resources

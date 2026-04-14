@@ -17,7 +17,7 @@ plot_ly(data = mtcars,
         y = ~mpg,
         type = 'scatter',
         mode = 'markers',
-        marker = list(size = 10, color = 'steelblue')) %>%
+        marker = list(size = 10, color = 'steelblue')) |>
   layout(title = 'Car Weight vs MPG',
          xaxis = list(title = 'Weight (1000 lbs)'),
          yaxis = list(title = 'Miles per Gallon'))
@@ -38,7 +38,7 @@ plot_ly(data = mtcars,
         mode = 'markers',
         color = ~factor(cyl),
         colors = 'Set1',
-        marker = list(size = 10)) %>%
+        marker = list(size = 10)) |>
   layout(title = 'MPG vs Weight by Cylinders',
          xaxis = list(title = 'Weight (1000 lbs)'),
          yaxis = list(title = 'Miles per Gallon'),
@@ -66,7 +66,7 @@ plot_ly(data = mtcars,
           colorbar = list(title = 'Horsepower')
         ),
         text = ~paste('Car:', rownames(mtcars), '<br>HP:', hp),
-        hoverinfo = 'text') %>%
+        hoverinfo = 'text') |>
   layout(title = 'MPG vs Weight (bubble size = horsepower)',
          xaxis = list(title = 'Weight (1000 lbs)'),
          yaxis = list(title = 'Miles per Gallon'))
@@ -90,7 +90,7 @@ plot_ly(data = df,
         y = ~value,
         type = 'scatter',
         mode = 'lines',
-        line = list(color = 'darkgreen', width = 2)) %>%
+        line = list(color = 'darkgreen', width = 2)) |>
   layout(title = 'Time Series Example',
          xaxis = list(title = 'Date'),
          yaxis = list(title = 'Cumulative Value'))
@@ -109,13 +109,13 @@ series_a <- cumsum(rnorm(length(dates), mean = 0.3, sd = 5))
 series_b <- cumsum(rnorm(length(dates), mean = 0.5, sd = 7))
 series_c <- cumsum(rnorm(length(dates), mean = 0.2, sd = 6))
 
-plot_ly() %>%
+plot_ly() |>
   add_trace(x = ~dates, y = ~series_a, type = 'scatter', mode = 'lines',
-            name = 'Product A', line = list(color = 'steelblue', width = 2)) %>%
+            name = 'Product A', line = list(color = 'steelblue', width = 2)) |>
   add_trace(x = ~dates, y = ~series_b, type = 'scatter', mode = 'lines',
-            name = 'Product B', line = list(color = 'firebrick', width = 2)) %>%
+            name = 'Product B', line = list(color = 'firebrick', width = 2)) |>
   add_trace(x = ~dates, y = ~series_c, type = 'scatter', mode = 'lines',
-            name = 'Product C', line = list(color = 'forestgreen', width = 2)) %>%
+            name = 'Product C', line = list(color = 'forestgreen', width = 2)) |>
   layout(title = 'Product Sales Over Time',
          xaxis = list(title = 'Date'),
          yaxis = list(title = 'Cumulative Sales'),
@@ -142,7 +142,7 @@ plot_ly(data = df,
         mode = 'lines+markers',
         line = list(color = 'purple', width = 3),
         marker = list(size = 12, color = 'orange',
-                     line = list(color = 'purple', width = 2))) %>%
+                     line = list(color = 'purple', width = 2))) |>
   layout(title = 'Monthly Revenue Trend',
          xaxis = list(title = 'Month'),
          yaxis = list(title = 'Revenue ($K)'))
@@ -170,7 +170,7 @@ plot_ly(data = df,
         y = ~sales,
         type = 'bar',
         marker = list(color = 'steelblue',
-                     line = list(color = 'navy', width = 1.5))) %>%
+                     line = list(color = 'navy', width = 1.5))) |>
   layout(title = 'Sales by Region',
          xaxis = list(title = 'Region'),
          yaxis = list(title = 'Sales ($K)'))
@@ -189,16 +189,16 @@ product_a <- c(42, 48, 55, 61)
 product_b <- c(38, 45, 41, 52)
 product_c <- c(35, 38, 44, 48)
 
-plot_ly() %>%
+plot_ly() |>
   add_trace(x = ~quarters, y = ~product_a, type = 'bar',
             name = 'Product A',
-            marker = list(color = '#1f77b4')) %>%
+            marker = list(color = '#1f77b4')) |>
   add_trace(x = ~quarters, y = ~product_b, type = 'bar',
             name = 'Product B',
-            marker = list(color = '#ff7f0e')) %>%
+            marker = list(color = '#ff7f0e')) |>
   add_trace(x = ~quarters, y = ~product_c, type = 'bar',
             name = 'Product C',
-            marker = list(color = '#2ca02c')) %>%
+            marker = list(color = '#2ca02c')) |>
   layout(title = 'Quarterly Sales by Product',
          xaxis = list(title = 'Quarter'),
          yaxis = list(title = 'Sales ($K)'),
@@ -218,16 +218,16 @@ salaries <- c(450, 320, 180, 280)
 equipment <- c(120, 45, 85, 150)
 overhead <- c(80, 60, 45, 90)
 
-plot_ly() %>%
+plot_ly() |>
   add_trace(x = ~departments, y = ~salaries, type = 'bar',
             name = 'Salaries',
-            marker = list(color = '#636EFA')) %>%
+            marker = list(color = '#636EFA')) |>
   add_trace(x = ~departments, y = ~equipment, type = 'bar',
             name = 'Equipment',
-            marker = list(color = '#EF553B')) %>%
+            marker = list(color = '#EF553B')) |>
   add_trace(x = ~departments, y = ~overhead, type = 'bar',
             name = 'Overhead',
-            marker = list(color = '#00CC96')) %>%
+            marker = list(color = '#00CC96')) |>
   layout(title = 'Department Budget Breakdown',
          xaxis = list(title = 'Department'),
          yaxis = list(title = 'Budget ($K)'),
@@ -254,7 +254,7 @@ plot_ly(data = df,
         type = 'bar',
         orientation = 'h',  # Horizontal orientation
         marker = list(color = 'coral',
-                     line = list(color = 'darkred', width = 1))) %>%
+                     line = list(color = 'darkred', width = 1))) |>
   layout(title = 'Top 5 Products by Units Sold',
          xaxis = list(title = 'Units Sold'),
          yaxis = list(title = ''))
@@ -286,7 +286,7 @@ plot_ly(data = df,
           width = 8
         ),
         marker = list(color = 'lightblue',
-                     line = list(color = 'steelblue', width = 1.5))) %>%
+                     line = list(color = 'steelblue', width = 1.5))) |>
   layout(title = 'Treatment Effects (mean ± SE)',
          xaxis = list(title = 'Treatment Group'),
          yaxis = list(title = 'Response Variable'))
@@ -308,7 +308,7 @@ plot_ly(x = ~mtcars$mpg,
         type = 'histogram',
         nbinsx = 15,  # Number of bins
         marker = list(color = 'skyblue',
-                     line = list(color = 'navy', width = 1))) %>%
+                     line = list(color = 'navy', width = 1))) |>
   layout(title = 'Distribution of MPG',
          xaxis = list(title = 'Miles per Gallon'),
          yaxis = list(title = 'Count'))
@@ -326,13 +326,13 @@ mtcars_4cyl <- mtcars[mtcars$cyl == 4, ]
 mtcars_6cyl <- mtcars[mtcars$cyl == 6, ]
 mtcars_8cyl <- mtcars[mtcars$cyl == 8, ]
 
-plot_ly(alpha = 0.6) %>%  # Transparency for overlap
+plot_ly(alpha = 0.6) |>  # Transparency for overlap
   add_histogram(x = ~mtcars_4cyl$mpg, name = '4 Cylinders',
-                marker = list(color = 'green')) %>%
+                marker = list(color = 'green')) |>
   add_histogram(x = ~mtcars_6cyl$mpg, name = '6 Cylinders',
-                marker = list(color = 'blue')) %>%
+                marker = list(color = 'blue')) |>
   add_histogram(x = ~mtcars_8cyl$mpg, name = '8 Cylinders',
-                marker = list(color = 'red')) %>%
+                marker = list(color = 'red')) |>
   layout(title = 'MPG Distribution by Cylinder Count',
          xaxis = list(title = 'Miles per Gallon'),
          yaxis = list(title = 'Count'),
@@ -352,7 +352,7 @@ plot_ly(data = iris,
         y = ~Sepal.Length,
         type = 'box',
         color = ~Species,
-        colors = c('#1f77b4', '#ff7f0e', '#2ca02c')) %>%
+        colors = c('#1f77b4', '#ff7f0e', '#2ca02c')) |>
   layout(title = 'Sepal Length Distribution by Species',
          xaxis = list(title = 'Species'),
          yaxis = list(title = 'Sepal Length (cm)'),
@@ -374,7 +374,7 @@ plot_ly(data = iris,
         color = ~Species,
         colors = 'Set2',
         box = list(visible = TRUE),  # Show box plot inside violin
-        meanline = list(visible = TRUE)) %>%  # Show mean line
+        meanline = list(visible = TRUE)) |>  # Show mean line
   layout(title = 'Petal Length Distribution by Species',
          xaxis = list(title = 'Species'),
          yaxis = list(title = 'Petal Length (cm)'),
@@ -397,7 +397,7 @@ plot_ly(x = ~x, y = ~y,
         type = 'histogram2d',
         colorscale = 'Viridis',
         nbinsx = 20,
-        nbinsy = 20) %>%
+        nbinsy = 20) |>
   layout(title = '2D Histogram (Density Plot)',
          xaxis = list(title = 'X Variable'),
          yaxis = list(title = 'Y Variable'))
@@ -428,7 +428,7 @@ plot_ly(data = df,
         box = list(visible = TRUE),  # Show box plot
         meanline = list(visible = TRUE),  # Show mean line
         color = ~group,
-        colors = c('#8DD3C7', '#FFFFB3', '#BEBADA')) %>%
+        colors = c('#8DD3C7', '#FFFFB3', '#BEBADA')) |>
   layout(title = 'Distribution Comparison with Box + Violin',
          xaxis = list(title = 'Group'),
          yaxis = list(title = 'Value'),
@@ -460,7 +460,7 @@ plot_ly(data = df,
         textinfo = 'label+percent',
         marker = list(colors = c('#1f77b4', '#ff7f0e', '#2ca02c',
                                   '#d62728', '#9467bd'),
-                     line = list(color = 'white', width = 2))) %>%
+                     line = list(color = 'white', width = 2))) |>
   layout(title = 'Market Share Distribution',
          showlegend = TRUE)
 ```
@@ -487,7 +487,7 @@ plot_ly(data = df,
         textinfo = 'label+percent',
         marker = list(colors = c('#636EFA', '#EF553B', '#00CC96',
                                   '#AB63FA', '#FFA15A'),
-                     line = list(color = 'white', width = 2))) %>%
+                     line = list(color = 'white', width = 2))) |>
   layout(title = 'Annual Budget Allocation',
          annotations = list(  # Add text in center
            list(text = 'Total:<br>$1,250K',
@@ -524,7 +524,7 @@ plot_ly(data = df,
         type = 'sunburst',
         branchvalues = 'total',  # Size by total of children
         marker = list(colorscale = 'Blues',
-                     line = list(width = 2))) %>%
+                     line = list(width = 2))) |>
   layout(title = 'Regional Sales Breakdown by Quarter')
 ```
 
@@ -555,7 +555,7 @@ plot_ly(data = df,
         type = 'treemap',
         textposition = 'middle center',
         marker = list(colorscale = 'Viridis',
-                     line = list(width = 2, color = 'white'))) %>%
+                     line = list(width = 2, color = 'white'))) |>
   layout(title = 'Product Sales by Category')
 ```
 
@@ -582,7 +582,7 @@ plot_ly(z = ~cor_matrix,
         colorbar = list(title = 'Correlation'),
         text = ~round(cor_matrix, 2),  # Show values
         texttemplate = '%{text}',
-        textfont = list(size = 12)) %>%
+        textfont = list(size = 12)) |>
   layout(title = 'Correlation Matrix: mtcars Variables',
          xaxis = list(title = ''),
          yaxis = list(title = ''))
@@ -611,7 +611,7 @@ plot_ly(x = ~x, y = ~y, z = ~z,
           showlabels = TRUE,  # Show contour labels
           labelfont = list(size = 10, color = 'white')
         ),
-        colorbar = list(title = 'Height')) %>%
+        colorbar = list(title = 'Height')) |>
   layout(title = 'Contour Plot Example',
          xaxis = list(title = 'X'),
          yaxis = list(title = 'Y'))
@@ -649,7 +649,7 @@ plot_ly(data = measurements,
           array = ~response_error,
           color = 'gray',
           thickness = 2
-        )) %>%
+        )) |>
   layout(title = 'Dose-Response Curve with Error Bars',
          xaxis = list(title = 'Concentration (µM)'),
          yaxis = list(title = 'Response'))
@@ -675,7 +675,7 @@ mtcars$upper <- pred_interval[, 'upr']
 # Sort by weight for smooth confidence band
 mtcars <- mtcars[order(mtcars$wt), ]
 
-plot_ly() %>%
+plot_ly() |>
   # Confidence band
   add_ribbons(data = mtcars,
               x = ~wt,
@@ -684,19 +684,19 @@ plot_ly() %>%
               fillcolor = 'rgba(70, 130, 180, 0.2)',
               line = list(width = 0),
               name = '95% CI',
-              showlegend = TRUE) %>%
+              showlegend = TRUE) |>
   # Regression line
   add_lines(data = mtcars,
             x = ~wt,
             y = ~predicted,
             line = list(color = 'steelblue', width = 2),
-            name = 'Regression Line') %>%
+            name = 'Regression Line') |>
   # Original data points
   add_markers(data = mtcars,
               x = ~wt,
               y = ~mpg,
               marker = list(size = 8, color = 'darkred'),
-              name = 'Data') %>%
+              name = 'Data') |>
   layout(title = 'Linear Regression with 95% Confidence Interval',
          xaxis = list(title = 'Weight (1000 lbs)'),
          yaxis = list(title = 'Miles per Gallon'))
@@ -728,7 +728,7 @@ plot_ly(type = 'choropleth',
         z = ~state_data$value,
         text = ~state_data$state,
         colorscale = 'Viridis',
-        colorbar = list(title = 'Score')) %>%
+        colorbar = list(title = 'Score')) |>
   layout(title = 'State Performance Scores',
          geo = list(scope = 'usa',
                    projection = list(type = 'albers usa'),
@@ -765,7 +765,7 @@ plot_ly(data = cities,
           size = ~population / 100,  # Scale marker size
           color = 'red',
           line = list(color = 'darkred', width = 1)
-        )) %>%
+        )) |>
   layout(title = 'Top 10 US Cities by Population',
          geo = list(
            scope = 'usa',
@@ -807,7 +807,7 @@ plot_ly(data = earthquakes,
           cmax = 40,
           colorbar = list(title = 'Depth (km)'),
           line = list(color = 'black', width = 1)
-        )) %>%
+        )) |>
   layout(title = 'Earthquake Data (size = magnitude, color = depth)',
          geo = list(
            scope = 'north america',
@@ -839,7 +839,7 @@ p <- plot_ly()
 
 # Add lines for each route
 for (i in 1:nrow(routes)) {
-  p <- p %>%
+  p <- p |>
     add_trace(
       type = 'scattergeo',
       lon = c(routes$origin_lon[i], routes$dest_lon[i]),
@@ -859,7 +859,7 @@ all_cities <- data.frame(
 )
 all_cities <- unique(all_cities)
 
-p <- p %>%
+p <- p |>
   add_trace(
     type = 'scattergeo',
     lon = all_cities$lon,
@@ -870,7 +870,7 @@ p <- p %>%
     showlegend = FALSE
   )
 
-p %>%
+p |>
   layout(
     title = 'International Flight Routes',
     geo = list(
@@ -904,7 +904,7 @@ plot_ly(data = mtcars,
                      '<br>Weight:', wt, '(1000 lbs)',
                      '<br>MPG:', mpg,
                      '<br>Cylinders:', cyl),
-        hoverinfo = 'text') %>%  # Only show custom text
+        hoverinfo = 'text') |>  # Only show custom text
   layout(title = 'Custom Hover Information')
 ```
 
@@ -925,7 +925,7 @@ z <- outer(x, y, function(x, y) sin(x/2) * cos(y/2))
 
 plot_ly(x = ~x, y = ~y, z = ~z,
         type = 'heatmap',
-        colorscale = 'Viridis') %>%
+        colorscale = 'Viridis') |>
   layout(title = 'Example Colorscale: Viridis')
 ```
 
@@ -943,7 +943,7 @@ p2 <- plot_ly(data = iris, x = ~Species, y = ~Sepal.Length, type = 'box',
               marker = list(color = 'coral'))
 
 # Combine into subplots
-subplot(p1, p2, nrows = 1, margin = 0.05) %>%
+subplot(p1, p2, nrows = 1, margin = 0.05) |>
   layout(title = 'Histogram and Box Plot Side-by-Side',
          showlegend = FALSE)
 ```
@@ -1004,7 +1004,7 @@ plot_ly(data = df,
         text = ~country,
         hoverinfo = 'text',
         type = 'scatter',
-        mode = 'markers') %>%
+        mode = 'markers') |>
   layout(title = 'GDP vs Population Over Time',
          xaxis = list(title = 'GDP (billions)'),
          yaxis = list(title = 'Population (millions)'))

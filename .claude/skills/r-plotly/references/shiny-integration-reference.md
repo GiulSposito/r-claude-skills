@@ -90,7 +90,7 @@ ui <- fluidPage(
 
 # Dynamic sizing in server
 output$plot <- renderPlotly({
-  plot_ly(data = mtcars, x = ~wt, y = ~mpg) %>%
+  plot_ly(data = mtcars, x = ~wt, y = ~mpg) |>
     layout(
       autosize = TRUE,
       margin = list(l = 50, r = 50, t = 50, b = 50)
@@ -115,7 +115,7 @@ output$plot <- renderPlotly({
 
 # Best: Sample data for visualization
 output$plot <- renderPlotly({
-  sampled <- large_data %>% slice_sample(n = 1000)
+  sampled <- large_data |> slice_sample(n = 1000)
   plot_ly(sampled, x = ~x, y = ~y, type = "scattergl")
 })
 
@@ -127,7 +127,7 @@ cached_layout <- list(
 )
 
 output$plot <- renderPlotly({
-  plot_ly(reactive_data(), x = ~x, y = ~y) %>%
+  plot_ly(reactive_data(), x = ~x, y = ~y) |>
     layout(cached_layout)
 })
 ```
@@ -249,7 +249,7 @@ server <- function(input, output, session) {
       type = "scatter",
       mode = "markers",
       source = "car_plot"
-    ) %>%
+    ) |>
       layout(
         dragmode = "select",  # or "lasso"
         selectdirection = "any"  # "h", "v", or "any"
@@ -362,7 +362,7 @@ server <- function(input, output, session) {
 
   output$histogram <- renderPlotly({
     req(clicked_species())
-    data <- iris %>% filter(Species == clicked_species())
+    data <- iris |> filter(Species == clicked_species())
     plot_ly(data, x = ~Petal.Length, type = "histogram")
   })
 }
@@ -460,7 +460,7 @@ server <- function(input, output, session) {
       source = "iris_scatter",
       customdata = ~Species,
       marker = list(size = 10)
-    ) %>%
+    ) |>
       layout(
         title = "Click, Hover, or Select Points",
         dragmode = "select"
@@ -524,7 +524,7 @@ server <- function(input, output, session) {
         color = c("setosa" = "#1f77b4", "versicolor" = "#ff7f0e",
                   "virginica" = "#2ca02c")[counts$Species]
       )
-    ) %>%
+    ) |>
       layout(title = "Species Distribution (Selected)")
   })
 }
@@ -579,7 +579,7 @@ server <- function(input, output, session) {
     count <- trace_count() + 1
     trace_count(count)
 
-    plotlyProxy("plot", session) %>%
+    plotlyProxy("plot", session) |>
       plotlyProxyInvoke(
         "addTraces",
         list(
@@ -597,7 +597,7 @@ server <- function(input, output, session) {
     count <- trace_count()
     if (count > 1) {
       trace_count(count - 1)
-      plotlyProxy("plot", session) %>%
+      plotlyProxy("plot", session) |>
         plotlyProxyInvoke("deleteTraces", count - 1)
     }
   })
@@ -624,7 +624,7 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$update, {
-    plotlyProxy("plot", session) %>%
+    plotlyProxy("plot", session) |>
       plotlyProxyInvoke(
         "restyle",
         list(y = list(rnorm(20))),  # New y values
@@ -647,7 +647,7 @@ server <- function(input, output, session) {
 
   # Change marker color (restyle)
   observeEvent(input$change_color, {
-    plotlyProxy("plot", session) %>%
+    plotlyProxy("plot", session) |>
       plotlyProxyInvoke(
         "restyle",
         list(marker.color = "red"),
@@ -657,7 +657,7 @@ server <- function(input, output, session) {
 
   # Change axis title (relayout)
   observeEvent(input$change_title, {
-    plotlyProxy("plot", session) %>%
+    plotlyProxy("plot", session) |>
       plotlyProxyInvoke(
         "relayout",
         list(xaxis = list(title = "Weight (1000 lbs)"))
@@ -682,7 +682,7 @@ server <- function(input, output, session) {
       type = "scatter",
       mode = "markers",
       marker = list(size = 15)
-    ) %>%
+    ) |>
       layout(yaxis = list(range = c(-5, 5)))
   })
 
@@ -690,7 +690,7 @@ server <- function(input, output, session) {
     # Animate over 10 steps
     for (i in 1:10) {
       delay(i * 100, {
-        plotlyProxy("plot", session) %>%
+        plotlyProxy("plot", session) |>
           plotlyProxyInvoke(
             "animate",
             list(
@@ -734,7 +734,7 @@ server <- function(input, output, session) {
       y = values$y,
       type = "scatter",
       mode = "lines"
-    ) %>%
+    ) |>
       layout(
         xaxis = list(range = c(1, 50)),
         yaxis = list(range = c(-3, 3))
@@ -756,7 +756,7 @@ server <- function(input, output, session) {
         # Shift data and add new point
         values$y <- c(values$y[-1], rnorm(1))
 
-        plotlyProxy("stream_plot", session) %>%
+        plotlyProxy("stream_plot", session) |>
           plotlyProxyInvoke(
             "restyle",
             list(y = list(values$y)),
@@ -798,11 +798,11 @@ server <- function(input, output, session) {
   trace_counter <- reactiveVal(3)
 
   output$plot <- renderPlotly({
-    plot_ly() %>%
+    plot_ly() |>
       add_trace(x = 1:10, y = rnorm(10), name = "Trace 1",
-                type = "scatter", mode = "lines+markers") %>%
+                type = "scatter", mode = "lines+markers") |>
       add_trace(x = 1:10, y = rnorm(10), name = "Trace 2",
-                type = "scatter", mode = "lines+markers") %>%
+                type = "scatter", mode = "lines+markers") |>
       add_trace(x = 1:10, y = rnorm(10), name = "Trace 3",
                 type = "scatter", mode = "lines+markers")
   })
@@ -810,7 +810,7 @@ server <- function(input, output, session) {
   # Update opacity
   observeEvent(input$opacity, {
     trace_idx <- as.numeric(sub("Trace ", "", input$trace)) - 1
-    plotlyProxy("plot", session) %>%
+    plotlyProxy("plot", session) |>
       plotlyProxyInvoke(
         "restyle",
         list(opacity = input$opacity),
@@ -821,7 +821,7 @@ server <- function(input, output, session) {
   # Update mode
   observeEvent(input$mode, {
     trace_idx <- as.numeric(sub("Trace ", "", input$trace)) - 1
-    plotlyProxy("plot", session) %>%
+    plotlyProxy("plot", session) |>
       plotlyProxyInvoke(
         "restyle",
         list(mode = input$mode),
@@ -834,7 +834,7 @@ server <- function(input, output, session) {
     count <- trace_counter() + 1
     trace_counter(count)
 
-    plotlyProxy("plot", session) %>%
+    plotlyProxy("plot", session) |>
       plotlyProxyInvoke(
         "addTraces",
         list(
@@ -856,7 +856,7 @@ server <- function(input, output, session) {
   # Remove trace
   observeEvent(input$remove, {
     trace_idx <- as.numeric(sub("Trace ", "", input$trace)) - 1
-    plotlyProxy("plot", session) %>%
+    plotlyProxy("plot", session) |>
       plotlyProxyInvoke("deleteTraces", trace_idx)
 
     count <- trace_counter() - 1
@@ -909,7 +909,7 @@ server <- function(input, output, session) {
 
   # Bar chart of species counts
   output$species_bar <- renderPlotly({
-    counts <- iris %>%
+    counts <- iris |>
       count(Species)
 
     plot_ly(
@@ -919,7 +919,7 @@ server <- function(input, output, session) {
       type = "bar",
       source = "species_bar",
       customdata = ~Species
-    ) %>%
+    ) |>
       layout(
         title = "Species Counts",
         xaxis = list(title = ""),
@@ -937,7 +937,7 @@ server <- function(input, output, session) {
   output$scatter <- renderPlotly({
     data <- iris
     if (!is.null(selected_species())) {
-      data <- data %>% filter(Species == selected_species())
+      data <- data |> filter(Species == selected_species())
     }
 
     plot_ly(
@@ -947,7 +947,7 @@ server <- function(input, output, session) {
       color = ~Species,
       type = "scatter",
       mode = "markers"
-    ) %>%
+    ) |>
       layout(
         title = if (is.null(selected_species())) {
           "All Species"
@@ -961,7 +961,7 @@ server <- function(input, output, session) {
   output$table <- renderTable({
     data <- iris
     if (!is.null(selected_species())) {
-      data <- data %>% filter(Species == selected_species())
+      data <- data |> filter(Species == selected_species())
     }
     head(data, 10)
   })
@@ -1003,7 +1003,7 @@ server <- function(input, output, session) {
       mode = "markers",
       source = "scatter1",
       marker = list(size = 10)
-    ) %>%
+    ) |>
       layout(
         title = "Weight vs MPG",
         dragmode = "select"
@@ -1020,7 +1020,7 @@ server <- function(input, output, session) {
       mode = "markers",
       source = "scatter2",
       marker = list(size = 10)
-    ) %>%
+    ) |>
       layout(
         title = "Horsepower vs MPG",
         dragmode = "select"
@@ -1053,7 +1053,7 @@ server <- function(input, output, session) {
       x = ~wt,
       type = "histogram",
       nbinsx = 10
-    ) %>%
+    ) |>
       layout(
         title = paste("Weight Distribution (n =", nrow(data), ")")
       )
@@ -1071,7 +1071,7 @@ server <- function(input, output, session) {
       x = ~hp,
       type = "histogram",
       nbinsx = 10
-    ) %>%
+    ) |>
       layout(
         title = paste("HP Distribution (n =", nrow(data), ")")
       )
@@ -1135,8 +1135,8 @@ server <- function(input, output, session) {
   output$plot <- renderPlotly({
     if (drill_state$level == "overview") {
       # Level 1: Cylinders
-      data <- mtcars %>%
-        group_by(cyl) %>%
+      data <- mtcars |>
+        group_by(cyl) |>
         summarise(
           count = n(),
           avg_mpg = mean(mpg)
@@ -1151,7 +1151,7 @@ server <- function(input, output, session) {
         customdata = ~cyl,
         text = ~paste("Avg MPG:", round(avg_mpg, 1)),
         textposition = "outside"
-      ) %>%
+      ) |>
         layout(
           title = "Cars by Cylinder Count",
           xaxis = list(title = "Cylinders"),
@@ -1160,9 +1160,9 @@ server <- function(input, output, session) {
 
     } else if (drill_state$level == "cylinder") {
       # Level 2: Gears for selected cylinder
-      data <- mtcars %>%
-        filter(cyl == drill_state$selected_cyl) %>%
-        group_by(gear) %>%
+      data <- mtcars |>
+        filter(cyl == drill_state$selected_cyl) |>
+        group_by(gear) |>
         summarise(
           count = n(),
           avg_mpg = mean(mpg)
@@ -1177,7 +1177,7 @@ server <- function(input, output, session) {
         customdata = ~gear,
         text = ~paste("Avg MPG:", round(avg_mpg, 1)),
         textposition = "outside"
-      ) %>%
+      ) |>
         layout(
           title = paste("Gears for", drill_state$selected_cyl, "Cylinder Cars"),
           xaxis = list(title = "Gears"),
@@ -1186,11 +1186,11 @@ server <- function(input, output, session) {
 
     } else {
       # Level 3: Individual cars
-      data <- mtcars %>%
+      data <- mtcars |>
         filter(
           cyl == drill_state$selected_cyl,
           gear == drill_state$selected_gear
-        ) %>%
+        ) |>
         mutate(car = rownames(.))
 
       plot_ly(
@@ -1202,7 +1202,7 @@ server <- function(input, output, session) {
         text = ~car,
         textposition = "top center",
         marker = list(size = 15)
-      ) %>%
+      ) |>
         layout(
           title = paste(drill_state$selected_cyl, "Cyl,",
                        drill_state$selected_gear, "Gears"),
@@ -1236,28 +1236,28 @@ server <- function(input, output, session) {
   # Data table
   output$data_table <- renderTable({
     if (drill_state$level == "overview") {
-      mtcars %>%
-        group_by(cyl) %>%
+      mtcars |>
+        group_by(cyl) |>
         summarise(
           Count = n(),
           `Avg MPG` = round(mean(mpg), 1),
           `Avg HP` = round(mean(hp), 0)
         )
     } else if (drill_state$level == "cylinder") {
-      mtcars %>%
-        filter(cyl == drill_state$selected_cyl) %>%
-        group_by(gear) %>%
+      mtcars |>
+        filter(cyl == drill_state$selected_cyl) |>
+        group_by(gear) |>
         summarise(
           Count = n(),
           `Avg MPG` = round(mean(mpg), 1),
           `Avg HP` = round(mean(hp), 0)
         )
     } else {
-      mtcars %>%
+      mtcars |>
         filter(
           cyl == drill_state$selected_cyl,
           gear == drill_state$selected_gear
-        ) %>%
+        ) |>
         select(mpg, cyl, disp, hp, wt, gear)
     }
   })
@@ -1312,13 +1312,13 @@ server <- function(input, output, session) {
   # Overview tab plots
   output$overview_bar <- renderPlotly({
     plot_ly(
-      mtcars %>% count(cyl),
+      mtcars |> count(cyl),
       x = ~factor(cyl),
       y = ~n,
       type = "bar",
       source = "cyl_bar",
       customdata = ~cyl
-    ) %>%
+    ) |>
       layout(title = "Cylinder Distribution")
   })
 
@@ -1330,17 +1330,17 @@ server <- function(input, output, session) {
   output$overview_box <- renderPlotly({
     data <- mtcars
     if (!is.null(selected_cyl())) {
-      data <- data %>% filter(cyl == selected_cyl())
+      data <- data |> filter(cyl == selected_cyl())
     }
 
-    plot_ly(data, y = ~mpg, type = "box", name = "MPG") %>%
+    plot_ly(data, y = ~mpg, type = "box", name = "MPG") |>
       layout(title = "MPG Distribution")
   })
 
   output$overview_scatter <- renderPlotly({
     data <- mtcars
     if (!is.null(selected_cyl())) {
-      data <- data %>% filter(cyl == selected_cyl())
+      data <- data |> filter(cyl == selected_cyl())
     }
 
     plot_ly(
@@ -1350,17 +1350,17 @@ server <- function(input, output, session) {
       color = ~factor(cyl),
       type = "scatter",
       mode = "markers"
-    ) %>%
+    ) |>
       layout(title = "Weight vs MPG")
   })
 
   output$summary_table <- renderTable({
     data <- mtcars
     if (!is.null(selected_cyl())) {
-      data <- data %>% filter(cyl == selected_cyl())
+      data <- data |> filter(cyl == selected_cyl())
     }
 
-    data %>%
+    data |>
       summarise(
         N = n(),
         `Avg MPG` = round(mean(mpg), 1),
@@ -1373,7 +1373,7 @@ server <- function(input, output, session) {
   output$detail_histogram <- renderPlotly({
     data <- mtcars
     if (!is.null(selected_cyl())) {
-      data <- data %>% filter(cyl == selected_cyl())
+      data <- data |> filter(cyl == selected_cyl())
     }
 
     plot_ly(
@@ -1381,7 +1381,7 @@ server <- function(input, output, session) {
       x = ~get(input$detail_var),
       type = "histogram",
       nbinsx = 15
-    ) %>%
+    ) |>
       layout(
         title = paste(input$detail_var, "Distribution"),
         xaxis = list(title = input$detail_var)
@@ -1391,7 +1391,7 @@ server <- function(input, output, session) {
   output$detail_violin <- renderPlotly({
     data <- mtcars
     if (!is.null(selected_cyl())) {
-      data <- data %>% filter(cyl == selected_cyl())
+      data <- data |> filter(cyl == selected_cyl())
     }
 
     plot_ly(
@@ -1400,7 +1400,7 @@ server <- function(input, output, session) {
       type = "violin",
       box = list(visible = TRUE),
       meanline = list(visible = TRUE)
-    ) %>%
+    ) |>
       layout(
         title = paste(input$detail_var, "Violin Plot"),
         yaxis = list(title = input$detail_var)
@@ -1410,7 +1410,7 @@ server <- function(input, output, session) {
   output$detail_scatter <- renderPlotly({
     data <- mtcars
     if (!is.null(selected_cyl())) {
-      data <- data %>% filter(cyl == selected_cyl())
+      data <- data |> filter(cyl == selected_cyl())
     }
 
     plot_ly(
@@ -1421,7 +1421,7 @@ server <- function(input, output, session) {
       type = "scatter",
       mode = "markers",
       marker = list(size = 10)
-    ) %>%
+    ) |>
       layout(
         title = paste("Weight vs", input$detail_var),
         yaxis = list(title = input$detail_var)
@@ -1468,7 +1468,7 @@ server <- function(input, output, session) {
   current_traces <- reactiveVal(c("sin", "cos"))
 
   output$dynamic_plot <- renderPlotly({
-    p <- plot_ly() %>%
+    p <- plot_ly() |>
       layout(
         xaxis = list(title = "x"),
         yaxis = list(title = "y", range = c(-2.5, 2.5))
@@ -1476,7 +1476,7 @@ server <- function(input, output, session) {
 
     # Add initial traces
     if ("sin" %in% input$traces) {
-      p <- p %>% add_trace(
+      p <- p |> add_trace(
         x = x,
         y = sin(input$frequency * x) * input$amplitude,
         type = "scatter",
@@ -1487,7 +1487,7 @@ server <- function(input, output, session) {
     }
 
     if ("cos" %in% input$traces) {
-      p <- p %>% add_trace(
+      p <- p |> add_trace(
         x = x,
         y = cos(input$frequency * x) * input$amplitude,
         type = "scatter",
@@ -1500,7 +1500,7 @@ server <- function(input, output, session) {
     if ("tan" %in% input$traces) {
       y_tan <- tan(input$frequency * x) * input$amplitude
       y_tan[abs(y_tan) > 2.5] <- NA  # Clip
-      p <- p %>% add_trace(
+      p <- p |> add_trace(
         x = x,
         y = y_tan,
         type = "scatter",
@@ -1571,7 +1571,7 @@ server <- function(input, output, session) {
       y = ~mpg,
       type = "scatter",
       mode = "markers"
-    ) %>%
+    ) |>
       onRender("
         function(el, x) {
           el.on('plotly_click', function(d) {
@@ -1647,7 +1647,7 @@ server <- function(input, output, session) {
   filtered_data <- reactive({
     data <- large_data
     if (input$category != "All") {
-      data <- data %>% filter(category == input$category)
+      data <- data |> filter(category == input$category)
     }
     data
   })
@@ -1659,7 +1659,7 @@ server <- function(input, output, session) {
     start_time <- Sys.time()
 
     # Sample data
-    data <- filtered_data() %>%
+    data <- filtered_data() |>
       slice_sample(n = min(sample_size_debounced(), nrow(.)))
 
     # Use WebGL for large datasets
@@ -1677,7 +1677,7 @@ server <- function(input, output, session) {
       type = plot_type,
       mode = "markers",
       marker = list(size = 5, opacity = 0.6)
-    ) %>%
+    ) |>
       layout(
         showlegend = TRUE,
         hovermode = "closest"
@@ -1744,7 +1744,7 @@ server <- function(input, output, session) {
       "iris" = iris,
       "diamonds" = {
         if (requireNamespace("ggplot2", quietly = TRUE)) {
-          ggplot2::diamonds %>% slice_sample(n = 1000)
+          ggplot2::diamonds |> slice_sample(n = 1000)
         } else {
           mtcars
         }
@@ -1769,8 +1769,8 @@ server <- function(input, output, session) {
     add_log("Processing data")
 
     data <- data_source()
-    data %>%
-      select(x = all_of(input$xvar), y = all_of(input$yvar)) %>%
+    data |>
+      select(x = all_of(input$xvar), y = all_of(input$yvar)) |>
       filter(!is.na(x), !is.na(y))
   })
 
@@ -1786,7 +1786,7 @@ server <- function(input, output, session) {
       type = "scatter",
       mode = "markers",
       marker = list(opacity = 0.6)
-    ) %>%
+    ) |>
       layout(
         xaxis = list(title = input$xvar),
         yaxis = list(title = input$yvar)
@@ -1863,10 +1863,10 @@ server <- function(input, output, session) {
     data <- mtcars
 
     if (input$cyl_filter != "All") {
-      data <- data %>% filter(cyl == as.numeric(input$cyl_filter))
+      data <- data |> filter(cyl == as.numeric(input$cyl_filter))
     }
 
-    data <- data %>%
+    data <- data |>
       filter(mpg >= input$mpg_range[1], mpg <= input$mpg_range[2])
 
     rv$filtered_data <- data
@@ -1890,7 +1890,7 @@ server <- function(input, output, session) {
                    "<br>MPG:", mpg,
                    "<br>Cyl:", cyl),
       hoverinfo = "text"
-    ) %>%
+    ) |>
       layout(
         title = "Weight vs MPG",
         xaxis = list(title = "Weight (1000 lbs)"),
@@ -1930,19 +1930,19 @@ server <- function(input, output, session) {
       data <- data[rv$selected_indices, ]
     }
 
-    summary_data <- data %>%
-      group_by(cyl) %>%
+    summary_data <- data |>
+      group_by(cyl) |>
       summarise(
         count = n(),
         avg_mpg = mean(mpg),
         avg_hp = mean(hp)
       )
 
-    plot_ly(summary_data) %>%
+    plot_ly(summary_data) |>
       add_bars(x = ~factor(cyl), y = ~count, name = "Count",
-               marker = list(color = "#8884d8")) %>%
+               marker = list(color = "#8884d8")) |>
       add_lines(x = ~factor(cyl), y = ~avg_mpg, name = "Avg MPG",
-                yaxis = "y2", line = list(color = "#82ca9d", width = 3)) %>%
+                yaxis = "y2", line = list(color = "#82ca9d", width = 3)) |>
       layout(
         title = "Summary by Cylinders",
         xaxis = list(title = "Cylinders"),

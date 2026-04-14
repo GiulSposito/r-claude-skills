@@ -284,8 +284,8 @@ large_table
 #| code-fold: true
 #| code-summary: "Show the data processing code"
 
-data_clean <- data %>%
-  filter(!is.na(value)) %>%
+data_clean <- data |>
+  filter(!is.na(value)) |>
   mutate(log_value = log(value))
 ```
 

@@ -115,7 +115,7 @@ library(soundecology)
 # Calculate ACI for 24-hour recording (5-min segments)
 files <- list.files("24h_recording", pattern = "\\.wav$", full.names = TRUE)
 
-aci_diurnal <- tibble(file = files) %>%
+aci_diurnal <- tibble(file = files) |>
   mutate(
     hour = as.numeric(str_extract(file, "\\d{2}(?=h)")),
     aci = map_dbl(file, ~{
@@ -206,11 +206,11 @@ adi_normalized <- adi / adi_max_possible  # Normalize to 0-1
 # Compare ADI across three habitats
 habitats <- c("forest", "grassland", "wetland")
 
-adi_comparison <- habitats %>%
+adi_comparison <- habitats |>
   map_dfr(function(habitat) {
     files <- list.files(habitat, pattern = "\\.wav$", full.names = TRUE)
 
-    files %>%
+    files |>
       map_dfr(~{
         audio <- readWave(.x)
         result <- acoustic_diversity(audio, max_freq = 10000, db_threshold = -50)
@@ -295,7 +295,7 @@ Same as ADI: `max_freq`, `db_threshold`, `freq_step`
 
 ```r
 # Calculate both ADI and AEI for multiple recordings
-soundscape_metrics <- files %>%
+soundscape_metrics <- files |>
   map_dfr(function(file) {
     audio <- readWave(file)
 
@@ -389,7 +389,7 @@ bi <- bi_result$left_area
 
 ```r
 # Calculate BI across 24 hours
-bi_temporal <- files %>%
+bi_temporal <- files |>
   map_dfr(function(file) {
     audio <- readWave(file)
     bi <- bioacoustic_index(audio, min_freq = 2000, max_freq = 8000)
@@ -482,11 +482,11 @@ ndsi_val <- ndsi_result$ndsi_left
 # Compare NDSI across disturbance gradient
 sites <- c("natural", "moderate", "disturbed")
 
-ndsi_gradient <- sites %>%
+ndsi_gradient <- sites |>
   map_dfr(function(site) {
     files <- list.files(site, pattern = "\\.wav$", full.names = TRUE)
 
-    files %>%
+    files |>
       map_dfr(~{
         audio <- readWave(.x)
         result <- ndsi(audio, anthro_min = 1000, anthro_max = 2000,
@@ -590,11 +590,11 @@ calculate_soundscape_profile <- function(audio_file) {
 }
 
 # Apply to all files
-soundscape_profiles <- files %>%
+soundscape_profiles <- files |>
   map_dfr(calculate_soundscape_profile)
 
 # PCA for dimensionality reduction
-pca <- prcomp(soundscape_profiles %>% select(-file), scale. = TRUE)
+pca <- prcomp(soundscape_profiles |> select(-file), scale. = TRUE)
 
 # Biplot
 library(ggfortify)

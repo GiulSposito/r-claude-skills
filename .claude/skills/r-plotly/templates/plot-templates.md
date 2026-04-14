@@ -12,7 +12,7 @@ Copy-paste ready templates for common plotly visualizations in R. Replace placeh
 
 2. **Comments**: Lines starting with `#` explain options - remove or uncomment as needed
 
-3. **Pipe Syntax**: Templates use `%>%` for readability - ensure magrittr/dplyr loaded
+3. **Pipe Syntax**: Templates use native pipe `|>` (R ≥ 4.1)
 
 4. **Common Modifications**:
    - Colors: Change `colors = "Set1"` or use `c("red", "blue", ...)`
@@ -41,7 +41,7 @@ plot_ly(
     "<b>X:</b> %{x}<br>",
     "<b>Y:</b> %{y}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Scatter Plot Title",
     xaxis = list(title = "X Axis Label"),
@@ -66,7 +66,7 @@ plot_ly(
     "<b>X:</b> %{x}<br>",
     "<b>Y:</b> %{y}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Grouped Scatter Plot",
     xaxis = list(title = "X Axis"),
@@ -99,7 +99,7 @@ plot_ly(
     "Y: %{y}<br>",
     "Size: %{marker.size:,.0f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Bubble Chart",
     xaxis = list(title = "X Axis"),
@@ -109,21 +109,21 @@ plot_ly(
 
 ### 4. Scatter with Smooth Line
 ```r
-plot_ly(data = DATA) %>%
+plot_ly(data = DATA) |>
   add_markers(
     x = ~X_VAR,
     y = ~Y_VAR,
     marker = list(color = "#1f77b4", size = 8, opacity = 0.6),
     name = "Data Points",
     hovertemplate = "X: %{x}<br>Y: %{y}<extra></extra>"
-  ) %>%
+  ) |>
   add_lines(
     x = ~X_VAR,
     y = fitted(loess(Y_VAR ~ X_VAR, data = DATA)),  # or use your fitted values
     line = list(color = "#ff7f0e", width = 3),
     name = "Smooth Line",
     hoverinfo = "skip"
-  ) %>%
+  ) |>
   layout(
     title = "Scatter with Trend Line",
     xaxis = list(title = "X Axis"),
@@ -150,7 +150,7 @@ plot_ly(
     "Y: %{y}<br>",
     "Z: %{z}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "3D Scatter Plot",
     scene = list(
@@ -175,7 +175,7 @@ plot_ly(
   mode = "lines",
   line = list(color = "#1f77b4", width = 2),
   hovertemplate = "X: %{x}<br>Y: %{y:.2f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Line Plot Title",
     xaxis = list(title = "X Axis"),
@@ -186,28 +186,28 @@ plot_ly(
 
 ### 7. Multiple Line Series
 ```r
-plot_ly(data = DATA) %>%
+plot_ly(data = DATA) |>
   add_lines(
     x = ~X_VAR,
     y = ~Y_VAR1,
     name = "Series 1",
     line = list(color = "#1f77b4", width = 2),
     hovertemplate = "Series 1: %{y:.2f}<extra></extra>"
-  ) %>%
+  ) |>
   add_lines(
     x = ~X_VAR,
     y = ~Y_VAR2,
     name = "Series 2",
     line = list(color = "#ff7f0e", width = 2),
     hovertemplate = "Series 2: %{y:.2f}<extra></extra>"
-  ) %>%
+  ) |>
   add_lines(
     x = ~X_VAR,
     y = ~Y_VAR3,
     name = "Series 3",
     line = list(color = "#2ca02c", width = 2),
     hovertemplate = "Series 3: %{y:.2f}<extra></extra>"
-  ) %>%
+  ) |>
   layout(
     title = "Multiple Time Series",
     xaxis = list(title = "Time"),
@@ -229,7 +229,7 @@ plot_ly(
   fillcolor = "rgba(31, 119, 180, 0.3)",
   line = list(color = "#1f77b4", width = 2),
   hovertemplate = "X: %{x}<br>Y: %{y:,.0f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Area Chart",
     xaxis = list(title = "X Axis"),
@@ -248,7 +248,7 @@ plot_ly(
   mode = "lines",
   line = list(color = "#1f77b4", width = 2),
   hovertemplate = "%{x|%Y-%m-%d}<br>Value: %{y:,.2f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Time Series with Slider",
     xaxis = list(
@@ -285,7 +285,7 @@ plot_ly(
     line = list(color = "#000000", width = 1)
   ),
   hovertemplate = "<b>%{x}</b><br>Value: %{y:,.0f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Bar Chart Title",
     xaxis = list(title = "Categories"),
@@ -308,7 +308,7 @@ plot_ly(
     "Group: %{fullData.name}<br>",
     "Value: %{y:,.0f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Grouped Bar Chart",
     xaxis = list(title = "Categories"),
@@ -333,7 +333,7 @@ plot_ly(
     "<b>%{x}</b><br>",
     "%{fullData.name}: %{y:,.0f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Stacked Bar Chart",
     xaxis = list(title = "Categories"),
@@ -346,7 +346,7 @@ plot_ly(
 ### 13. Horizontal Bar Chart
 ```r
 plot_ly(
-  data = DATA %>% arrange(VALUE_VAR),  # Sort for better visualization
+  data = DATA |> arrange(VALUE_VAR),  # Sort for better visualization
   y = ~CATEGORY_VAR,
   x = ~VALUE_VAR,
   type = "bar",
@@ -358,7 +358,7 @@ plot_ly(
     colorbar = list(title = "Value")
   ),
   hovertemplate = "<b>%{y}</b><br>Value: %{x:,.0f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Horizontal Bar Chart",
     xaxis = list(title = "Values"),
@@ -387,7 +387,7 @@ plot_ly(
     "Mean: %{y:.2f}<br>",
     "SD: %{error_y.array:.2f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Bar Chart with Error Bars",
     xaxis = list(title = "Categories"),
@@ -409,7 +409,7 @@ plot_ly(
   decreasing = list(marker = list(color = "#d62728")),
   totals = list(marker = list(color = "#1f77b4")),
   hovertemplate = "<b>%{x}</b><br>Change: %{y:,.0f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Waterfall Chart",
     xaxis = list(title = "Categories"),
@@ -434,7 +434,7 @@ plot_ly(
     line = list(color = "#FFFFFF", width = 1)
   ),
   hovertemplate = "Range: %{x}<br>Count: %{y}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Histogram",
     xaxis = list(title = "Value"),
@@ -459,7 +459,7 @@ plot_ly(
     "Q1: %{q1:.2f}<br>",
     "Q3: %{q3:.2f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Box Plot Distribution",
     xaxis = list(title = "Groups"),
@@ -481,7 +481,7 @@ plot_ly(
   meanline = list(visible = TRUE),
   opacity = 0.6,
   hovertemplate = "Value: %{y:.2f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Violin Plot Distribution",
     xaxis = list(title = "Groups"),
@@ -503,12 +503,12 @@ plot_ly(
   nbinsx = 30,
   nbinsy = 30,
   hovertemplate = "X: %{x}<br>Y: %{y}<br>Count: %{z}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "2D Histogram",
     xaxis = list(title = "X Variable"),
     yaxis = list(title = "Y Variable")
-  ) %>%
+  ) |>
   colorbar(title = "Count")
 ```
 
@@ -532,7 +532,7 @@ plot_ly(
     "<b>%{text}</b><br>",
     "Value: %{z:,.0f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Choropleth Map",
     geo = list(
@@ -541,7 +541,7 @@ plot_ly(
       showlakes = TRUE,
       lakecolor = toRGB("white")
     )
-  ) %>%
+  ) |>
   colorbar(title = "Value")
 ```
 
@@ -570,7 +570,7 @@ plot_ly(
     "Lon: %{lon:.4f}<br>",
     "Value: %{marker.color:,.0f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Scatter Geographic Map",
     geo = list(
@@ -602,7 +602,7 @@ plot_ly(
     line = list(width = 1, color = "white")
   ),
   hovertemplate = "%{text}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Bubble Map",
     geo = list(
@@ -631,7 +631,7 @@ plot_ly(
   type = "surface",
   colorscale = "Viridis",
   hovertemplate = "X: %{x}<br>Y: %{y}<br>Z: %{z:.2f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "3D Surface Plot",
     scene = list(
@@ -642,7 +642,7 @@ plot_ly(
         eye = list(x = 1.5, y = 1.5, z = 1.5)
       )
     )
-  ) %>%
+  ) |>
   colorbar(title = "Z Value")
 ```
 
@@ -668,7 +668,7 @@ plot_ly(
     "Y: %{y:.2f}<br>",
     "Z: %{z:.2f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "3D Scatter with Projections",
     scene = list(
@@ -713,17 +713,17 @@ plot_ly(
     "Y: %{y:.2f}<br>",
     "Size: %{marker.size:,.0f}<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Animated Scatter Plot",
     xaxis = list(title = "X Axis", range = c(MIN_X, MAX_X)),  # Fixed range
     yaxis = list(title = "Y Axis", range = c(MIN_Y, MAX_Y))
-  ) %>%
+  ) |>
   animation_opts(
     frame = 1000,  # 1000ms per frame
     transition = 500,  # 500ms transition
     redraw = FALSE
-  ) %>%
+  ) |>
   animation_slider(
     currentvalue = list(prefix = "Year: ", font = list(color = "black"))
   )
@@ -746,22 +746,22 @@ plot_ly(
   text = ~VALUE_VAR,
   textposition = "outside",
   hovertemplate = "<b>%{y}</b><br>Value: %{x:,.0f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = "Racing Bar Chart",
     xaxis = list(title = "Value", range = c(0, MAX_VALUE * 1.1)),
     yaxis = list(title = "", categoryorder = "trace"),
     showlegend = FALSE,
     margin = list(l = 150)
-  ) %>%
+  ) |>
   animation_opts(
     frame = 500,
     transition = 300,
     redraw = TRUE  # Important for racing bars
-  ) %>%
+  ) |>
   animation_slider(
     currentvalue = list(prefix = "Period: ")
-  ) %>%
+  ) |>
   animation_button(
     x = 1, xanchor = "right",
     y = 0, yanchor = "bottom"
@@ -770,7 +770,7 @@ plot_ly(
 
 ### 27. Animation with Trails
 ```r
-plot_ly(data = DATA) %>%
+plot_ly(data = DATA) |>
   add_markers(
     x = ~X_VAR,
     y = ~Y_VAR,
@@ -783,7 +783,7 @@ plot_ly(data = DATA) %>%
       "X: %{x:.2f}<br>",
       "Y: %{y:.2f}<extra></extra>"
     )
-  ) %>%
+  ) |>
   add_lines(
     x = ~X_VAR,
     y = ~Y_VAR,
@@ -794,12 +794,12 @@ plot_ly(data = DATA) %>%
     line = list(width = 1),
     showlegend = FALSE,
     hoverinfo = "skip"
-  ) %>%
+  ) |>
   layout(
     title = "Animation with Movement Trails",
     xaxis = list(title = "X Axis"),
     yaxis = list(title = "Y Axis")
-  ) %>%
+  ) |>
   animation_opts(
     frame = 500,
     transition = 400,
@@ -842,7 +842,7 @@ server <- function(input, output, session) {
         color = "#1f77b4",
         line = list(color = "white", width = 1)
       )
-    ) %>%
+    ) |>
       layout(
         title = paste("Distribution of", input$variable),
         xaxis = list(title = input$variable),
@@ -873,7 +873,7 @@ server <- function(input, output, session) {
       mode = "markers",
       marker = list(size = 10),
       source = "scatterSource"  # Important: name the source
-    ) %>%
+    ) |>
       layout(
         title = "Click on Points",
         xaxis = list(title = "X Variable"),
@@ -928,7 +928,7 @@ server <- function(input, output, session) {
       type = "scatter",
       mode = "markers",
       marker = list(size = 10, color = "#1f77b4")
-    ) %>%
+    ) |>
       layout(
         title = "Dynamic Updates with PlotlyProxy",
         xaxis = list(title = "X", range = c(-3, 3)),
@@ -941,7 +941,7 @@ server <- function(input, output, session) {
     new_point <- data.frame(x = rnorm(1), y = rnorm(1))
     rv$data <- rbind(rv$data, new_point)
 
-    plotlyProxy("proxyPlot", session) %>%
+    plotlyProxy("proxyPlot", session) |>
       plotlyProxyInvoke(
         "addTraces",
         list(
@@ -995,9 +995,9 @@ hovertemplate = paste0(
 
 ### Multiple Y-Axes
 ```r
-plot_ly(data = DATA) %>%
-  add_lines(x = ~X_VAR, y = ~Y1_VAR, name = "Series 1", yaxis = "y") %>%
-  add_lines(x = ~X_VAR, y = ~Y2_VAR, name = "Series 2", yaxis = "y2") %>%
+plot_ly(data = DATA) |>
+  add_lines(x = ~X_VAR, y = ~Y1_VAR, name = "Series 1", yaxis = "y") |>
+  add_lines(x = ~X_VAR, y = ~Y2_VAR, name = "Series 2", yaxis = "y2") |>
   layout(
     yaxis = list(title = "Y1 Axis"),
     yaxis2 = list(
@@ -1016,7 +1016,7 @@ subplot(
   nrows = 2,
   shareX = TRUE,
   titleY = TRUE
-) %>%
+) |>
   layout(title = "Combined Subplots")
 ```
 
@@ -1038,7 +1038,7 @@ save_image(p, "plot.png", width = 1200, height = 800)
 
 ### Enable Download Button
 ```r
-plot_ly(...) %>%
+plot_ly(...) |>
   config(
     toImageButtonOptions = list(
       format = "png",  # or "svg", "jpeg"
@@ -1051,7 +1051,7 @@ plot_ly(...) %>%
 
 ### Disable Interaction
 ```r
-plot_ly(...) %>%
+plot_ly(...) |>
   config(
     displayModeBar = FALSE,  # Hide toolbar
     staticPlot = TRUE  # Disable all interactions

@@ -538,7 +538,7 @@ smoothed_probs <- zoo::rollmean(
 **2. Confidence thresholding**:
 ```r
 # Only keep high-confidence predictions
-detections <- predictions %>%
+detections <- predictions |>
   filter(max_prob > 0.7)  # Tune threshold per species/class
 ```
 
@@ -546,8 +546,8 @@ detections <- predictions %>%
 ```r
 # Remove very short detections (likely false positives)
 min_duration_sec <- 1.0
-detections <- detections %>%
-  group_by(class) %>%
+detections <- detections |>
+  group_by(class) |>
   filter(duration >= min_duration_sec)
 ```
 
@@ -556,7 +556,7 @@ detections <- detections %>%
 # Remove overlapping detections (keep highest confidence)
 nms <- function(detections, iou_threshold = 0.5) {
   # Sort by confidence
-  detections <- detections %>% arrange(desc(confidence))
+  detections <- detections |> arrange(desc(confidence))
 
   keep <- c()
   for (i in 1:nrow(detections)) {
@@ -614,8 +614,8 @@ total_loss <- 0.7 * strong_loss + 0.3 * weak_loss
 # Query set: Examples to classify
 
 # Compute prototypes (mean of support embeddings)
-prototypes <- support_embeddings %>%
-  group_by(class) %>%
+prototypes <- support_embeddings |>
+  group_by(class) |>
   summarise(prototype = mean(embedding))
 
 # Classify query based on nearest prototype

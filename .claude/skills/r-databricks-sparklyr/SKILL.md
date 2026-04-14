@@ -60,15 +60,15 @@ Use this skill when:
 library(sparklyr)
 sc <- spark_connect(method = "databricks")
 
-summary <- spark_read_table(sc, "huge_table") %>%
-  filter(date >= "2024-01-01") %>%
-  group_by(category) %>%
-  summarize(total = sum(amount)) %>%
+summary <- spark_read_table(sc, "huge_table") |>
+  filter(date >= "2024-01-01") |>
+  group_by(category) |>
+  summarize(total = sum(amount)) |>
   collect()  # Small result
 
 # Local analysis (r-datascience skill)
 library(tidyverse)
-summary %>%
+summary |>
   ggplot(aes(category, total)) +
   geom_col()
 ```
@@ -123,7 +123,7 @@ data <- spark_read_table(sc, "catalog.schema.table")
 data <- spark_read_delta(sc, path = "dbfs:/path/to/delta")
 
 # Write Delta table
-result %>%
+result |>
   spark_write_delta(
     path = "dbfs:/output/table",
     mode = "overwrite",
@@ -154,24 +154,24 @@ data <- spark_read_csv(
 **Key Principles**:
 ```r
 # Lazy evaluation - no execution yet
-query <- spark_df %>%
-  filter(year == 2024, status == "active") %>%
-  group_by(category) %>%
+query <- spark_df |>
+  filter(year == 2024, status == "active") |>
+  group_by(category) |>
   summarize(
     count = n(),
     total = sum(amount),
     avg = mean(amount)
-  ) %>%
+  ) |>
   arrange(desc(total))
 
 # Inspect SQL before executing
-query %>% show_query()
+query |> show_query()
 
 # Execute and bring to R (only aggregated result)
-result <- query %>% collect()
+result <- query |> collect()
 
 # OR materialize in Spark for reuse
-cached <- query %>% compute("temp_table")
+cached <- query |> compute("temp_table")
 ```
 
 **Performance Tips**:
@@ -194,9 +194,9 @@ cached <- query %>% compute("temp_table")
 **Patterns**:
 ```r
 # Row numbers within groups
-spark_df %>%
-  group_by(user_id) %>%
-  arrange(date) %>%
+spark_df |>
+  group_by(user_id) |>
+  arrange(date) |>
   mutate(
     order_number = row_number(),
     prev_amount = lag(amount, 1),
@@ -204,8 +204,8 @@ spark_df %>%
   )
 
 # Cumulative aggregations
-spark_df %>%
-  arrange(date) %>%
+spark_df |>
+  arrange(date) |>
   mutate(
     cumulative_sales = cumsum(sales),
     rolling_avg_7d = mean(sales, na.rm = TRUE)
@@ -226,25 +226,25 @@ spark_df %>%
 **Patterns**:
 ```r
 # Standard join
-sales %>%
+sales |>
   left_join(customers, by = "customer_id")
 
 # Modern join_by syntax
-sales %>%
+sales |>
   left_join(customers, join_by(customer_id == id))
 
 # Broadcast small dimension table
-large_fact %>%
+large_fact |>
   left_join(
     sdf_broadcast(small_dimension),
     by = "dim_key"
   )
 
 # Optimized join with repartitioning
-large_table1 %>%
-  sdf_repartition(partition_by = "key") %>%
+large_table1 |>
+  sdf_repartition(partition_by = "key") |>
   inner_join(
-    large_table2 %>% sdf_repartition(partition_by = "key"),
+    large_table2 |> sdf_repartition(partition_by = "key"),
     by = "key"
   )
 ```
@@ -264,17 +264,17 @@ large_table1 %>%
 **Complete ML Workflow**:
 ```r
 # 1. Split data
-splits <- spark_df %>%
+splits <- spark_df |>
   sdf_random_split(training = 0.8, testing = 0.2, seed = 123)
 
 # 2. Create pipeline
-pipeline <- ml_pipeline(sc) %>%
-  ft_string_indexer("category", "category_idx") %>%
-  ft_one_hot_encoder("category_idx", "category_vec") %>%
+pipeline <- ml_pipeline(sc) |>
+  ft_string_indexer("category", "category_idx") |>
+  ft_one_hot_encoder("category_idx", "category_vec") |>
   ft_vector_assembler(
     c("category_vec", "feature1", "feature2"),
     "features"
-  ) %>%
+  ) |>
   ml_random_forest_classifier(
     features_col = "features",
     label_col = "label",
@@ -321,7 +321,7 @@ ml_save(model, "dbfs:/models/my_model")
 delta_df <- spark_read_delta(sc, path = "dbfs:/delta/table")
 
 # Write Delta (atomic)
-spark_df %>%
+spark_df |>
   spark_write_delta(
     path = "dbfs:/delta/output",
     mode = "overwrite",
@@ -360,32 +360,32 @@ history <- tbl(sc, sql("DESCRIBE HISTORY delta.`/path`"))
 **Optimization Checklist**:
 ```r
 # 1. Filter early (predicate pushdown)
-spark_df %>%
-  filter(date >= "2024-01-01", status == "active") %>%  # Push down!
-  group_by(category) %>%
+spark_df |>
+  filter(date >= "2024-01-01", status == "active") |>  # Push down!
+  group_by(category) |>
   summarize(total = sum(amount))
 
 # 2. Broadcast small tables
-large %>%
+large |>
   left_join(sdf_broadcast(small_lookup), by = "key")
 
 # 3. Cache reused data
-intermediate <- spark_df %>%
-  filter(conditions) %>%
-  mutate(complex_calc) %>%
+intermediate <- spark_df |>
+  filter(conditions) |>
+  mutate(complex_calc) |>
   compute("cached_table")  # Reuse without recomputing
 
 # 4. Tune partitions
-spark_df %>%
+spark_df |>
   sdf_repartition(partitions = 200)  # Increase parallelism
 
 # 5. Coalesce before writing
-result %>%
-  sdf_coalesce(partitions = 10) %>%
+result |>
+  sdf_coalesce(partitions = 10) |>
   spark_write_parquet("output")
 
 # 6. Inspect execution plan
-query %>% explain()
+query |> explain()
 ```
 
 ### 9. Production Deployment
@@ -415,9 +415,9 @@ sc <- spark_connect(method = "databricks")
 # Error handling
 tryCatch({
   # ETL pipeline
-  result <- spark_read_table(sc, "source_table") %>%
-    filter(date == processing_date) %>%
-    mutate(processed_at = now()) %>%
+  result <- spark_read_table(sc, "source_table") |>
+    filter(date == processing_date) |>
+    mutate(processed_at = now()) |>
     # ... transformations ...
     compute("staging_table")
 
@@ -426,7 +426,7 @@ tryCatch({
   if (row_count == 0) stop("No data processed!")
 
   # Write output
-  result %>%
+  result |>
     spark_write_table(
       "output_table",
       mode = "overwrite"
@@ -449,12 +449,12 @@ tryCatch({
 **Memory Errors**:
 ```r
 # Increase partitions
-df %>% sdf_repartition(partitions = 400)
+df |> sdf_repartition(partitions = 400)
 
 # Avoid collect() on large data
-df %>%
-  group_by(category) %>%
-  summarize(metrics) %>%  # Aggregate first
+df |>
+  group_by(category) |>
+  summarize(metrics) |>  # Aggregate first
   collect()
 ```
 
@@ -472,14 +472,14 @@ Sys.getenv("DATABRICKS_TOKEN")
 **Translation Errors**:
 ```r
 # See generated SQL
-query %>% show_query()
+query |> show_query()
 
 # Use Spark SQL directly
-df %>% mutate(result = expr("spark_function(column)"))
+df |> mutate(result = expr("spark_function(column)"))
 
 # Or use spark_apply() for custom R code
-df %>% spark_apply(function(data) {
-  data %>% mutate(result = custom_r_function(col))
+df |> spark_apply(function(data) {
+  data |> mutate(result = custom_r_function(col))
 })
 ```
 
@@ -492,15 +492,15 @@ Operations build a query plan but don't execute until collect() or compute().
 
 ```r
 # No execution yet - just building plan
-query <- spark_df %>%
-  filter(x > 10) %>%
-  group_by(category) %>%
+query <- spark_df |>
+  filter(x > 10) |>
+  group_by(category) |>
   summarize(total = sum(amount))
 
-query %>% show_query()    # See SQL without executing
-query %>% explain()       # See execution plan
-query %>% collect()       # Execute and bring to R
-query %>% compute("tmp")  # Execute and cache in Spark
+query |> show_query()    # See SQL without executing
+query |> explain()       # See execution plan
+query |> collect()       # Execute and bring to R
+query |> compute("tmp")  # Execute and cache in Spark
 ```
 
 ### 2. Distributed vs Local
@@ -531,17 +531,17 @@ sc <- spark_connect(method = "databricks")
 data <- spark_read_table(sc, "catalog.schema.table")
 
 # Quick stats
-data %>% glimpse()
-data %>% sdf_nrow()
+data |> glimpse()
+data |> sdf_nrow()
 
 # Sample for local exploration
-sample <- data %>%
-  sdf_sample(0.001) %>%
+sample <- data |>
+  sdf_sample(0.001) |>
   collect()
 
 # Analyze sample locally with tidyverse
 library(ggplot2)
-sample %>%
+sample |>
   ggplot(aes(x, y)) +
   geom_point()
 ```
@@ -552,8 +552,8 @@ sample %>%
 raw <- spark_read_delta(sc, "bronze/raw_events")
 
 # Transform (stays in Spark)
-cleaned <- raw %>%
-  filter(!is.na(important_field)) %>%
+cleaned <- raw |>
+  filter(!is.na(important_field)) |>
   mutate(
     processed_date = today(),
     category = case_when(
@@ -561,12 +561,12 @@ cleaned <- raw %>%
       type == "B" ~ "Type B",
       TRUE ~ "Other"
     )
-  ) %>%
+  ) |>
   compute("silver.cleaned_events")
 
 # Aggregate
-aggregated <- cleaned %>%
-  group_by(date, category) %>%
+aggregated <- cleaned |>
+  group_by(date, category) |>
   summarize(
     count = n(),
     total_amount = sum(amount),
@@ -574,7 +574,7 @@ aggregated <- cleaned %>%
   )
 
 # Write
-aggregated %>%
+aggregated |>
   spark_write_table(
     "gold.daily_summary",
     mode = "overwrite",
@@ -591,14 +591,14 @@ sc <- spark_connect(
 )
 
 # 2. Test on sample
-spark_read_table(sc, "large_table") %>%
-  sdf_sample(0.01) %>%
-  <your_transformations> %>%
+spark_read_table(sc, "large_table") |>
+  sdf_sample(0.01) |>
+  <your_transformations> |>
   collect()
 
 # 3. Run on full data when ready
-spark_read_table(sc, "large_table") %>%
-  <your_transformations> %>%
+spark_read_table(sc, "large_table") |>
+  <your_transformations> |>
   spark_write_table("output")
 
 # 4. Promote to Databricks notebook for production
@@ -634,13 +634,13 @@ spark_read_table(sc, "large_table") %>%
 ### ⚠️ Never collect() Large Data
 ```r
 # BAD - May crash R!
-all_data <- spark_read_table(sc, "billion_row_table") %>%
+all_data <- spark_read_table(sc, "billion_row_table") |>
   collect()
 
 # GOOD - Aggregate first
-summary <- spark_read_table(sc, "billion_row_table") %>%
-  group_by(category) %>%
-  summarize(metrics) %>%
+summary <- spark_read_table(sc, "billion_row_table") |>
+  group_by(category) |>
+  summarize(metrics) |>
   collect()  # Small result
 ```
 

@@ -15,7 +15,7 @@ Callbacks are objects that perform actions at various stages of training. They e
 Callbacks are passed to `fit()`:
 
 ```r
-model %>% fit(
+model |> fit(
   x_train, y_train,
   epochs = 100,
   callbacks = list(
@@ -53,7 +53,7 @@ early_stop <- callback_early_stopping(
   restore_best_weights = TRUE
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   validation_split = 0.2,
   epochs = 100,
@@ -120,7 +120,7 @@ checkpoint <- callback_model_checkpoint(
   verbose = 1
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   validation_data = list(x_val, y_val),
   epochs = 100,
@@ -151,7 +151,7 @@ weights_checkpoint <- callback_model_checkpoint(
 )
 
 # Later, load weights
-model %>% load_model_weights("models/weights_epoch_25.weights.h5")
+model |> load_model_weights("models/weights_epoch_25.weights.h5")
 ```
 
 ### callback_reduce_lr_on_plateau()
@@ -183,7 +183,7 @@ reduce_lr <- callback_reduce_lr_on_plateau(
   verbose = 1
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   validation_data = list(x_val, y_val),
   epochs = 100,
@@ -232,7 +232,7 @@ tensorboard_callback <- callback_tensorboard(
   write_graph = TRUE
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   validation_data = list(x_val, y_val),
   epochs = 50,
@@ -277,7 +277,7 @@ csv_logger <- callback_csv_logger(
   append = FALSE
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   validation_data = list(x_val, y_val),
   epochs = 100,
@@ -317,7 +317,7 @@ lr_scheduler <- callback_learning_rate_scheduler(
   verbose = 1
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   epochs = 50,
   callbacks = list(lr_scheduler)
@@ -369,7 +369,7 @@ Stops training when NaN loss is encountered.
 
 **Example:**
 ```r
-model %>% fit(
+model |> fit(
   x_train, y_train,
   epochs = 100,
   callbacks = list(callback_terminate_on_nan())
@@ -399,7 +399,7 @@ backup_callback <- callback_backup_and_restore(
 )
 
 # Training will resume from backup if interrupted
-model %>% fit(
+model |> fit(
   x_train, y_train,
   epochs = 100,
   callbacks = list(backup_callback)
@@ -457,7 +457,7 @@ MetricLogger <- new_callback_class(
 # Usage
 metric_logger <- MetricLogger(metric_name = "val_accuracy")
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   validation_split = 0.2,
   epochs = 10,
@@ -501,7 +501,7 @@ GradientMonitor <- new_callback_class(
 # Usage
 grad_monitor <- GradientMonitor(log_freq = 100)
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   epochs = 5,
   callbacks = list(grad_monitor)
@@ -546,13 +546,13 @@ warmup <- WarmupScheduler(
   target_lr = 0.001
 )
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.0001),
   loss = "categorical_crossentropy",
   metrics = "accuracy"
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   epochs = 50,
   callbacks = list(warmup)
@@ -606,7 +606,7 @@ smart_stop <- SmartEarlyStopping(
   patience = 10
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   validation_data = list(x_val, y_val),
   epochs = 100,
@@ -657,7 +657,7 @@ WeightStatsLogger <- new_callback_class(
 # Usage
 weight_stats <- WeightStatsLogger(log_freq = 5)
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   epochs = 50,
   callbacks = list(weight_stats)
@@ -711,7 +711,7 @@ callbacks_list <- list(
 )
 
 # Train with all callbacks
-model %>% fit(
+model |> fit(
   x_train, y_train,
   validation_data = list(x_val, y_val),
   epochs = 100,

@@ -21,13 +21,13 @@ The native Keras3 format, ideal for most use cases.
 library(keras3)
 
 # Build a simple model
-model <- keras_model_sequential() %>%
-  layer_dense(units = 64, activation = "relu", input_shape = 10) %>%
-  layer_dropout(rate = 0.5) %>%
-  layer_dense(units = 32, activation = "relu") %>%
+model <- keras_model_sequential() |>
+  layer_dense(units = 64, activation = "relu", input_shape = 10) |>
+  layer_dropout(rate = 0.5) |>
+  layer_dense(units = 32, activation = "relu") |>
   layer_dense(units = 1, activation = "sigmoid")
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.001),
   loss = "binary_crossentropy",
   metrics = c("accuracy")
@@ -37,7 +37,7 @@ model %>% compile(
 x_train <- array(rnorm(1000 * 10), dim = c(1000, 10))
 y_train <- array(rbinom(1000, 1, 0.5), dim = c(1000, 1))
 
-history <- model %>% fit(
+history <- model |> fit(
   x = x_train,
   y = y_train,
   epochs = 5,
@@ -70,7 +70,7 @@ save_model(model, "checkpoint.keras")
 
 # Later: Resume training
 model <- load_model("checkpoint.keras")
-history <- model %>% fit(
+history <- model |> fit(
   x = x_train,
   y = y_train,
   epochs = 5,  # Additional epochs
@@ -106,12 +106,12 @@ CustomLayer <- Layer(
 )
 
 # Build model with custom layer
-model <- keras_model_sequential() %>%
-  layer_input(shape = 10) %>%
-  CustomLayer(units = 32) %>%
+model <- keras_model_sequential() |>
+  layer_input(shape = 10) |>
+  CustomLayer(units = 32) |>
   layer_dense(units = 1)
 
-model %>% compile(optimizer = "adam", loss = "mse")
+model |> compile(optimizer = "adam", loss = "mse")
 
 # Save
 save_model(model, "custom_model.keras")
@@ -135,11 +135,11 @@ library(keras3)
 # Sys.setenv(KERAS_BACKEND = "tensorflow")
 
 # Build model
-model <- keras_model_sequential() %>%
-  layer_dense(units = 64, activation = "relu", input_shape = 10) %>%
+model <- keras_model_sequential() |>
+  layer_dense(units = 64, activation = "relu", input_shape = 10) |>
   layer_dense(units = 1, activation = "sigmoid")
 
-model %>% compile(
+model |> compile(
   optimizer = "adam",
   loss = "binary_crossentropy"
 )
@@ -159,19 +159,19 @@ export_savedmodel(model, "saved_model_dir/")
 loaded_model <- load_savedmodel("saved_model_dir/")
 
 # Use for predictions
-predictions <- loaded_model %>% predict(x_test)
+predictions <- loaded_model |> predict(x_test)
 ```
 
 ### SavedModel for TensorFlow Serving
 
 ```r
 # Export with serving signature
-model <- keras_model_sequential() %>%
-  layer_input(shape = 10, name = "input_features") %>%
-  layer_dense(units = 64, activation = "relu") %>%
+model <- keras_model_sequential() |>
+  layer_input(shape = 10, name = "input_features") |>
+  layer_dense(units = 64, activation = "relu") |>
   layer_dense(units = 1, activation = "sigmoid", name = "output")
 
-model %>% compile(optimizer = "adam", loss = "binary_crossentropy")
+model |> compile(optimizer = "adam", loss = "binary_crossentropy")
 
 # Export for serving
 export_savedmodel(model, "serving_model/1/")  # Version 1
@@ -215,23 +215,23 @@ Save and load weights without architecture or optimizer state.
 
 ```r
 # Save weights only
-model %>% save_model_weights("model_weights.weights.h5")
+model |> save_model_weights("model_weights.weights.h5")
 
 # Or use HDF5 format
-model %>% save_model_weights("model_weights.h5")
+model |> save_model_weights("model_weights.h5")
 
 # Load weights into existing model
-new_model <- keras_model_sequential() %>%
-  layer_dense(units = 64, activation = "relu", input_shape = 10) %>%
-  layer_dropout(rate = 0.5) %>%
-  layer_dense(units = 32, activation = "relu") %>%
+new_model <- keras_model_sequential() |>
+  layer_dense(units = 64, activation = "relu", input_shape = 10) |>
+  layer_dropout(rate = 0.5) |>
+  layer_dense(units = 32, activation = "relu") |>
   layer_dense(units = 1, activation = "sigmoid")
 
 # Must compile before loading weights (if you plan to train)
-new_model %>% compile(optimizer = "adam", loss = "binary_crossentropy")
+new_model |> compile(optimizer = "adam", loss = "binary_crossentropy")
 
 # Load weights
-new_model %>% load_model_weights("model_weights.weights.h5")
+new_model |> load_model_weights("model_weights.weights.h5")
 
 # Now ready for prediction or continued training
 ```
@@ -247,11 +247,11 @@ base_model <- application_resnet50(
 )
 
 # Load custom pre-trained weights
-base_model %>% load_model_weights("pretrained_resnet_weights.h5")
+base_model |> load_model_weights("pretrained_resnet_weights.h5")
 
 # 2. Checkpointing During Training
 model <- build_my_model()
-model %>% compile(optimizer = "adam", loss = "mse")
+model |> compile(optimizer = "adam", loss = "mse")
 
 checkpoint_callback <- callback_model_checkpoint(
   filepath = "checkpoints/weights_epoch_{epoch:02d}_loss_{loss:.4f}.weights.h5",
@@ -260,7 +260,7 @@ checkpoint_callback <- callback_model_checkpoint(
   monitor = "val_loss"
 )
 
-history <- model %>% fit(
+history <- model |> fit(
   x = x_train,
   y = y_train,
   validation_split = 0.2,
@@ -270,8 +270,8 @@ history <- model %>% fit(
 
 # 3. Model Ensembling: Share architecture, different weights
 architecture <- function() {
-  keras_model_sequential() %>%
-    layer_dense(units = 64, activation = "relu", input_shape = 10) %>%
+  keras_model_sequential() |>
+    layer_dense(units = 64, activation = "relu", input_shape = 10) |>
     layer_dense(units = 1)
 }
 
@@ -280,15 +280,15 @@ models <- list()
 for (i in 1:5) {
   set.seed(i)
   model <- architecture()
-  model %>% compile(optimizer = "adam", loss = "mse")
-  model %>% fit(x_train, y_train, epochs = 10, verbose = 0)
-  model %>% save_model_weights(sprintf("ensemble_model_%d.weights.h5", i))
+  model |> compile(optimizer = "adam", loss = "mse")
+  model |> fit(x_train, y_train, epochs = 10, verbose = 0)
+  model |> save_model_weights(sprintf("ensemble_model_%d.weights.h5", i))
   models[[i]] <- model
 }
 
 # Ensemble predictions
 ensemble_predict <- function(models, x) {
-  predictions <- lapply(models, function(m) m %>% predict(x, verbose = 0))
+  predictions <- lapply(models, function(m) m |> predict(x, verbose = 0))
   averaged <- Reduce("+", predictions) / length(predictions)
   return(averaged)
 }
@@ -316,10 +316,10 @@ config <- keras3::from_json(json_config)
 new_model <- keras_model$from_config(config)
 
 # Compile before use
-new_model %>% compile(optimizer = "adam", loss = "mse")
+new_model |> compile(optimizer = "adam", loss = "mse")
 
 # Optionally load weights
-new_model %>% load_model_weights("trained_weights.weights.h5")
+new_model |> load_model_weights("trained_weights.weights.h5")
 ```
 
 ### Use Cases for Config Export
@@ -350,14 +350,14 @@ Keras3 with JAX backend has specific considerations.
 library(keras3)
 
 # Build model
-model <- keras_model_sequential() %>%
-  layer_dense(units = 64, activation = "relu", input_shape = 10) %>%
+model <- keras_model_sequential() |>
+  layer_dense(units = 64, activation = "relu", input_shape = 10) |>
   layer_dense(units = 1)
 
-model %>% compile(optimizer = "adam", loss = "mse")
+model |> compile(optimizer = "adam", loss = "mse")
 
 # Train
-history <- model %>% fit(x_train, y_train, epochs = 5)
+history <- model |> fit(x_train, y_train, epochs = 5)
 
 # Save as .keras (recommended)
 save_model(model, "jax_model.keras")
@@ -492,7 +492,7 @@ model_checkpoint_callback <- callback_model_checkpoint(
   monitor = "val_loss"
 )
 
-history <- model %>% fit(
+history <- model |> fit(
   x_train, y_train,
   validation_split = 0.2,
   epochs = 50,
@@ -508,7 +508,7 @@ config <- get_config(model)
 saveRDS(config, "model_architecture_v1.rds")
 
 # Weights stored separately (e.g., model registry, cloud storage)
-model %>% save_model_weights("weights/model_v1_trained.weights.h5")
+model |> save_model_weights("weights/model_v1_trained.weights.h5")
 ```
 
 ### 4. Production Deployment

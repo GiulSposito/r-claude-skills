@@ -43,10 +43,10 @@ mel_layer <- layer_mel_spectrogram(
 )
 
 # Use in model
-model <- keras_model_sequential(input_shape = c(16000)) %>%
-  mel_layer() %>%
-  layer_conv_2d(32, c(3, 3), activation = "relu") %>%
-  layer_flatten() %>%
+model <- keras_model_sequential(input_shape = c(16000)) |>
+  mel_layer() |>
+  layer_conv_2d(32, c(3, 3), activation = "relu") |>
+  layer_flatten() |>
   layer_dense(10, activation = "softmax")
 ```
 
@@ -77,8 +77,8 @@ stft_layer <- layer_stft_spectrogram(
 )
 
 # Build audio processing pipeline
-audio_pipeline <- keras_model_sequential(input_shape = c(16000)) %>%
-  stft_layer() %>%
+audio_pipeline <- keras_model_sequential(input_shape = c(16000)) |>
+  stft_layer() |>
   layer_conv_2d(64, c(3, 3), activation = "relu")
 ```
 
@@ -143,8 +143,8 @@ Randomly flips images horizontally or vertically.
 flip_layer <- layer_random_flip(mode = "horizontal")
 
 # Apply during training only
-data_augmentation <- keras_model_sequential() %>%
-  layer_random_flip("horizontal") %>%
+data_augmentation <- keras_model_sequential() |>
+  layer_random_flip("horizontal") |>
   layer_random_rotation(0.2)
 ```
 
@@ -346,8 +346,8 @@ Applies CutMix augmentation (cut and paste image patches).
 cutmix_layer <- layer_cut_mix(alpha = 1.0)
 
 # Use in training pipeline
-model %>% fit(
-  train_dataset %>% dataset_map(function(x, y) {
+model |> fit(
+  train_dataset |> dataset_map(function(x, y) {
     cutmix_layer(list(x, y))
   }),
   epochs = 50
@@ -398,10 +398,10 @@ randaugment_layer <- layer_rand_augment(
 )
 
 # Complete augmentation pipeline
-augmentation_pipeline <- keras_model_sequential() %>%
-  layer_resizing(224, 224) %>%
-  layer_random_flip("horizontal") %>%
-  randaugment_layer() %>%
+augmentation_pipeline <- keras_model_sequential() |>
+  layer_resizing(224, 224) |>
+  layer_random_flip("horizontal") |>
+  randaugment_layer() |>
   layer_rescaling(scale = 1/255)
 ```
 
@@ -437,14 +437,14 @@ text_vectorizer <- layer_text_vectorization(
 )
 
 # Adapt to training data
-text_vectorizer %>% adapt(train_texts)
+text_vectorizer |> adapt(train_texts)
 
 # Use in model
-text_model <- keras_model_sequential(input_shape = c(1), dtype = "string") %>%
-  text_vectorizer() %>%
-  layer_embedding(input_dim = 10000, output_dim = 128) %>%
-  layer_global_average_pooling_1d() %>%
-  layer_dense(64, activation = "relu") %>%
+text_model <- keras_model_sequential(input_shape = c(1), dtype = "string") |>
+  text_vectorizer() |>
+  layer_embedding(input_dim = 10000, output_dim = 128) |>
+  layer_global_average_pooling_1d() |>
+  layer_dense(64, activation = "relu") |>
   layer_dense(1, activation = "sigmoid")
 ```
 
@@ -455,20 +455,20 @@ tfidf_vectorizer <- layer_text_vectorization(
   output_mode = "tf_idf"
 )
 
-tfidf_vectorizer %>% adapt(train_texts)
+tfidf_vectorizer |> adapt(train_texts)
 
 # TF-IDF model
-tfidf_model <- keras_model_sequential(input_shape = c(1), dtype = "string") %>%
-  tfidf_vectorizer() %>%
-  layer_dense(64, activation = "relu") %>%
+tfidf_model <- keras_model_sequential(input_shape = c(1), dtype = "string") |>
+  tfidf_vectorizer() |>
+  layer_dense(64, activation = "relu") |>
   layer_dense(num_classes, activation = "softmax")
 ```
 
 **Example - Custom Standardization:**
 ```r
 custom_standardize <- function(text) {
-  text %>%
-    tensorflow::tf$strings$lower() %>%
+  text |>
+    tensorflow::tf$strings$lower() |>
     tensorflow::tf$strings$regex_replace("[^a-z0-9 ]", "")
 }
 
@@ -507,13 +507,13 @@ category_lookup <- layer_string_lookup(
 )
 
 # Adapt to training data
-category_lookup %>% adapt(train_categories)
+category_lookup |> adapt(train_categories)
 
 # Use in model
-model <- keras_model_sequential() %>%
-  category_lookup() %>%
-  layer_embedding(input_dim = 101, output_dim = 16) %>%
-  layer_flatten() %>%
+model <- keras_model_sequential() |>
+  category_lookup() |>
+  layer_embedding(input_dim = 101, output_dim = 16) |>
+  layer_flatten() |>
   layer_dense(1)
 ```
 
@@ -524,7 +524,7 @@ multi_hot_lookup <- layer_string_lookup(
   output_mode = "multi_hot"
 )
 
-multi_hot_lookup %>% adapt(multi_label_data)
+multi_hot_lookup |> adapt(multi_label_data)
 ```
 
 ### layer_integer_lookup()
@@ -547,7 +547,7 @@ int_lookup <- layer_integer_lookup(
   num_oov_indices = 1
 )
 
-int_lookup %>% adapt(train_integer_features)
+int_lookup |> adapt(train_integer_features)
 
 # Reverse lookup (indices to values)
 reverse_lookup <- layer_integer_lookup(
@@ -610,8 +610,8 @@ hash_encoder <- layer_hashing(
 )
 
 # No adaptation needed - stateless transformation
-model <- keras_model_sequential() %>%
-  hash_encoder() %>%
+model <- keras_model_sequential() |>
+  hash_encoder() |>
   layer_dense(32, activation = "relu")
 ```
 
@@ -667,7 +667,7 @@ norm_layer <- layer_normalization(axis = -1)
 
 # Feature normalization (adapt to training data)
 feature_norm <- layer_normalization()
-feature_norm %>% adapt(train_features)
+feature_norm |> adapt(train_features)
 ```
 
 ### layer_discretization()
@@ -693,12 +693,12 @@ age_bins <- layer_discretization(
 
 # Automatic binning via adaptation
 auto_bins <- layer_discretization(num_bins = 10)
-auto_bins %>% adapt(train_numerical_features)
+auto_bins |> adapt(train_numerical_features)
 
 # Use in model
-model <- keras_model_sequential() %>%
-  auto_bins() %>%
-  layer_category_encoding(num_tokens = 11, output_mode = "one_hot") %>%
+model <- keras_model_sequential() |>
+  auto_bins() |>
+  layer_category_encoding(num_tokens = 11, output_mode = "one_hot") |>
   layer_dense(64, activation = "relu")
 ```
 
@@ -724,8 +724,8 @@ rescale_images <- layer_rescaling(scale = 1/255)
 rescale_custom <- layer_rescaling(scale = 2.0, offset = -1.0)  # to [-1, 1]
 
 # In model
-image_model <- keras_model_sequential(input_shape = c(224, 224, 3)) %>%
-  rescale_images() %>%
+image_model <- keras_model_sequential(input_shape = c(224, 224, 3)) |>
+  rescale_images() |>
   layer_conv_2d(32, c(3, 3), activation = "relu")
 ```
 
@@ -735,24 +735,24 @@ image_model <- keras_model_sequential(input_shape = c(224, 224, 3)) %>%
 library(keras3)
 
 # Image preprocessing and augmentation
-image_preprocessing <- keras_model_sequential(name = "preprocessing") %>%
-  layer_resizing(224, 224) %>%
+image_preprocessing <- keras_model_sequential(name = "preprocessing") |>
+  layer_resizing(224, 224) |>
   layer_rescaling(scale = 1/255)
 
-image_augmentation <- keras_model_sequential(name = "augmentation") %>%
-  layer_random_flip("horizontal") %>%
-  layer_random_rotation(0.15) %>%
-  layer_random_zoom(0.2) %>%
+image_augmentation <- keras_model_sequential(name = "augmentation") |>
+  layer_random_flip("horizontal") |>
+  layer_random_rotation(0.15) |>
+  layer_random_zoom(0.2) |>
   layer_random_contrast(0.1)
 
 # Complete image model
-image_model <- keras_model_sequential(input_shape = c(NULL, NULL, 3)) %>%
-  image_preprocessing() %>%
-  image_augmentation() %>%
-  layer_conv_2d(32, c(3, 3), activation = "relu") %>%
-  layer_max_pooling_2d(c(2, 2)) %>%
-  layer_flatten() %>%
-  layer_dense(128, activation = "relu") %>%
+image_model <- keras_model_sequential(input_shape = c(NULL, NULL, 3)) |>
+  image_preprocessing() |>
+  image_augmentation() |>
+  layer_conv_2d(32, c(3, 3), activation = "relu") |>
+  layer_max_pooling_2d(c(2, 2)) |>
+  layer_flatten() |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax")
 
 # Text preprocessing
@@ -760,13 +760,13 @@ text_preprocessing <- layer_text_vectorization(
   max_tokens = 10000,
   output_sequence_length = 100
 )
-text_preprocessing %>% adapt(train_texts)
+text_preprocessing |> adapt(train_texts)
 
-text_model <- keras_model_sequential(input_shape = c(1), dtype = "string") %>%
-  text_preprocessing() %>%
-  layer_embedding(10000, 128) %>%
-  layer_global_average_pooling_1d() %>%
-  layer_dense(64, activation = "relu") %>%
+text_model <- keras_model_sequential(input_shape = c(1), dtype = "string") |>
+  text_preprocessing() |>
+  layer_embedding(10000, 128) |>
+  layer_global_average_pooling_1d() |>
+  layer_dense(64, activation = "relu") |>
   layer_dense(1, activation = "sigmoid")
 ```
 

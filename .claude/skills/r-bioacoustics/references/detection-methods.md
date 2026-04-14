@@ -306,7 +306,7 @@ optimization <- optimize_energy_detector(
 # - f1_score: harmonic mean of precision and recall
 
 # Step 3: Select best parameters
-best_params <- optimization %>%
+best_params <- optimization |>
   filter(f1_score == max(f1_score))
 
 # Step 4: Apply to new recordings
@@ -390,9 +390,9 @@ ggplot(opt, aes(recall, precision, color = threshold, size = smooth)) +
 # High recall (catch all calls): choose low threshold
 # Balanced: choose max F1 score
 
-best_f1 <- opt %>% slice_max(f1_score, n = 1)
-best_precision <- opt %>% filter(precision > 0.9) %>% slice_max(recall, n = 1)
-best_recall <- opt %>% filter(recall > 0.9) %>% slice_max(precision, n = 1)
+best_f1 <- opt |> slice_max(f1_score, n = 1)
+best_precision <- opt |> filter(precision > 0.9) |> slice_max(recall, n = 1)
+best_recall <- opt |> filter(recall > 0.9) |> slice_max(precision, n = 1)
 ```
 
 ## 4. ohun template_detector()
@@ -424,8 +424,8 @@ template <- selection_table(
 )
 
 # Or create from existing detection
-template <- detections %>%
-  filter(species == "target_species") %>%
+template <- detections |>
+  filter(species == "target_species") |>
   slice_sample(n = 5)  # Use multiple templates
 
 # Step 2: Detect using templates
@@ -501,8 +501,8 @@ opt_template <- optimize_template_detector(
 # - Include slight variations in call structure
 
 # 2. Test individual templates
-template_performance <- templates %>%
-  rowwise() %>%
+template_performance <- templates |>
+  rowwise() |>
   mutate(
     detections = list(template_detector(
       templates = cur_data(),
@@ -517,8 +517,8 @@ template_performance <- templates %>%
 # Too general = many detections (low precision, high recall)
 
 # 4. Combine multiple templates
-best_templates <- template_performance %>%
-  filter(n_detections > 5 & n_detections < 50) %>%
+best_templates <- template_performance |>
+  filter(n_detections > 5 & n_detections < 50) |>
   select(-detections, -n_detections)
 
 # 5. Optimize threshold with combined templates
@@ -654,11 +654,11 @@ evaluate_detections <- function(detections, reference,
 comparison <- tibble(
   method = c("auto_detec", "blob_detection", "energy_detector"),
   detections = list(det_wr, det_ba, det_oh)
-) %>%
-  rowwise() %>%
+) |>
+  rowwise() |>
   mutate(
     metrics = list(evaluate_detections(detections[[1]], reference))
-  ) %>%
+  ) |>
   unnest(metrics)
 
 print(comparison)

@@ -336,7 +336,7 @@ ggplotly(p)
 
 # leaflet
 library(leaflet)
-leaflet() %>% addTiles() %>% addMarkers(lng=long, lat=lat)
+leaflet() |> addTiles() |> addMarkers(lng=long, lat=lat)
 
 # dygraphs
 library(dygraphs)
@@ -376,9 +376,9 @@ reactable(data, searchable = TRUE, filterable = TRUE)
 ```r
 # gt (publication-quality)
 library(gt)
-gt(data) %>%
-  fmt_currency(columns = revenue) %>%
-  fmt_percent(columns = growth) %>%
+gt(data) |>
+  fmt_currency(columns = revenue) |>
+  fmt_percent(columns = growth) |>
   tab_style(
     style = cell_fill(color = "#E8F4F8"),
     locations = cells_body()
@@ -440,7 +440,7 @@ sliderInput("year", "Year:",
 #| title: "Filtered Data"
 
 renderPlotly({
-  filtered <- data %>%
+  filtered <- data |>
     filter(region == input$region, year == input$year)
 
   plot_ly(filtered, x = ~month, y = ~sales, type = "scatter", mode = "lines")
@@ -724,7 +724,7 @@ params:
 
 ```r
 ```{r}
-filtered_data <- data %>%
+filtered_data <- data |>
   filter(region == params$region, year == params$year)
 ```
 ```
@@ -793,7 +793,7 @@ execute:
 ```r
 # Use reactive expressions for shared computations
 filtered_data <- reactive({
-  data %>% filter(region == input$region)
+  data |> filter(region == input$region)
 })
 
 # Use isolate() to prevent unnecessary updates
@@ -1099,7 +1099,7 @@ server: shiny
 ```r
 # Solution: Use reactive expressions properly
 filtered_data <- reactive({
-  data %>% filter(region == input$region)
+  data |> filter(region == input$region)
 })
 
 renderPlot({

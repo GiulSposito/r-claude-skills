@@ -30,7 +30,7 @@ metadata <- data.frame(
 )
 
 # Encode labels
-metadata <- metadata %>%
+metadata <- metadata |>
   mutate(class_id = as.integer(factor(class_name)) - 1L)
 
 # Split data
@@ -222,7 +222,7 @@ cat("Model created with frozen backbone\n")
 
 ```r
 # Phase 1: Train classifier with frozen backbone
-fitted_phase1 <- model %>%
+fitted_phase1 <- model |>
   setup(
     loss = nn_cross_entropy_loss(),
     optimizer = optim_adam,
@@ -231,18 +231,18 @@ fitted_phase1 <- model %>%
       luz_metric_recall(),
       luz_metric_precision()
     )
-  ) %>%
+  ) |>
 
   set_hparams(
     n_classes = n_classes,
     pretrained_backbone = pretrained_model,
     freeze_backbone = TRUE
-  ) %>%
+  ) |>
 
   set_opt_hparams(
     lr = 0.001,  # Higher LR for new layers
     weight_decay = 1e-4
-  ) %>%
+  ) |>
 
   fit(
     train_dl,
@@ -277,11 +277,11 @@ cat("\nPhase 1 complete. Unfreezing backbone for fine-tuning...\n")
 fitted_phase1$model$unfreeze_backbone()
 
 # Phase 2: Fine-tune entire model with lower learning rate
-fitted_phase2 <- fitted_phase1 %>%
+fitted_phase2 <- fitted_phase1 |>
   set_opt_hparams(
     lr = 1e-5,  # Much lower LR for fine-tuning
     weight_decay = 1e-4
-  ) %>%
+  ) |>
 
   fit(
     train_dl,
@@ -350,14 +350,14 @@ evaluate_image_model <- function(model, test_dl) {
     estimate = factor(predictions)
   )
 
-  overall_metrics <- results %>%
+  overall_metrics <- results |>
     metrics(truth, estimate)
 
-  conf_mat <- results %>%
+  conf_mat <- results |>
     conf_mat(truth, estimate)
 
-  per_class <- results %>%
-    group_by(truth) %>%
+  per_class <- results |>
+    group_by(truth) |>
     summarise(
       n = n(),
       accuracy = mean(truth == estimate),
@@ -463,23 +463,23 @@ base_model <- application_resnet50(
 freeze_weights(base_model)
 
 # Build model
-model <- keras_model_sequential() %>%
-  base_model %>%
-  layer_global_average_pooling_2d() %>%
-  layer_dropout(0.5) %>%
-  layer_dense(256, activation = "relu") %>%
-  layer_dropout(0.3) %>%
+model <- keras_model_sequential() |>
+  base_model |>
+  layer_global_average_pooling_2d() |>
+  layer_dropout(0.5) |>
+  layer_dense(256, activation = "relu") |>
+  layer_dropout(0.3) |>
   layer_dense(n_classes, activation = "softmax")
 
 # Compile
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.001),
   loss = "sparse_categorical_crossentropy",
   metrics = c("accuracy")
 )
 
 # Train phase 1
-history1 <- model %>% fit(
+history1 <- model |> fit(
   train_dl,
   epochs = 10,
   validation_data = val_dl,
@@ -492,13 +492,13 @@ history1 <- model %>% fit(
 # Unfreeze and fine-tune
 unfreeze_weights(base_model)
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 1e-5),
   loss = "sparse_categorical_crossentropy",
   metrics = c("accuracy")
 )
 
-history2 <- model %>% fit(
+history2 <- model |> fit(
   train_dl,
   epochs = 20,
   validation_data = val_dl,

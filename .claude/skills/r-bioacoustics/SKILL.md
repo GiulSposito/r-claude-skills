@@ -283,12 +283,12 @@ extract_features <- function(audio, start, end) {
 }
 
 # Apply to all detections
-features_custom <- detections_wr %>%
-  rowwise() %>%
+features_custom <- detections_wr |>
+  rowwise() |>
   mutate(
     audio = list(readWave(file.path("audio_folder", sound.files))),
     features = list(extract_features(audio[[1]], start, end))
-  ) %>%
+  ) |>
   unnest_wider(features)
 
 # Method 3: bioacoustics features (if using blob_detection)
@@ -432,13 +432,13 @@ detections <- blob_detection(
 )
 
 # Convert to selection table format
-selection_table <- detections %>%
+selection_table <- detections |>
   mutate(
     sound.files = basename(processed_files[1]),
     start = starting_time,
     end = starting_time + duration,
     selec = row_number()
-  ) %>%
+  ) |>
   select(sound.files, selec, start, end, duration, freq_min, freq_max)
 
 # 4. FEATURE EXTRACTION
@@ -457,16 +457,16 @@ add_mfcc <- function(row, audio_dir) {
   mfcc <- melfcc(segment, numcep = 13)
   mfcc_mean <- colMeans(mfcc)
 
-  as_tibble(t(mfcc_mean)) %>%
+  as_tibble(t(mfcc_mean)) |>
     set_names(paste0("mfcc_", 1:13))
 }
 
-mfcc_features <- selection_table %>%
-  rowwise() %>%
-  mutate(mfcc = list(add_mfcc(cur_data(), "pam_project/processed"))) %>%
+mfcc_features <- selection_table |>
+  rowwise() |>
+  mutate(mfcc = list(add_mfcc(cur_data(), "pam_project/processed"))) |>
   unnest(mfcc)
 
-features_complete <- bind_cols(features, mfcc_features %>% select(starts_with("mfcc_")))
+features_complete <- bind_cols(features, mfcc_features |> select(starts_with("mfcc_")))
 
 # Save features
 write_csv(features_complete, "pam_project/features/features.csv")
@@ -515,8 +515,8 @@ See [examples/pam-pipeline.md](examples/pam-pipeline.md) for complete reproducib
 ### Pattern 1: tuneR → seewave Pipeline
 ```r
 # tuneR for I/O and basic manipulation
-audio <- readWave("recording.wav") %>%
-  normalize(unit = "16") %>%
+audio <- readWave("recording.wav") |>
+  normalize(unit = "16") |>
   mono(which = "both")
 
 # seewave for analysis
@@ -585,7 +585,7 @@ species_detections <- auto_detec(path = "recordings", bp = c(2, 10))
 species_features <- specan(X = species_detections, path = "recordings")
 
 # Combine for multi-level analysis
-combined <- species_features %>%
+combined <- species_features |>
   left_join(soundscape_summary, by = c("sound.files" = "file"))
 ```
 
@@ -685,8 +685,8 @@ library(tuneR)
 library(seewave)
 
 extract_all_features <- function(audio_dir, detection_table) {
-  detection_table %>%
-    rowwise() %>%
+  detection_table |>
+    rowwise() |>
     mutate(
       # Load audio
       audio = list(readWave(file.path(audio_dir, sound.files))),
@@ -702,8 +702,8 @@ extract_all_features <- function(audio_dir, detection_table) {
       # Clean up
       audio = list(NULL),
       segment = list(NULL)
-    ) %>%
-    unnest_wider(spec) %>%
+    ) |>
+    unnest_wider(spec) |>
     unnest_wider(mfcc, names_sep = "_")
 }
 
@@ -715,7 +715,7 @@ features <- extract_all_features("audio_folder", detections)
 # Filter detections by quality metrics
 filter_detections <- function(detections, min_dur = 0.05, max_dur = 2,
                                min_freq = 1000, max_freq = 12000) {
-  detections %>%
+  detections |>
     filter(
       duration >= min_dur,
       duration <= max_dur,
@@ -736,8 +736,8 @@ library(ggplot2)
 plot_detection_grid <- function(audio_dir, detections, n = 16) {
   sampled <- slice_sample(detections, n = n)
 
-  plots <- sampled %>%
-    rowwise() %>%
+  plots <- sampled |>
+    rowwise() |>
     mutate(
       plot = list({
         audio <- readWave(file.path(audio_dir, sound.files))
@@ -762,7 +762,7 @@ plot_detection_grid("audio_folder", detections, n = 16)
 ```r
 # Export detection table to Raven selection table format
 export_raven <- function(detections, output_file) {
-  raven_format <- detections %>%
+  raven_format <- detections |>
     mutate(
       Selection = selec,
       View = "Spectrogram 1",
@@ -771,7 +771,7 @@ export_raven <- function(detections, output_file) {
       `End Time (s)` = end,
       `Low Freq (Hz)` = freq_min,
       `High Freq (Hz)` = freq_max
-    ) %>%
+    ) |>
     select(Selection, View, Channel, `Begin Time (s)`, `End Time (s)`,
            `Low Freq (Hz)`, `High Freq (Hz)`)
 

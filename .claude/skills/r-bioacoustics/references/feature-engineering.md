@@ -556,11 +556,11 @@ rhythmic_features <- c(
 library(tidymodels)
 
 # Correlation-based filtering
-recipe <- recipe(species ~ ., data = feature_data) %>%
+recipe <- recipe(species ~ ., data = feature_data) |>
   step_corr(all_numeric_predictors(), threshold = 0.9)  # Remove highly correlated
 
 # Variance-based filtering
-recipe <- recipe %>%
+recipe <- recipe |>
   step_nzv(all_numeric_predictors())  # Remove near-zero variance
 
 # Boruta or recursive feature elimination
@@ -641,13 +641,13 @@ extract_comprehensive_features <- function(audio) {
 }
 
 # Apply to detection table
-features <- detections %>%
-  rowwise() %>%
+features <- detections |>
+  rowwise() |>
   mutate(
     audio = list(readWave(sound.files)),
     segment = list(cutw(audio[[1]], from = start, to = end, output = "Wave")),
     features = list(extract_comprehensive_features(segment[[1]]))
-  ) %>%
+  ) |>
   unnest_wider(features)
 ```
 

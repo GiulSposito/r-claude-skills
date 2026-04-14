@@ -430,15 +430,15 @@ freeze_weights(base_model)
 # Add custom classifier
 inputs <- layer_input(shape = c(224, 224, 3))
 features <- base_model(inputs)
-outputs <- features %>%
-  layer_dense(256, activation = "relu") %>%
-  layer_dropout(0.5) %>%
+outputs <- features |>
+  layer_dense(256, activation = "relu") |>
+  layer_dropout(0.5) |>
   layer_dense(num_classes, activation = "softmax")
 
 model <- keras_model(inputs, outputs)
 
 # Compile with higher learning rate (only training head)
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.001),
   loss = "categorical_crossentropy",
   metrics = "accuracy"
@@ -457,14 +457,14 @@ Train entire model with low learning rate.
 unfreeze_weights(base_model)
 
 # Recompile with lower learning rate
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.0001),  # 10x lower
   loss = "categorical_crossentropy",
   metrics = "accuracy"
 )
 
 # Continue training
-model %>% fit(
+model |> fit(
   train_data,
   epochs = 20,
   validation_data = val_data
@@ -492,7 +492,7 @@ unfreeze_layers <- function(model, num_layers) {
 
 # Unfreeze top 20 layers
 unfreeze_layers(base_model, 20)
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.0001),
   loss = "categorical_crossentropy",
   metrics = "accuracy"
@@ -503,7 +503,7 @@ model %>% compile(
 
 # Unfreeze all layers
 unfreeze_weights(base_model)
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.00001),  # Even lower
   loss = "categorical_crossentropy",
   metrics = "accuracy"
@@ -522,14 +522,14 @@ lr_schedule <- learning_rate_schedule_exponential_decay(
   decay_rate = 0.96
 )
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = lr_schedule),
   loss = "categorical_crossentropy",
   metrics = "accuracy"
 )
 
 # Or use callbacks
-model %>% fit(
+model |> fit(
   train_data,
   epochs = 50,
   callbacks = list(
@@ -550,30 +550,30 @@ Structured training pipeline.
 ```r
 # Stage 1: Train head only (frozen base)
 freeze_weights(base_model)
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(0.001),
   loss = "categorical_crossentropy",
   metrics = "accuracy"
 )
-model %>% fit(train_data, epochs = 10, validation_data = val_data)
+model |> fit(train_data, epochs = 10, validation_data = val_data)
 
 # Stage 2: Fine-tune top layers
 unfreeze_layers(base_model, 30)
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(0.0001),
   loss = "categorical_crossentropy",
   metrics = "accuracy"
 )
-model %>% fit(train_data, epochs = 20, validation_data = val_data)
+model |> fit(train_data, epochs = 20, validation_data = val_data)
 
 # Stage 3: Fine-tune all layers
 unfreeze_weights(base_model)
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(0.00001),
   loss = "categorical_crossentropy",
   metrics = "accuracy"
 )
-model %>% fit(train_data, epochs = 30, validation_data = val_data)
+model |> fit(train_data, epochs = 30, validation_data = val_data)
 ```
 
 ## Model Comparison Table
@@ -620,9 +620,9 @@ BATCH_SIZE <- 32
 NUM_CLASSES <- 10
 
 # Data preprocessing with augmentation
-data_augmentation <- keras_model_sequential() %>%
-  layer_random_flip("horizontal") %>%
-  layer_random_rotation(0.2) %>%
+data_augmentation <- keras_model_sequential() |>
+  layer_random_flip("horizontal") |>
+  layer_random_rotation(0.2) |>
   layer_random_zoom(0.2)
 
 # Load and preprocess data
@@ -642,33 +642,33 @@ base_model <- application_efficientnet_b0(
 freeze_weights(base_model)
 
 inputs <- layer_input(shape = c(IMG_SIZE, 3))
-x <- inputs %>%
-  layer_rescaling(scale = 1/255) %>%
+x <- inputs |>
+  layer_rescaling(scale = 1/255) |>
   data_augmentation()
 x <- base_model(x, training = FALSE)  # Inference mode for BN
-outputs <- x %>%
-  layer_dense(256, activation = "relu") %>%
-  layer_dropout(0.5) %>%
+outputs <- x |>
+  layer_dense(256, activation = "relu") |>
+  layer_dropout(0.5) |>
   layer_dense(NUM_CLASSES, activation = "softmax")
 
 model <- keras_model(inputs, outputs)
 
 # Stage 1: Train head
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(0.001),
   loss = "sparse_categorical_crossentropy",
   metrics = "accuracy"
 )
-model %>% fit(train_ds, epochs = 10)
+model |> fit(train_ds, epochs = 10)
 
 # Stage 2: Fine-tune
 unfreeze_weights(base_model)
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(0.0001),
   loss = "sparse_categorical_crossentropy",
   metrics = "accuracy"
 )
-model %>% fit(train_ds, epochs = 20)
+model |> fit(train_ds, epochs = 20)
 ```
 
 ## See Also

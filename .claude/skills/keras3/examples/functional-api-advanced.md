@@ -12,24 +12,24 @@ library(keras3)
 # Example: Movie recommendation with text and metadata
 # Input 1: Movie description (text)
 text_input <- keras_input(shape = NULL, dtype = "string", name = "description")
-text_features <- text_input %>%
-  layer_text_vectorization(max_tokens = 10000, output_sequence_length = 100) %>%
-  layer_embedding(input_dim = 10000, output_dim = 64) %>%
+text_features <- text_input |>
+  layer_text_vectorization(max_tokens = 10000, output_sequence_length = 100) |>
+  layer_embedding(input_dim = 10000, output_dim = 64) |>
   layer_global_average_pooling_1d()
 
 # Input 2: Metadata (year, budget, runtime)
 meta_input <- keras_input(shape = 3, name = "metadata")
-meta_features <- meta_input %>%
-  layer_dense(units = 32, activation = "relu") %>%
+meta_features <- meta_input |>
+  layer_dense(units = 32, activation = "relu") |>
   layer_dropout(rate = 0.3)
 
 # Merge inputs
 merged <- layer_concatenate(list(text_features, meta_features))
 
 # Output layers
-output <- merged %>%
-  layer_dense(units = 64, activation = "relu") %>%
-  layer_dropout(rate = 0.3) %>%
+output <- merged |>
+  layer_dense(units = 64, activation = "relu") |>
+  layer_dropout(rate = 0.3) |>
   layer_dense(units = 1, activation = "sigmoid", name = "rating")
 
 # Build model
@@ -38,14 +38,14 @@ model <- keras_model(
   outputs = output
 )
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.001),
   loss = "binary_crossentropy",
   metrics = c("accuracy")
 )
 
 # Training with named inputs
-history <- model %>% fit(
+history <- model |> fit(
   x = list(
     description = train_text,
     metadata = train_meta
@@ -63,25 +63,25 @@ history <- model %>% fit(
 # Example: Image + Sensor Data Fusion
 # Input 1: Image data
 image_input <- keras_input(shape = c(224, 224, 3), name = "image")
-image_features <- image_input %>%
-  layer_conv_2d(filters = 32, kernel_size = 3, activation = "relu") %>%
-  layer_max_pooling_2d(pool_size = 2) %>%
-  layer_conv_2d(filters = 64, kernel_size = 3, activation = "relu") %>%
-  layer_max_pooling_2d(pool_size = 2) %>%
+image_features <- image_input |>
+  layer_conv_2d(filters = 32, kernel_size = 3, activation = "relu") |>
+  layer_max_pooling_2d(pool_size = 2) |>
+  layer_conv_2d(filters = 64, kernel_size = 3, activation = "relu") |>
+  layer_max_pooling_2d(pool_size = 2) |>
   layer_flatten()
 
 # Input 2: Time-series sensor data
 sensor_input <- keras_input(shape = c(100, 10), name = "sensors")
-sensor_features <- sensor_input %>%
-  layer_lstm(units = 64, return_sequences = FALSE) %>%
+sensor_features <- sensor_input |>
+  layer_lstm(units = 64, return_sequences = FALSE) |>
   layer_dropout(rate = 0.3)
 
 # Combine with attention to sensor data
 merged <- layer_concatenate(list(image_features, sensor_features))
 
-output <- merged %>%
-  layer_dense(units = 128, activation = "relu") %>%
-  layer_dropout(rate = 0.4) %>%
+output <- merged |>
+  layer_dense(units = 128, activation = "relu") |>
+  layer_dropout(rate = 0.4) |>
   layer_dense(units = 5, activation = "softmax")
 
 model <- keras_model(
@@ -100,31 +100,31 @@ Single input generating multiple predictions with separate loss functions.
 text_input <- keras_input(shape = NULL, dtype = "string", name = "text")
 
 # Shared embedding layer
-shared_embedding <- text_input %>%
-  layer_text_vectorization(max_tokens = 20000, output_sequence_length = 200) %>%
+shared_embedding <- text_input |>
+  layer_text_vectorization(max_tokens = 20000, output_sequence_length = 200) |>
   layer_embedding(input_dim = 20000, output_dim = 128)
 
 # Shared LSTM processing
-shared_lstm <- shared_embedding %>%
+shared_lstm <- shared_embedding |>
   layer_lstm(units = 128, return_sequences = TRUE)
 
 # Output 1: Main topic classification
-topic_branch <- shared_lstm %>%
-  layer_global_average_pooling_1d() %>%
-  layer_dense(units = 64, activation = "relu") %>%
-  layer_dropout(rate = 0.3) %>%
+topic_branch <- shared_lstm |>
+  layer_global_average_pooling_1d() |>
+  layer_dense(units = 64, activation = "relu") |>
+  layer_dropout(rate = 0.3) |>
   layer_dense(units = 10, activation = "softmax", name = "topic")
 
 # Output 2: Sentiment analysis
-sentiment_branch <- shared_lstm %>%
-  layer_global_max_pooling_1d() %>%
-  layer_dense(units = 32, activation = "relu") %>%
-  layer_dropout(rate = 0.3) %>%
+sentiment_branch <- shared_lstm |>
+  layer_global_max_pooling_1d() |>
+  layer_dense(units = 32, activation = "relu") |>
+  layer_dropout(rate = 0.3) |>
   layer_dense(units = 3, activation = "softmax", name = "sentiment")
 
 # Output 3: Language detection (auxiliary task)
-language_branch <- shared_embedding %>%
-  layer_global_average_pooling_1d() %>%
+language_branch <- shared_embedding |>
+  layer_global_average_pooling_1d() |>
   layer_dense(units = 5, activation = "softmax", name = "language")
 
 # Build multi-output model
@@ -138,7 +138,7 @@ model <- keras_model(
 )
 
 # Compile with different losses and weights
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(),
   loss = list(
     topic = "categorical_crossentropy",
@@ -158,7 +158,7 @@ model %>% compile(
 )
 
 # Training with multiple outputs
-history <- model %>% fit(
+history <- model |> fit(
   x = train_texts,
   y = list(
     topic = train_topics,
@@ -182,26 +182,26 @@ build_resnet_block <- function(x, filters, kernel_size = 3, stride = 1) {
   shortcut <- x
 
   # Residual path
-  out <- x %>%
+  out <- x |>
     layer_conv_2d(filters = filters, kernel_size = kernel_size,
-                  strides = stride, padding = "same") %>%
-    layer_batch_normalization() %>%
-    layer_activation("relu") %>%
+                  strides = stride, padding = "same") |>
+    layer_batch_normalization() |>
+    layer_activation("relu") |>
     layer_conv_2d(filters = filters, kernel_size = kernel_size,
-                  padding = "same") %>%
+                  padding = "same") |>
     layer_batch_normalization()
 
   # Adjust shortcut dimensions if needed
   if (stride != 1 || dim(x)[4] != filters) {
-    shortcut <- x %>%
+    shortcut <- x |>
       layer_conv_2d(filters = filters, kernel_size = 1,
-                    strides = stride, padding = "same") %>%
+                    strides = stride, padding = "same") |>
       layer_batch_normalization()
   }
 
   # Add skip connection
   out <- layer_add(list(out, shortcut))
-  out <- out %>% layer_activation("relu")
+  out <- out |> layer_activation("relu")
 
   return(out)
 }
@@ -209,23 +209,23 @@ build_resnet_block <- function(x, filters, kernel_size = 3, stride = 1) {
 # Build complete ResNet-style model
 input <- keras_input(shape = c(32, 32, 3))
 
-output <- input %>%
+output <- input |>
   # Initial convolution
-  layer_conv_2d(filters = 64, kernel_size = 7, strides = 2, padding = "same") %>%
-  layer_batch_normalization() %>%
-  layer_activation("relu") %>%
-  layer_max_pooling_2d(pool_size = 3, strides = 2, padding = "same") %>%
+  layer_conv_2d(filters = 64, kernel_size = 7, strides = 2, padding = "same") |>
+  layer_batch_normalization() |>
+  layer_activation("relu") |>
+  layer_max_pooling_2d(pool_size = 3, strides = 2, padding = "same") |>
 
   # ResNet blocks
-  build_resnet_block(filters = 64) %>%
-  build_resnet_block(filters = 64) %>%
-  build_resnet_block(filters = 128, stride = 2) %>%
-  build_resnet_block(filters = 128) %>%
-  build_resnet_block(filters = 256, stride = 2) %>%
-  build_resnet_block(filters = 256) %>%
+  build_resnet_block(filters = 64) |>
+  build_resnet_block(filters = 64) |>
+  build_resnet_block(filters = 128, stride = 2) |>
+  build_resnet_block(filters = 128) |>
+  build_resnet_block(filters = 256, stride = 2) |>
+  build_resnet_block(filters = 256) |>
 
   # Classification head
-  layer_global_average_pooling_2d() %>%
+  layer_global_average_pooling_2d() |>
   layer_dense(units = 10, activation = "softmax")
 
 model <- keras_model(inputs = input, outputs = output)
@@ -240,22 +240,22 @@ Split processing into parallel paths with different operations.
 inception_module <- function(x, filters_1x1, filters_3x3_reduce, filters_3x3,
                              filters_5x5_reduce, filters_5x5, filters_pool) {
   # Branch 1: 1x1 convolution
-  branch1 <- x %>%
+  branch1 <- x |>
     layer_conv_2d(filters = filters_1x1, kernel_size = 1, activation = "relu")
 
   # Branch 2: 1x1 -> 3x3 convolution
-  branch2 <- x %>%
-    layer_conv_2d(filters = filters_3x3_reduce, kernel_size = 1, activation = "relu") %>%
+  branch2 <- x |>
+    layer_conv_2d(filters = filters_3x3_reduce, kernel_size = 1, activation = "relu") |>
     layer_conv_2d(filters = filters_3x3, kernel_size = 3, padding = "same", activation = "relu")
 
   # Branch 3: 1x1 -> 5x5 convolution
-  branch3 <- x %>%
-    layer_conv_2d(filters = filters_5x5_reduce, kernel_size = 1, activation = "relu") %>%
+  branch3 <- x |>
+    layer_conv_2d(filters = filters_5x5_reduce, kernel_size = 1, activation = "relu") |>
     layer_conv_2d(filters = filters_5x5, kernel_size = 5, padding = "same", activation = "relu")
 
   # Branch 4: MaxPool -> 1x1 convolution
-  branch4 <- x %>%
-    layer_max_pooling_2d(pool_size = 3, strides = 1, padding = "same") %>%
+  branch4 <- x |>
+    layer_max_pooling_2d(pool_size = 3, strides = 1, padding = "same") |>
     layer_conv_2d(filters = filters_pool, kernel_size = 1, activation = "relu")
 
   # Concatenate all branches
@@ -267,22 +267,22 @@ inception_module <- function(x, filters_1x1, filters_3x3_reduce, filters_3x3,
 # Build Inception-style network
 input <- keras_input(shape = c(224, 224, 3))
 
-output <- input %>%
-  layer_conv_2d(filters = 64, kernel_size = 7, strides = 2, padding = "same", activation = "relu") %>%
-  layer_max_pooling_2d(pool_size = 3, strides = 2, padding = "same") %>%
+output <- input |>
+  layer_conv_2d(filters = 64, kernel_size = 7, strides = 2, padding = "same", activation = "relu") |>
+  layer_max_pooling_2d(pool_size = 3, strides = 2, padding = "same") |>
 
   # Inception modules
-  inception_module(64, 64, 96, 128, 16, 32, 32) %>%
-  inception_module(128, 128, 128, 192, 32, 96, 64) %>%
-  layer_max_pooling_2d(pool_size = 3, strides = 2, padding = "same") %>%
+  inception_module(64, 64, 96, 128, 16, 32, 32) |>
+  inception_module(128, 128, 128, 192, 32, 96, 64) |>
+  layer_max_pooling_2d(pool_size = 3, strides = 2, padding = "same") |>
 
   # More inception modules
-  inception_module(192, 192, 96, 208, 16, 48, 64) %>%
-  inception_module(160, 160, 112, 224, 24, 64, 64) %>%
+  inception_module(192, 192, 96, 208, 16, 48, 64) |>
+  inception_module(160, 160, 112, 224, 24, 64, 64) |>
 
   # Classification
-  layer_global_average_pooling_2d() %>%
-  layer_dropout(rate = 0.4) %>%
+  layer_global_average_pooling_2d() |>
+  layer_dropout(rate = 0.4) |>
   layer_dense(units = 1000, activation = "softmax")
 
 model <- keras_model(inputs = input, outputs = output)
@@ -298,12 +298,12 @@ Reuse the same layer instance across different branches for weight sharing.
 create_embedding_network <- function() {
   input <- keras_input(shape = c(28, 28, 1))
 
-  output <- input %>%
-    layer_conv_2d(filters = 32, kernel_size = 3, activation = "relu") %>%
-    layer_max_pooling_2d(pool_size = 2) %>%
-    layer_conv_2d(filters = 64, kernel_size = 3, activation = "relu") %>%
-    layer_max_pooling_2d(pool_size = 2) %>%
-    layer_flatten() %>%
+  output <- input |>
+    layer_conv_2d(filters = 32, kernel_size = 3, activation = "relu") |>
+    layer_max_pooling_2d(pool_size = 2) |>
+    layer_conv_2d(filters = 64, kernel_size = 3, activation = "relu") |>
+    layer_max_pooling_2d(pool_size = 2) |>
+    layer_flatten() |>
     layer_dense(units = 128, activation = "relu")
 
   keras_model(inputs = input, outputs = output)
@@ -329,7 +329,7 @@ distance <- layer_lambda(
 )(list(embedding_a, embedding_b))
 
 # Convert distance to similarity
-output <- distance %>%
+output <- distance |>
   layer_dense(units = 1, activation = "sigmoid", name = "similarity")
 
 # Build Siamese model
@@ -338,14 +338,14 @@ siamese_model <- keras_model(
   outputs = output
 )
 
-siamese_model %>% compile(
+siamese_model |> compile(
   optimizer = optimizer_adam(),
   loss = "binary_crossentropy",
   metrics = c("accuracy")
 )
 
 # Training with pairs
-history <- siamese_model %>% fit(
+history <- siamese_model |> fit(
   x = list(input_a = train_pairs_a, input_b = train_pairs_b),
   y = train_labels,  # 1 for similar, 0 for dissimilar
   validation_split = 0.2,
@@ -355,7 +355,7 @@ history <- siamese_model %>% fit(
 
 # Extract embedding model for inference
 # Use the shared embedding_model directly
-embeddings <- embedding_model %>% predict(test_images)
+embeddings <- embedding_model |> predict(test_images)
 ```
 
 ## Complex DAG (Directed Acyclic Graph)
@@ -367,65 +367,65 @@ Non-linear topology combining multiple patterns.
 input <- keras_input(shape = c(256, 256, 3), name = "image")
 
 # Encoder: Progressive downsampling
-conv1 <- input %>%
-  layer_conv_2d(filters = 64, kernel_size = 3, padding = "same", activation = "relu") %>%
+conv1 <- input |>
+  layer_conv_2d(filters = 64, kernel_size = 3, padding = "same", activation = "relu") |>
   layer_conv_2d(filters = 64, kernel_size = 3, padding = "same", activation = "relu")
 
-pool1 <- conv1 %>% layer_max_pooling_2d(pool_size = 2)  # 128x128
+pool1 <- conv1 |> layer_max_pooling_2d(pool_size = 2)  # 128x128
 
-conv2 <- pool1 %>%
-  layer_conv_2d(filters = 128, kernel_size = 3, padding = "same", activation = "relu") %>%
+conv2 <- pool1 |>
+  layer_conv_2d(filters = 128, kernel_size = 3, padding = "same", activation = "relu") |>
   layer_conv_2d(filters = 128, kernel_size = 3, padding = "same", activation = "relu")
 
-pool2 <- conv2 %>% layer_max_pooling_2d(pool_size = 2)  # 64x64
+pool2 <- conv2 |> layer_max_pooling_2d(pool_size = 2)  # 64x64
 
-conv3 <- pool2 %>%
-  layer_conv_2d(filters = 256, kernel_size = 3, padding = "same", activation = "relu") %>%
+conv3 <- pool2 |>
+  layer_conv_2d(filters = 256, kernel_size = 3, padding = "same", activation = "relu") |>
   layer_conv_2d(filters = 256, kernel_size = 3, padding = "same", activation = "relu")
 
-pool3 <- conv3 %>% layer_max_pooling_2d(pool_size = 2)  # 32x32
+pool3 <- conv3 |> layer_max_pooling_2d(pool_size = 2)  # 32x32
 
 # Bottom: Deepest features
-conv4 <- pool3 %>%
-  layer_conv_2d(filters = 512, kernel_size = 3, padding = "same", activation = "relu") %>%
+conv4 <- pool3 |>
+  layer_conv_2d(filters = 512, kernel_size = 3, padding = "same", activation = "relu") |>
   layer_conv_2d(filters = 512, kernel_size = 3, padding = "same", activation = "relu")
 
 # Decoder with skip connections: Progressive upsampling
-up1 <- conv4 %>%
-  layer_upsampling_2d(size = 2) %>%  # 64x64
+up1 <- conv4 |>
+  layer_upsampling_2d(size = 2) |>  # 64x64
   layer_conv_2d(filters = 256, kernel_size = 3, padding = "same", activation = "relu")
 
 merge1 <- layer_concatenate(list(up1, conv3))  # Merge with conv3
 
-conv5 <- merge1 %>%
-  layer_conv_2d(filters = 256, kernel_size = 3, padding = "same", activation = "relu") %>%
+conv5 <- merge1 |>
+  layer_conv_2d(filters = 256, kernel_size = 3, padding = "same", activation = "relu") |>
   layer_conv_2d(filters = 256, kernel_size = 3, padding = "same", activation = "relu")
 
-up2 <- conv5 %>%
-  layer_upsampling_2d(size = 2) %>%  # 128x128
+up2 <- conv5 |>
+  layer_upsampling_2d(size = 2) |>  # 128x128
   layer_conv_2d(filters = 128, kernel_size = 3, padding = "same", activation = "relu")
 
 merge2 <- layer_concatenate(list(up2, conv2))  # Merge with conv2
 
-conv6 <- merge2 %>%
-  layer_conv_2d(filters = 128, kernel_size = 3, padding = "same", activation = "relu") %>%
+conv6 <- merge2 |>
+  layer_conv_2d(filters = 128, kernel_size = 3, padding = "same", activation = "relu") |>
   layer_conv_2d(filters = 128, kernel_size = 3, padding = "same", activation = "relu")
 
-up3 <- conv6 %>%
-  layer_upsampling_2d(size = 2) %>%  # 256x256
+up3 <- conv6 |>
+  layer_upsampling_2d(size = 2) |>  # 256x256
   layer_conv_2d(filters = 64, kernel_size = 3, padding = "same", activation = "relu")
 
 merge3 <- layer_concatenate(list(up3, conv1))  # Merge with conv1
 
 # Final output
-output <- merge3 %>%
-  layer_conv_2d(filters = 64, kernel_size = 3, padding = "same", activation = "relu") %>%
+output <- merge3 |>
+  layer_conv_2d(filters = 64, kernel_size = 3, padding = "same", activation = "relu") |>
   layer_conv_2d(filters = 1, kernel_size = 1, activation = "sigmoid")
 
 # Build U-Net style model
 model <- keras_model(inputs = input, outputs = output)
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.0001),
   loss = "binary_crossentropy",
   metrics = c("accuracy")

@@ -275,12 +275,12 @@ cor.test(x, y, method = "kendall")
 
 # Multiple correlations
 library(corrplot)
-cor_matrix <- cor(data %>% select(where(is.numeric)))
+cor_matrix <- cor(data |> select(where(is.numeric)))
 corrplot(cor_matrix, method = "circle")
 
 # Test all correlations
 library(psych)
-corr.test(data %>% select(where(is.numeric)))
+corr.test(data |> select(where(is.numeric)))
 ```
 
 ## Mixed Effects Models

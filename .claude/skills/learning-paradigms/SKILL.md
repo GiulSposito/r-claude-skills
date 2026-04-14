@@ -335,7 +335,7 @@ py_run_file("train_ssl.py")
 embeddings <- py$load_embeddings()
 
 # Continue in R with tidymodels
-model <- logistic_reg() %>%
+model <- logistic_reg() |>
   fit(label ~ ., data = embeddings)
 ```
 

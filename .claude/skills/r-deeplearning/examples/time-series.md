@@ -242,21 +242,21 @@ cnn_1d_forecaster <- nn_module(
     # Conv1d expects: (batch, channels, seq_len)
     x <- x$permute(c(1, 3, 2))
 
-    x <- x %>%
-      self$conv1() %>%
-      self$bn1() %>%
-      nnf_relu() %>%
+    x <- x |>
+      self$conv1() |>
+      self$bn1() |>
+      nnf_relu() |>
       self$pool1()
 
-    x <- x %>%
-      self$conv2() %>%
-      self$bn2() %>%
-      nnf_relu() %>%
+    x <- x |>
+      self$conv2() |>
+      self$bn2() |>
+      nnf_relu() |>
       self$pool2()
 
-    x <- x %>%
-      self$conv3() %>%
-      self$bn3() %>%
+    x <- x |>
+      self$conv3() |>
+      self$bn3() |>
       nnf_relu()
 
     # Global pooling
@@ -313,16 +313,16 @@ cnn_gru_forecaster <- nn_module(
     # CNN expects (batch, channels, seq_len)
     x <- x$permute(c(1, 3, 2))
 
-    x <- x %>%
-      self$conv1() %>%
-      self$bn1() %>%
-      nnf_relu() %>%
+    x <- x |>
+      self$conv1() |>
+      self$bn1() |>
+      nnf_relu() |>
       self$pool1()
 
-    x <- x %>%
-      self$conv2() %>%
-      self$bn2() %>%
-      nnf_relu() %>%
+    x <- x |>
+      self$conv2() |>
+      self$bn2() |>
+      nnf_relu() |>
       self$pool2()
 
     # Back to (batch, seq_len, channels) for GRU
@@ -347,14 +347,14 @@ cnn_gru_forecaster <- nn_module(
 
 ```r
 # Train GRU model
-fitted <- model_gru %>%
+fitted <- model_gru |>
   setup(
     loss = nn_mse_loss(),  # MSE for regression
     optimizer = optim_adam,
     metrics = list(
       luz_metric_mae()  # Mean Absolute Error
     )
-  ) %>%
+  ) |>
 
   set_hparams(
     input_dim = 1,
@@ -362,12 +362,12 @@ fitted <- model_gru %>%
     n_layers = 2,
     forecast_horizon = forecast_horizon,
     dropout = 0.3
-  ) %>%
+  ) |>
 
   set_opt_hparams(
     lr = 0.001,
     weight_decay = 1e-5
-  ) %>%
+  ) |>
 
   fit(
     train_dl,
@@ -468,7 +468,7 @@ plot_data <- data.frame(
 )
 
 # Plot first few sequences
-ggplot(plot_data %>% filter(sequence <= 5),
+ggplot(plot_data |> filter(sequence <= 5),
        aes(x = step)) +
   geom_line(aes(y = actual, color = "Actual")) +
   geom_line(aes(y = predicted, color = "Predicted"), linetype = "dashed") +

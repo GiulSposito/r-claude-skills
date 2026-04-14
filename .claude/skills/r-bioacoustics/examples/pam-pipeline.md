@@ -126,7 +126,7 @@ processed_dir <- here("data", "processed_audio")
 raw_files <- dir_ls(raw_dir, glob = "*.wav")
 
 # Process with progress
-standardization_log <- raw_files %>%
+standardization_log <- raw_files |>
   map_dfr(
     ~standardize_audio(.x, processed_dir),
     .progress = TRUE
@@ -186,21 +186,21 @@ detect_events <- function(audio_path, file_id) {
   }
 
   # Convert to tidy format
-  detections %>%
-    as_tibble() %>%
+  detections |>
+    as_tibble() |>
     mutate(
       sound_file = basename(audio_path),
       file_id = file_id,
       detection_id = row_number(),
       .before = 1
-    ) %>%
+    ) |>
     select(
       sound_file, file_id, detection_id,
       start = starting_time,
       duration,  # in ms
       freq_min, freq_max, freq_bandwidth, freq_centroid,
       temp_centroid, area, smoothness
-    ) %>%
+    ) |>
     mutate(
       end = start + duration / 1000,  # Convert ms to seconds
       duration_sec = duration / 1000
@@ -212,7 +212,7 @@ processed_dir <- here("data", "processed_audio")
 processed_files <- dir_ls(processed_dir, glob = "*.wav")
 
 # Detect with progress
-all_detections <- processed_files %>%
+all_detections <- processed_files |>
   imap_dfr(
     ~detect_events(.x, .y),
     .progress = TRUE
@@ -222,7 +222,7 @@ all_detections <- processed_files %>%
 write_csv(all_detections, here("features", "detections.csv"))
 
 # Summary statistics
-summary_stats <- all_detections %>%
+summary_stats <- all_detections |>
   summarize(
     n_files = n_distinct(sound_file),
     n_detections = n(),
@@ -337,10 +337,10 @@ plan(multisession, workers = 4)
 # Extract features for all detections (with progress)
 processed_dir <- here("data", "processed_audio")
 
-features <- detections %>%
-  mutate(audio_path = file.path(processed_dir, sound_file)) %>%
+features <- detections |>
+  mutate(audio_path = file.path(processed_dir, sound_file)) |>
   # Sample for testing (remove for full run)
-  # slice_sample(n = 1000) %>%
+  # slice_sample(n = 1000) |>
   # Extract features
   future_pmap_dfr(
     list(audio_path, start, end),
@@ -351,7 +351,7 @@ features <- detections %>%
 
 # Combine with detection metadata
 features_complete <- bind_cols(
-  detections %>% select(sound_file, file_id, detection_id, start, end),
+  detections |> select(sound_file, file_id, detection_id, start, end),
   features
 )
 
@@ -386,25 +386,25 @@ annotations <- read_csv(here("data", "annotations", "manual_labels.csv"))
 
 # Function: Find best matching annotation for each detection
 match_annotations <- function(detections, annotations) {
-  detections %>%
+  detections |>
     left_join(
       annotations,
       by = "sound_file",
       suffix = c("_det", "_ann")
-    ) %>%
+    ) |>
     # Calculate overlap
     mutate(
       overlap_start = pmax(start_det, start_ann),
       overlap_end = pmin(end_det, end_ann),
       overlap_duration = pmax(0, overlap_end - overlap_start),
       overlap_prop = overlap_duration / (end_det - start_det)
-    ) %>%
+    ) |>
     # Keep best match (highest overlap)
-    group_by(sound_file, detection_id) %>%
-    slice_max(overlap_prop, n = 1, with_ties = FALSE) %>%
-    ungroup() %>%
+    group_by(sound_file, detection_id) |>
+    slice_max(overlap_prop, n = 1, with_ties = FALSE) |>
+    ungroup() |>
     # Filter: keep only detections with >50% overlap
-    filter(overlap_prop > 0.5) %>%
+    filter(overlap_prop > 0.5) |>
     select(
       sound_file, file_id, detection_id,
       species,
@@ -418,15 +418,15 @@ match_annotations <- function(detections, annotations) {
 labeled_data <- match_annotations(features, annotations)
 
 # Check class distribution
-class_counts <- labeled_data %>%
+class_counts <- labeled_data |>
   count(species, sort = TRUE)
 
 print(class_counts)
 
 # Handle class imbalance (optional: downsample majority class)
-# balanced_data <- labeled_data %>%
-#   group_by(species) %>%
-#   slice_sample(n = min(class_counts$n)) %>%
+# balanced_data <- labeled_data |>
+#   group_by(species) |>
+#   slice_sample(n = min(class_counts$n)) |>
 #   ungroup()
 
 # Save labeled data
@@ -458,7 +458,7 @@ data <- read_csv(here("features", "labeled_features.csv"))
 set.seed(42)
 
 # Extract file_id for grouping
-data <- data %>%
+data <- data |>
   mutate(species = as.factor(species))
 
 # Grouped split (by file_id)
@@ -470,15 +470,15 @@ test_data <- testing(split)
 cv_folds <- group_vfold_cv(train_data, group = file_id, v = 5, strata = species)
 
 # 2. FEATURE ENGINEERING RECIPE
-recipe <- recipe(species ~ ., data = train_data) %>%
+recipe <- recipe(species ~ ., data = train_data) |>
   # Remove identifiers
-  step_rm(sound_file, file_id, detection_id) %>%
+  step_rm(sound_file, file_id, detection_id) |>
   # Remove near-zero variance
-  step_nzv(all_numeric_predictors()) %>%
+  step_nzv(all_numeric_predictors()) |>
   # Remove highly correlated (>0.95)
-  step_corr(all_numeric_predictors(), threshold = 0.95) %>%
+  step_corr(all_numeric_predictors(), threshold = 0.95) |>
   # Impute missing (if any)
-  step_impute_median(all_numeric_predictors()) %>%
+  step_impute_median(all_numeric_predictors()) |>
   # Normalize
   step_normalize(all_numeric_predictors())
 
@@ -487,13 +487,13 @@ rf_spec <- rand_forest(
   mtry = tune(),
   trees = 1000,
   min_n = tune()
-) %>%
-  set_engine("ranger", importance = "impurity") %>%
+) |>
+  set_engine("ranger", importance = "impurity") |>
   set_mode("classification")
 
 # 4. WORKFLOW
-workflow <- workflow() %>%
-  add_recipe(recipe) %>%
+workflow <- workflow() |>
+  add_recipe(recipe) |>
   add_model(rf_spec)
 
 # 5. HYPERPARAMETER TUNING
@@ -504,7 +504,7 @@ tune_grid <- grid_regular(
 )
 
 # Tune with grouped CV
-tune_results <- workflow %>%
+tune_results <- workflow |>
   tune_grid(
     resamples = cv_folds,
     grid = tune_grid,
@@ -513,41 +513,41 @@ tune_results <- workflow %>%
   )
 
 # Best parameters
-best_params <- tune_results %>%
+best_params <- tune_results |>
   select_best(metric = "accuracy")
 
 print(best_params)
 
 # 6. FINALIZE AND FIT
-final_workflow <- workflow %>%
+final_workflow <- workflow |>
   finalize_workflow(best_params)
 
-final_fit <- final_workflow %>%
+final_fit <- final_workflow |>
   fit(train_data)
 
 # 7. EVALUATE ON TEST SET
-test_predictions <- final_fit %>%
-  predict(test_data) %>%
-  bind_cols(test_data %>% select(species))
+test_predictions <- final_fit |>
+  predict(test_data) |>
+  bind_cols(test_data |> select(species))
 
 # Confusion matrix
-conf_mat <- test_predictions %>%
+conf_mat <- test_predictions |>
   conf_mat(truth = species, estimate = .pred_class)
 
 print(conf_mat)
 
 # Per-class metrics
-per_class_metrics <- test_predictions %>%
-  metrics(truth = species, estimate = .pred_class, .metric = "precision") %>%
+per_class_metrics <- test_predictions |>
+  metrics(truth = species, estimate = .pred_class, .metric = "precision") |>
   bind_rows(
-    test_predictions %>%
+    test_predictions |>
       metrics(truth = species, estimate = .pred_class, .metric = "recall")
   )
 
 print(per_class_metrics)
 
 # Overall accuracy
-overall_accuracy <- test_predictions %>%
+overall_accuracy <- test_predictions |>
   accuracy(truth = species, estimate = .pred_class)
 
 print(overall_accuracy)
@@ -607,26 +607,26 @@ process_file <- function(audio_path) {
   }
 
   # 2. Extract features
-  features <- detections %>%
-    as_tibble() %>%
-    rowwise() %>%
+  features <- detections |>
+    as_tibble() |>
+    rowwise() |>
     mutate(
       segment = list(cutw(audio, from = starting_time,
                           to = starting_time + duration/1000, output = "Wave")),
       features = list(extract_features_simple(segment[[1]]))
-    ) %>%
-    unnest_wider(features) %>%
+    ) |>
+    unnest_wider(features) |>
     select(-segment)
 
   # 3. Predict species
-  predictions <- model %>%
-    predict(features, type = "prob") %>%
+  predictions <- model |>
+    predict(features, type = "prob") |>
     bind_cols(
-      model %>% predict(features)
-    ) %>%
+      model |> predict(features)
+    ) |>
     bind_cols(
-      features %>% select(starting_time, duration)
-    ) %>%
+      features |> select(starting_time, duration)
+    ) |>
     mutate(
       sound_file = filename,
       end_time = starting_time + duration / 1000,
@@ -646,7 +646,7 @@ extract_features_simple <- function(segment) {
 new_recordings_dir <- here("data", "new_recordings")
 new_files <- dir_ls(new_recordings_dir, glob = "*.wav")
 
-all_predictions <- new_files %>%
+all_predictions <- new_files |>
   map_dfr(process_file, .progress = TRUE)
 
 # Save raw predictions
@@ -654,39 +654,39 @@ write_csv(all_predictions, here("predictions", "raw_predictions.csv"))
 
 # 9. POST-PROCESSING
 # Filter by confidence threshold
-confident_predictions <- all_predictions %>%
+confident_predictions <- all_predictions |>
   # Get max probability for each detection
-  rowwise() %>%
-  mutate(max_prob = max(c_across(starts_with(".pred_")))) %>%
-  ungroup() %>%
+  rowwise() |>
+  mutate(max_prob = max(c_across(starts_with(".pred_")))) |>
+  ungroup() |>
   # Filter: keep only confident predictions (>0.7)
   filter(max_prob > 0.7)
 
 # Temporal smoothing (aggregate overlapping predictions)
-smoothed_predictions <- confident_predictions %>%
-  arrange(sound_file, starting_time) %>%
-  group_by(sound_file, .pred_class) %>%
+smoothed_predictions <- confident_predictions |>
+  arrange(sound_file, starting_time) |>
+  group_by(sound_file, .pred_class) |>
   mutate(
     time_diff = starting_time - lag(end_time, default = -Inf),
     new_bout = time_diff > 5  # New bout if >5s gap
-  ) %>%
-  mutate(bout_id = cumsum(new_bout)) %>%
-  group_by(sound_file, .pred_class, bout_id) %>%
+  ) |>
+  mutate(bout_id = cumsum(new_bout)) |>
+  group_by(sound_file, .pred_class, bout_id) |>
   summarize(
     start = min(starting_time),
     end = max(end_time),
     n_detections = n(),
     mean_confidence = mean(max_prob),
     .groups = "drop"
-  ) %>%
+  ) |>
   rename(species = .pred_class)
 
 # Save final predictions
 write_csv(smoothed_predictions, here("predictions", "species_detections.csv"))
 
 # Summary
-species_summary <- smoothed_predictions %>%
-  count(species, name = "n_bouts") %>%
+species_summary <- smoothed_predictions |>
+  count(species, name = "n_bouts") |>
   arrange(desc(n_bouts))
 
 print(species_summary)
@@ -717,32 +717,32 @@ predictions <- read_csv(here("predictions", "species_detections.csv"))
 ground_truth <- read_csv(here("data", "annotations", "validation_labels.csv"))
 
 # Match predictions to ground truth (similar to step 6)
-matched <- predictions %>%
-  left_join(ground_truth, by = "sound_file", suffix = c("_pred", "_truth")) %>%
+matched <- predictions |>
+  left_join(ground_truth, by = "sound_file", suffix = c("_pred", "_truth")) |>
   mutate(
     overlap_start = pmax(start_pred, start_truth),
     overlap_end = pmin(end_pred, end_truth),
     overlap = pmax(0, overlap_end - overlap_start),
     overlap_prop = overlap / (end_pred - start_pred)
-  ) %>%
-  filter(overlap_prop > 0.5) %>%
-  group_by(sound_file, species_pred) %>%
-  slice_max(overlap_prop, n = 1) %>%
+  ) |>
+  filter(overlap_prop > 0.5) |>
+  group_by(sound_file, species_pred) |>
+  slice_max(overlap_prop, n = 1) |>
   ungroup()
 
 # Confusion matrix
-conf_mat <- matched %>%
+conf_mat <- matched |>
   conf_mat(truth = species_truth, estimate = species_pred)
 
 # Metrics
-metrics <- matched %>%
+metrics <- matched |>
   metrics(truth = species_truth, estimate = species_pred)
 
 print(metrics)
 
 # Per-species precision and recall
-per_species <- matched %>%
-  group_by(species_truth) %>%
+per_species <- matched |>
+  group_by(species_truth) |>
   summarize(
     n_true = n(),
     n_correct = sum(species_pred == species_truth),

@@ -189,9 +189,9 @@ policy <- tensorflow::tf$keras$mixed_precision$Policy("mixed_float16")
 tensorflow::tf$keras$mixed_precision$set_global_policy(policy)
 
 # Build model (automatically uses mixed precision)
-model <- keras_model_sequential() %>%
-  layer_dense(128, activation = "relu") %>%
-  layer_dense(128, activation = "relu") %>%
+model <- keras_model_sequential() |>
+  layer_dense(128, activation = "relu") |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax", dtype = "float32")  # Output in float32
 
 # Use loss scaling
@@ -212,7 +212,7 @@ tensorboard_callback <- callback_tensorboard(
   profile_batch = c(10, 20)
 )
 
-model %>% fit(
+model |> fit(
   train_data,
   epochs = 50,
   callbacks = list(tensorboard_callback)
@@ -403,8 +403,8 @@ custom_model <- new_model_class(
 
 ```r
 # Create and train model
-model <- keras_model_sequential() %>%
-  layer_dense(128, activation = "relu", input_shape = c(784)) %>%
+model <- keras_model_sequential() |>
+  layer_dense(128, activation = "relu", input_shape = c(784)) |>
   layer_dense(10, activation = "softmax")
 
 # Train model
@@ -470,8 +470,8 @@ test_all_backends <- function(model_fn, data) {
 
 # Usage
 model_fn <- function() {
-  keras_model_sequential() %>%
-    layer_dense(128, activation = "relu", input_shape = c(784)) %>%
+  keras_model_sequential() |>
+    layer_dense(128, activation = "relu", input_shape = c(784)) |>
     layer_dense(10, activation = "softmax")
 }
 
@@ -491,12 +491,12 @@ benchmark_backend <- function(backend_name) {
   config_set_backend(backend_name)
 
   # Build model
-  model <- keras_model_sequential(input_shape = c(784)) %>%
-    layer_dense(512, activation = "relu") %>%
-    layer_dense(256, activation = "relu") %>%
+  model <- keras_model_sequential(input_shape = c(784)) |>
+    layer_dense(512, activation = "relu") |>
+    layer_dense(256, activation = "relu") |>
     layer_dense(10, activation = "softmax")
 
-  model %>% compile(
+  model |> compile(
     optimizer = optimizer_adam(),
     loss = "sparse_categorical_crossentropy",
     metrics = "accuracy"
@@ -508,7 +508,7 @@ benchmark_backend <- function(backend_name) {
 
   # Benchmark training
   tic(sprintf("%s training", backend_name))
-  history <- model %>% fit(
+  history <- model |> fit(
     x_train, y_train,
     epochs = 5,
     batch_size = 256,
@@ -542,8 +542,8 @@ print(do.call(rbind, lapply(results, as.data.frame)))
 # jax.jit for compilation
 
 # Model code remains the same!
-model <- keras_model_sequential() %>%
-  layer_dense(128, activation = "relu") %>%
+model <- keras_model_sequential() |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax")
 ```
 
@@ -557,8 +557,8 @@ model <- keras_model_sequential() %>%
 # dataloader <- torch$utils$data$DataLoader(...)
 
 # Model code remains the same!
-model <- keras_model_sequential() %>%
-  layer_dense(128, activation = "relu") %>%
+model <- keras_model_sequential() |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax")
 ```
 
@@ -587,8 +587,8 @@ setup_backend <- function(backend = "tensorflow") {
 
 # model.R - Backend-agnostic model
 build_model <- function() {
-  keras_model_sequential() %>%
-    layer_dense(128, activation = "relu") %>%
+  keras_model_sequential() |>
+    layer_dense(128, activation = "relu") |>
     layer_dense(10, activation = "softmax")
 }
 

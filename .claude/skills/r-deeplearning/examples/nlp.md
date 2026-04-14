@@ -35,7 +35,7 @@ text_data <- data.frame(
 )
 
 # Encode labels
-text_data <- text_data %>%
+text_data <- text_data |>
   mutate(label_id = as.integer(factor(sentiment)) - 1L)
 
 # Split data
@@ -59,9 +59,9 @@ n_classes <- length(unique(text_data$sentiment))
 # Build vocabulary from training data
 build_vocabulary <- function(texts, min_freq = 2, max_vocab = 10000) {
   # Tokenize
-  tokens <- texts %>%
-    str_to_lower() %>%
-    str_replace_all("[^a-z0-9\\s]", "") %>%
+  tokens <- texts |>
+    str_to_lower() |>
+    str_replace_all("[^a-z0-9\\s]", "") |>
     str_split("\\s+")
 
   # Count word frequencies
@@ -92,10 +92,10 @@ build_vocabulary <- function(texts, min_freq = 2, max_vocab = 10000) {
 
 # Text encoding function
 encode_text <- function(text, vocab, max_length = 100) {
-  tokens <- text %>%
-    str_to_lower() %>%
-    str_replace_all("[^a-z0-9\\s]", "") %>%
-    str_split("\\s+") %>%
+  tokens <- text |>
+    str_to_lower() |>
+    str_replace_all("[^a-z0-9\\s]", "") |>
+    str_split("\\s+") |>
     .[[1]]
 
   # Convert to indices
@@ -316,7 +316,7 @@ gru_attention_classifier <- nn_module(
 
 ```r
 # Train model
-fitted <- model %>%
+fitted <- model |>
   setup(
     loss = nn_cross_entropy_loss(),
     optimizer = optim_adam,
@@ -325,7 +325,7 @@ fitted <- model %>%
       luz_metric_precision(),
       luz_metric_recall()
     )
-  ) %>%
+  ) |>
 
   set_hparams(
     vocab_size = vocab_size,
@@ -335,12 +335,12 @@ fitted <- model %>%
     n_classes = n_classes,
     dropout = 0.5,
     bidirectional = TRUE
-  ) %>%
+  ) |>
 
   set_opt_hparams(
     lr = 0.001,
     weight_decay = 1e-5
-  ) %>%
+  ) |>
 
   fit(
     train_dl,
@@ -457,8 +457,8 @@ evaluate_text_model <- function(model, test_dl) {
     estimate = factor(predictions)
   )
 
-  overall <- results %>% metrics(truth, estimate)
-  conf_mat <- results %>% conf_mat(truth, estimate)
+  overall <- results |> metrics(truth, estimate)
+  conf_mat <- results |> conf_mat(truth, estimate)
 
   return(list(overall = overall, confusion_matrix = conf_mat))
 }

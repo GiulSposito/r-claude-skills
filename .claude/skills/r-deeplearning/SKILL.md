@@ -75,9 +75,9 @@ model <- nn_module(
     self$relu <- nn_relu()
   },
   forward = function(x) {
-    x %>%
-      self$fc1() %>%
-      self$relu() %>%
+    x |>
+      self$fc1() |>
+      self$relu() |>
       self$fc2()
   }
 )
@@ -112,29 +112,29 @@ with_no_grad({  # Disable gradient computation
 library(keras3)
 
 # Sequential API - simple stacking
-model <- keras_model_sequential(input_shape = c(784)) %>%
-  layer_dense(units = 128, activation = "relu") %>%
-  layer_dropout(rate = 0.2) %>%
+model <- keras_model_sequential(input_shape = c(784)) |>
+  layer_dense(units = 128, activation = "relu") |>
+  layer_dropout(rate = 0.2) |>
   layer_dense(units = 10, activation = "softmax")
 
 # Functional API - complex topologies
 inputs <- layer_input(shape = c(784))
-outputs <- inputs %>%
-  layer_dense(units = 128, activation = "relu") %>%
-  layer_dropout(rate = 0.2) %>%
+outputs <- inputs |>
+  layer_dense(units = 128, activation = "relu") |>
+  layer_dropout(rate = 0.2) |>
   layer_dense(units = 10, activation = "softmax")
 
 model <- keras_model(inputs, outputs)
 
 # Compile - configure learning process
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.001),
   loss = loss_categorical_crossentropy(),
   metrics = list(metric_categorical_accuracy())
 )
 
 # Training - high-level fit()
-history <- model %>% fit(
+history <- model |> fit(
   x_train, y_train,
   epochs = 20,
   batch_size = 32,
@@ -146,10 +146,10 @@ history <- model %>% fit(
 )
 
 # Evaluation
-model %>% evaluate(x_test, y_test)
+model |> evaluate(x_test, y_test)
 
 # Inference
-predictions <- model %>% predict(x_new)
+predictions <- model |> predict(x_new)
 ```
 
 ### luz (torch High-Level Training)
@@ -158,16 +158,16 @@ predictions <- model %>% predict(x_new)
 library(luz)
 
 # luz provides keras-like API for torch models
-fitted <- net %>%
+fitted <- net |>
   setup(
     loss = nn_cross_entropy_loss(),
     optimizer = optim_adam,
     metrics = list(
       luz_metric_accuracy()
     )
-  ) %>%
-  set_hparams(input_dim = 784, hidden_dim = 128, output_dim = 10) %>%
-  set_opt_hparams(lr = 0.001) %>%
+  ) |>
+  set_hparams(input_dim = 784, hidden_dim = 128, output_dim = 10) |>
+  set_opt_hparams(lr = 0.001) |>
   fit(
     train_dataloader,
     epochs = 20,
@@ -208,19 +208,19 @@ cnn_model <- nn_module(
   },
   forward = function(x) {
     # Conv block 1
-    x <- self$conv1(x) %>% self$relu() %>% self$pool()
+    x <- self$conv1(x) |> self$relu() |> self$pool()
 
     # Conv block 2
-    x <- self$conv2(x) %>% self$relu() %>% self$pool()
+    x <- self$conv2(x) |> self$relu() |> self$pool()
 
     # Conv block 3
-    x <- self$conv3(x) %>% self$relu() %>% self$pool()
+    x <- self$conv3(x) |> self$relu() |> self$pool()
 
     # Flatten
     x <- x$view(c(x$size(1), -1))
 
     # Fully connected
-    x <- self$fc1(x) %>% self$relu() %>% self$dropout()
+    x <- self$fc1(x) |> self$relu() |> self$dropout()
     x <- self$fc2(x)
 
     return(x)
@@ -229,9 +229,9 @@ cnn_model <- nn_module(
 
 # Data augmentation
 augmentation_transform <- function(x) {
-  x %>%
-    transform_random_horizontal_flip(p = 0.5) %>%
-    transform_random_rotation(degrees = 15) %>%
+  x |>
+    transform_random_horizontal_flip(p = 0.5) |>
+    transform_random_rotation(degrees = 15) |>
     transform_color_jitter(brightness = 0.2, contrast = 0.2)
 }
 
@@ -249,32 +249,32 @@ base_model$trainable <- FALSE
 
 # Add custom head
 inputs <- layer_input(shape = c(224, 224, 3))
-outputs <- inputs %>%
-  base_model() %>%
-  layer_global_average_pooling_2d() %>%
-  layer_dense(256, activation = "relu") %>%
-  layer_dropout(0.3) %>%
+outputs <- inputs |>
+  base_model() |>
+  layer_global_average_pooling_2d() |>
+  layer_dense(256, activation = "relu") |>
+  layer_dropout(0.3) |>
   layer_dense(num_classes, activation = "softmax")
 
 model <- keras_model(inputs, outputs)
 
 # Two-phase training
 # Phase 1: Train head with frozen base
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(1e-3),
   loss = loss_categorical_crossentropy(),
   metrics = "accuracy"
 )
-model %>% fit(train_data, epochs = 10)
+model |> fit(train_data, epochs = 10)
 
 # Phase 2: Fine-tune entire network
 base_model$trainable <- TRUE
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(1e-5),  # Lower learning rate
   loss = loss_categorical_crossentropy(),
   metrics = "accuracy"
 )
-model %>% fit(train_data, epochs = 10)
+model |> fit(train_data, epochs = 10)
 ```
 
 ### Natural Language Processing (RNNs/LSTMs)
@@ -301,7 +301,7 @@ lstm_model <- nn_module(
     last_hidden <- lstm_out[[2]][[1]][2, , ]  # Last layer's hidden state
 
     # Classification head
-    out <- last_hidden %>% self$dropout() %>% self$fc()
+    out <- last_hidden |> self$dropout() |> self$fc()
 
     return(out)
   }
@@ -310,17 +310,17 @@ lstm_model <- nn_module(
 # Bidirectional LSTM (keras3)
 library(keras3)
 
-model <- keras_model_sequential() %>%
-  layer_embedding(input_dim = vocab_size, output_dim = 128, input_length = max_len) %>%
-  layer_lstm(units = 64, return_sequences = TRUE) %>%
-  bidirectional(layer_lstm(units = 64)) %>%
-  layer_dense(64, activation = "relu") %>%
-  layer_dropout(0.3) %>%
+model <- keras_model_sequential() |>
+  layer_embedding(input_dim = vocab_size, output_dim = 128, input_length = max_len) |>
+  layer_lstm(units = 64, return_sequences = TRUE) |>
+  bidirectional(layer_lstm(units = 64)) |>
+  layer_dense(64, activation = "relu") |>
+  layer_dropout(0.3) |>
   layer_dense(num_classes, activation = "softmax")
 
 # Text preprocessing with keras
 tokenizer <- text_tokenizer(num_words = 10000)
-tokenizer %>% fit_text_tokenizer(texts)
+tokenizer |> fit_text_tokenizer(texts)
 sequences <- texts_to_sequences(tokenizer, texts)
 x_train <- pad_sequences(sequences, maxlen = max_len)
 ```
@@ -361,9 +361,9 @@ cnn_ts_model <- nn_module(
   },
   forward = function(x) {
     # x: (batch, input_dim, seq_len)
-    x <- self$conv1(x) %>% self$relu()
-    x <- self$conv2(x) %>% self$relu()
-    x <- self$conv3(x) %>% self$relu()
+    x <- self$conv1(x) |> self$relu()
+    x <- self$conv2(x) |> self$relu()
+    x <- self$conv3(x) |> self$relu()
     x <- self$pool(x)$squeeze(-1)  # Global pooling
     x <- self$fc(x)
     return(x)
@@ -411,9 +411,9 @@ tabular_model <- nn_module(
     x <- torch_cat(list(x_numeric, embedded_cat), dim = 2)
 
     # Dense network
-    x <- self$fc1(x) %>% self$batch_norm1() %>% self$relu() %>% self$dropout()
-    x <- self$fc2(x) %>% self$batch_norm2() %>% self$relu() %>% self$dropout()
-    x <- self$fc3(x) %>% self$relu()
+    x <- self$fc1(x) |> self$batch_norm1() |> self$relu() |> self$dropout()
+    x <- self$fc2(x) |> self$batch_norm2() |> self$relu() |> self$dropout()
+    x <- self$fc3(x) |> self$relu()
     x <- self$output(x)
 
     return(x)
@@ -538,22 +538,22 @@ audio_cnn <- nn_module(
     # Input: (batch, 1, n_mels, time)
 
     # Conv block 1
-    x <- self$conv1(x) %>% self$batch_norm1() %>% self$relu() %>% self$pool()
+    x <- self$conv1(x) |> self$batch_norm1() |> self$relu() |> self$pool()
 
     # Conv block 2
-    x <- self$conv2(x) %>% self$batch_norm2() %>% self$relu() %>% self$pool()
+    x <- self$conv2(x) |> self$batch_norm2() |> self$relu() |> self$pool()
 
     # Conv block 3
-    x <- self$conv3(x) %>% self$batch_norm3() %>% self$relu() %>% self$pool()
+    x <- self$conv3(x) |> self$batch_norm3() |> self$relu() |> self$pool()
 
     # Conv block 4
-    x <- self$conv4(x) %>% self$batch_norm4() %>% self$relu()
+    x <- self$conv4(x) |> self$batch_norm4() |> self$relu()
 
     # Global pooling
     x <- self$global_pool(x)$squeeze(c(3, 4))  # (batch, 256)
 
     # Classification head
-    x <- self$fc1(x) %>% self$relu() %>% self$dropout()
+    x <- self$fc1(x) |> self$relu() |> self$dropout()
     x <- self$fc2(x)
 
     return(x)
@@ -603,9 +603,9 @@ audio_crnn <- nn_module(
     batch_size <- x$size(1)
 
     # CNN feature extraction
-    x <- self$conv1(x) %>% self$batch_norm1() %>% self$relu() %>% self$pool()
-    x <- self$conv2(x) %>% self$batch_norm2() %>% self$relu() %>% self$pool()
-    x <- self$conv3(x) %>% self$batch_norm3() %>% self$relu() %>% self$pool()
+    x <- self$conv1(x) |> self$batch_norm1() |> self$relu() |> self$pool()
+    x <- self$conv2(x) |> self$batch_norm2() |> self$relu() |> self$pool()
+    x <- self$conv3(x) |> self$batch_norm3() |> self$relu() |> self$pool()
     # Shape: (batch, 256, n_mels/8, time/8)
 
     # Reshape for RNN: (batch, time, features)
@@ -623,7 +623,7 @@ audio_crnn <- nn_module(
     weighted <- (rnn_out * attention_weights)$sum(dim = 2)  # (batch, rnn_hidden*2)
 
     # Classification
-    out <- weighted %>% self$dropout() %>% self$fc()
+    out <- weighted |> self$dropout() |> self$fc()
 
     return(out)
   }
@@ -761,7 +761,7 @@ valid_dl <- dataloader(valid_ds, batch_size = 32, shuffle = FALSE, num_workers =
 library(luz)
 
 # Setup model
-fitted <- audio_cnn %>%
+fitted <- audio_cnn |>
   setup(
     loss = nn_cross_entropy_loss(),
     optimizer = optim_adam,
@@ -769,9 +769,9 @@ fitted <- audio_cnn %>%
       luz_metric_accuracy(),
       luz_metric_binary_auroc()  # If binary classification
     )
-  ) %>%
-  set_hparams(num_classes = length(unique(train_labels)), n_mels = 128) %>%
-  set_opt_hparams(lr = 0.001, weight_decay = 1e-4) %>%
+  ) |>
+  set_hparams(num_classes = length(unique(train_labels)), n_mels = 128) |>
+  set_opt_hparams(lr = 0.001, weight_decay = 1e-4) |>
   fit(
     train_dl,
     epochs = 50,
@@ -918,15 +918,15 @@ aggregate_windows <- function(inference_results, method = "mean") {
   # Group overlapping predictions and aggregate
   if (method == "mean") {
     # Average probabilities across overlapping windows
-    aggregated <- inference_results %>%
-      group_by(start_time = floor(start_time)) %>%
+    aggregated <- inference_results |>
+      group_by(start_time = floor(start_time)) |>
       summarize(
         predictions = list(Reduce(`+`, predictions) / length(predictions))
       )
   } else if (method == "max") {
     # Max probability across overlapping windows
-    aggregated <- inference_results %>%
-      group_by(start_time = floor(start_time)) %>%
+    aggregated <- inference_results |>
+      group_by(start_time = floor(start_time)) |>
       summarize(
         predictions = list(do.call(pmax, predictions))
       )
@@ -1002,7 +1002,7 @@ library(tidyverse)
 audio_df <- tibble(
   file_path = list.files("audio", pattern = "\\.wav$", full.names = TRUE),
   file_name = basename(file_path)
-) %>%
+) |>
   mutate(
     # Extract labels from filename
     species = str_extract(file_name, "^[A-Za-z]+"),
@@ -1011,20 +1011,20 @@ audio_df <- tibble(
   )
 
 # Split by recording_id to prevent leakage
-train_test_split <- audio_df %>%
-  mutate(recording_id = str_extract(file_name, "rec[0-9]+")) %>%
-  group_by(recording_id) %>%
-  slice_sample(n = 1) %>%  # One file per recording for split decision
-  ungroup() %>%
-  mutate(split = sample(c("train", "test"), n(), replace = TRUE, prob = c(0.8, 0.2))) %>%
+train_test_split <- audio_df |>
+  mutate(recording_id = str_extract(file_name, "rec[0-9]+")) |>
+  group_by(recording_id) |>
+  slice_sample(n = 1) |>  # One file per recording for split decision
+  ungroup() |>
+  mutate(split = sample(c("train", "test"), n(), replace = TRUE, prob = c(0.8, 0.2))) |>
   select(recording_id, split)
 
-audio_df <- audio_df %>%
-  mutate(recording_id = str_extract(file_name, "rec[0-9]+")) %>%
+audio_df <- audio_df |>
+  mutate(recording_id = str_extract(file_name, "rec[0-9]+")) |>
   left_join(train_test_split, by = "recording_id")
 
-train_df <- audio_df %>% filter(split == "train")
-test_df <- audio_df %>% filter(split == "test")
+train_df <- audio_df |> filter(split == "train")
+test_df <- audio_df |> filter(split == "test")
 ```
 
 ### With tidymodels
@@ -1044,9 +1044,9 @@ extract_embeddings <- function(model, dataloader, device = "cpu") {
     coro::loop(for (batch in dataloader) {
       x <- batch$x$to(device = device)
       # Forward pass through CNN (stop before final layer)
-      features <- model$conv1(x) %>%
-        model$conv2() %>%
-        model$conv3() %>%
+      features <- model$conv1(x) |>
+        model$conv2() |>
+        model$conv3() |>
         model$global_pool()
       embeddings[[length(embeddings) + 1]] <- as.array(features$cpu())
     })
@@ -1056,17 +1056,17 @@ extract_embeddings <- function(model, dataloader, device = "cpu") {
 }
 
 # Create tidymodels recipe with DL embeddings
-recipe_with_embeddings <- recipe(species ~ ., data = feature_df) %>%
-  step_normalize(all_numeric_predictors()) %>%
+recipe_with_embeddings <- recipe(species ~ ., data = feature_df) |>
+  step_normalize(all_numeric_predictors()) |>
   step_pca(starts_with("embedding_"), num_comp = 50)
 
 # Standard tidymodels workflow
-rf_spec <- rand_forest(trees = 500) %>%
-  set_engine("ranger") %>%
+rf_spec <- rand_forest(trees = 500) |>
+  set_engine("ranger") |>
   set_mode("classification")
 
-wf <- workflow() %>%
-  add_recipe(recipe_with_embeddings) %>%
+wf <- workflow() |>
+  add_recipe(recipe_with_embeddings) |>
   add_model(rf_spec)
 
 fit_resamples(wf, resamples = vfold_cv(feature_df, v = 5))
@@ -1092,7 +1092,7 @@ model$load_state_dict(torch_load("model_state.pt"))
 
 # keras3
 # Save
-model %>% save_model("model.keras")
+model |> save_model("model.keras")
 
 # Load
 model <- load_model("model.keras")

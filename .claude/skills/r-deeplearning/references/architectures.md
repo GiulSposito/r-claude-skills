@@ -36,13 +36,13 @@ simple_cnn <- nn_module(
   },
 
   forward = function(x) {
-    x <- x %>%
-      self$conv1() %>% self$bn1() %>% nnf_relu() %>% self$pool1() %>%
-      self$conv2() %>% self$bn2() %>% nnf_relu() %>% self$pool2() %>%
-      self$conv3() %>% self$bn3() %>% nnf_relu() %>% self$pool3()
+    x <- x |>
+      self$conv1() |> self$bn1() |> nnf_relu() |> self$pool1() |>
+      self$conv2() |> self$bn2() |> nnf_relu() |> self$pool2() |>
+      self$conv3() |> self$bn3() |> nnf_relu() |> self$pool3()
 
-    x <- self$gap(x) %>% torch_flatten(start_dim = 2)
-    x <- self$dropout(x) %>% self$fc()
+    x <- self$gap(x) |> torch_flatten(start_dim = 2)
+    x <- self$dropout(x) |> self$fc()
 
     return(x)
   }
@@ -92,9 +92,9 @@ residual_block <- nn_module(
   forward = function(x) {
     identity <- self$shortcut(x)
 
-    out <- x %>%
-      self$conv1() %>% self$bn1() %>% nnf_relu() %>%
-      self$conv2() %>% self$bn2()
+    out <- x |>
+      self$conv1() |> self$bn1() |> nnf_relu() |>
+      self$conv2() |> self$bn2()
 
     out <- out + identity
     out <- nnf_relu(out)
@@ -134,12 +134,12 @@ resnet_classifier <- nn_module(
   },
 
   forward = function(x) {
-    x <- x %>%
-      self$conv1() %>% self$bn1() %>% nnf_relu() %>% self$pool1() %>%
-      self$layer1() %>% self$layer2() %>%
-      self$layer3() %>% self$layer4()
+    x <- x |>
+      self$conv1() |> self$bn1() |> nnf_relu() |> self$pool1() |>
+      self$layer1() |> self$layer2() |>
+      self$layer3() |> self$layer4()
 
-    x <- self$gap(x) %>% torch_flatten(start_dim = 2) %>% self$fc()
+    x <- self$gap(x) |> torch_flatten(start_dim = 2) |> self$fc()
 
     return(x)
   }
@@ -188,13 +188,13 @@ cnn_1d <- nn_module(
   forward = function(x) {
     # x: (batch, channels, time_steps)
 
-    x <- x %>%
-      self$conv1() %>% self$bn1() %>% nnf_relu() %>% self$pool1() %>%
-      self$conv2() %>% self$bn2() %>% nnf_relu() %>% self$pool2() %>%
-      self$conv3() %>% self$bn3() %>% nnf_relu() %>% self$pool3()
+    x <- x |>
+      self$conv1() |> self$bn1() |> nnf_relu() |> self$pool1() |>
+      self$conv2() |> self$bn2() |> nnf_relu() |> self$pool2() |>
+      self$conv3() |> self$bn3() |> nnf_relu() |> self$pool3()
 
-    x <- self$gap(x) %>% torch_flatten(start_dim = 2)
-    x <- self$dropout(x) %>% self$fc()
+    x <- self$gap(x) |> torch_flatten(start_dim = 2)
+    x <- self$dropout(x) |> self$fc()
 
     return(x)
   }
@@ -247,7 +247,7 @@ lstm_model <- nn_module(
     # Take last time step
     last_hidden <- lstm_out[, -1, ]
 
-    out <- self$dropout(last_hidden) %>% self$fc()
+    out <- self$dropout(last_hidden) |> self$fc()
 
     return(out)
   }
@@ -292,7 +292,7 @@ gru_model <- nn_module(
   forward = function(x) {
     gru_out <- self$gru(x)[[1]]
     last_hidden <- gru_out[, -1, ]
-    out <- self$dropout(last_hidden) %>% self$fc()
+    out <- self$dropout(last_hidden) |> self$fc()
     return(out)
   }
 )
@@ -353,10 +353,10 @@ crnn_audio <- nn_module(
     batch_size <- x$shape[1]
 
     # CNN: extract features
-    x <- x %>%
-      self$conv1() %>% self$bn1() %>% nnf_relu() %>% self$pool1() %>%
-      self$conv2() %>% self$bn2() %>% nnf_relu() %>% self$pool2() %>%
-      self$conv3() %>% self$bn3() %>% nnf_relu() %>% self$pool3()
+    x <- x |>
+      self$conv1() |> self$bn1() |> nnf_relu() |> self$pool1() |>
+      self$conv2() |> self$bn2() |> nnf_relu() |> self$pool2() |>
+      self$conv3() |> self$bn3() |> nnf_relu() |> self$pool3()
 
     # x: (batch, 256, freq/8, time/8)
 
@@ -369,7 +369,7 @@ crnn_audio <- nn_module(
     last_hidden <- gru_out[, -1, ]
 
     # Classify
-    out <- self$dropout(last_hidden) %>% self$fc()
+    out <- self$dropout(last_hidden) |> self$fc()
 
     return(out)
   }
@@ -431,10 +431,10 @@ crnn_attention <- nn_module(
 
   forward = function(x) {
     # CNN
-    x <- x %>%
-      self$conv1() %>% self$bn1() %>% nnf_relu() %>% self$pool1() %>%
-      self$conv2() %>% self$bn2() %>% nnf_relu() %>% self$pool2() %>%
-      self$conv3() %>% self$bn3() %>% nnf_relu() %>% self$pool3()
+    x <- x |>
+      self$conv1() |> self$bn1() |> nnf_relu() |> self$pool1() |>
+      self$conv2() |> self$bn2() |> nnf_relu() |> self$pool2() |>
+      self$conv3() |> self$bn3() |> nnf_relu() |> self$pool3()
 
     # Reshape for RNN
     x <- x$permute(c(1, 4, 2, 3))
@@ -451,7 +451,7 @@ crnn_attention <- nn_module(
     attended <- (gru_out * attn_weights)$sum(dim = 2)  # (batch, hidden*2)
 
     # Classify
-    out <- self$dropout(attended) %>% self$fc()
+    out <- self$dropout(attended) |> self$fc()
 
     return(out)
   }
@@ -660,7 +660,7 @@ multiscale_cnn <- nn_module(
 
     # Combine and classify
     x <- self$conv_combined(x)
-    x <- self$gap(x) %>% torch_flatten(start_dim = 2)
+    x <- self$gap(x) |> torch_flatten(start_dim = 2)
     x <- self$fc(x)
 
     return(x)
@@ -702,9 +702,9 @@ tcn_block <- nn_module(
   forward = function(x) {
     residual <- self$residual(x)
 
-    out <- x %>%
-      self$conv1() %>% self$bn1() %>% nnf_relu() %>% self$dropout() %>%
-      self$conv2() %>% self$bn2() %>% nnf_relu() %>% self$dropout()
+    out <- x |>
+      self$conv1() |> self$bn1() |> nnf_relu() |> self$dropout() |>
+      self$conv2() |> self$bn2() |> nnf_relu() |> self$dropout()
 
     out <- out + residual
     out <- nnf_relu(out)

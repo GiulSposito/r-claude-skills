@@ -92,7 +92,7 @@ create_mel_layer <- function(
 input <- keras_input(shape = c(NULL), dtype = "float32", name = "audio")
 
 # Convert to mel-spectrogram
-mel_spec <- input %>%
+mel_spec <- input |>
   create_mel_layer(
     sample_rate = 16000,
     fft_length = 1024,
@@ -111,7 +111,7 @@ Use Short-Time Fourier Transform for frequency analysis.
 # STFT spectrogram layer
 input <- keras_input(shape = c(NULL), dtype = "float32", name = "audio")
 
-stft_spec <- input %>%
+stft_spec <- input |>
   layer_stft_spectrogram(
     fft_length = 512,
     sequence_stride = 256,
@@ -119,7 +119,7 @@ stft_spec <- input %>%
   )
 
 # Apply log scaling manually
-log_spec <- stft_spec %>%
+log_spec <- stft_spec |>
   layer_lambda(function(x) keras3::k_log(x + 1e-6))
 
 # log_spec shape: (batch, time_steps, fft_length/2 + 1)
@@ -133,12 +133,12 @@ Time and frequency masking for robust audio models.
 # Create augmentation pipeline
 create_audio_augmentation <- function() {
   # Sequential augmentation layers
-  keras_model_sequential() %>%
+  keras_model_sequential() |>
     # Randomly mask time segments
     layer_random_time_masking(
       max_size = 10,      # Maximum number of time steps to mask
       num_masks = 2       # Number of masks to apply
-    ) %>%
+    ) |>
     # Randomly mask frequency bands
     layer_random_frequency_masking(
       max_size = 10,      # Maximum number of frequency bins to mask
@@ -150,11 +150,11 @@ create_audio_augmentation <- function() {
 input <- keras_input(shape = c(NULL), dtype = "float32")
 
 # Preprocessing
-mel_spec <- input %>%
+mel_spec <- input |>
   create_mel_layer()
 
 # Apply augmentation only during training
-augmented <- mel_spec %>%
+augmented <- mel_spec |>
   create_audio_augmentation()
 
 # Note: Augmentation layers automatically disable during inference
@@ -182,7 +182,7 @@ build_audio_classifier <- function(n_classes, sample_rate = 16000) {
   )
 
   # Convert to mel-spectrogram
-  mel_spec <- input %>%
+  mel_spec <- input |>
     layer_mel_spectrogram(
       fft_length = 1024,
       sequence_stride = 512,
@@ -192,38 +192,38 @@ build_audio_classifier <- function(n_classes, sample_rate = 16000) {
     )
 
   # Data augmentation (training only)
-  augmented <- mel_spec %>%
-    layer_random_time_masking(max_size = 10, num_masks = 2) %>%
+  augmented <- mel_spec |>
+    layer_random_time_masking(max_size = 10, num_masks = 2) |>
     layer_random_frequency_masking(max_size = 10, num_masks = 2)
 
   # Add channel dimension for CNN
   # Shape: (batch, time, freq) -> (batch, time, freq, 1)
-  expanded <- augmented %>%
+  expanded <- augmented |>
     layer_reshape(target_shape = c(-1, 128, 1))
 
   # CNN architecture
-  output <- expanded %>%
+  output <- expanded |>
     # Block 1
-    layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu", padding = "same") %>%
-    layer_batch_normalization() %>%
-    layer_max_pooling_2d(pool_size = c(2, 2)) %>%
-    layer_dropout(rate = 0.25) %>%
+    layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu", padding = "same") |>
+    layer_batch_normalization() |>
+    layer_max_pooling_2d(pool_size = c(2, 2)) |>
+    layer_dropout(rate = 0.25) |>
 
     # Block 2
-    layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu", padding = "same") %>%
-    layer_batch_normalization() %>%
-    layer_max_pooling_2d(pool_size = c(2, 2)) %>%
-    layer_dropout(rate = 0.25) %>%
+    layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu", padding = "same") |>
+    layer_batch_normalization() |>
+    layer_max_pooling_2d(pool_size = c(2, 2)) |>
+    layer_dropout(rate = 0.25) |>
 
     # Block 3
-    layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = "relu", padding = "same") %>%
-    layer_batch_normalization() %>%
-    layer_global_average_pooling_2d() %>%
-    layer_dropout(rate = 0.5) %>%
+    layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = "relu", padding = "same") |>
+    layer_batch_normalization() |>
+    layer_global_average_pooling_2d() |>
+    layer_dropout(rate = 0.5) |>
 
     # Classification head
-    layer_dense(units = 256, activation = "relu") %>%
-    layer_dropout(rate = 0.3) %>%
+    layer_dense(units = 256, activation = "relu") |>
+    layer_dropout(rate = 0.3) |>
     layer_dense(units = n_classes, activation = "softmax")
 
   # Build model
@@ -235,7 +235,7 @@ build_audio_classifier <- function(n_classes, sample_rate = 16000) {
 # Create and compile model
 model <- build_audio_classifier(n_classes = 10)
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.001),
   loss = "sparse_categorical_crossentropy",
   metrics = c("accuracy")
@@ -258,7 +258,7 @@ build_rnn_audio_classifier <- function(n_classes, sample_rate = 16000) {
   )
 
   # Mel-spectrogram
-  mel_spec <- input %>%
+  mel_spec <- input |>
     layer_mel_spectrogram(
       fft_length = 1024,
       sequence_stride = 512,
@@ -268,11 +268,11 @@ build_rnn_audio_classifier <- function(n_classes, sample_rate = 16000) {
     )
 
   # RNN for temporal modeling
-  output <- mel_spec %>%
-    layer_lstm(units = 128, return_sequences = TRUE, dropout = 0.3) %>%
-    layer_lstm(units = 64, return_sequences = FALSE, dropout = 0.3) %>%
-    layer_dense(units = 128, activation = "relu") %>%
-    layer_dropout(rate = 0.4) %>%
+  output <- mel_spec |>
+    layer_lstm(units = 128, return_sequences = TRUE, dropout = 0.3) |>
+    layer_lstm(units = 64, return_sequences = FALSE, dropout = 0.3) |>
+    layer_dense(units = 128, activation = "relu") |>
+    layer_dropout(rate = 0.4) |>
     layer_dense(units = n_classes, activation = "softmax")
 
   model <- keras_model(inputs = input, outputs = output)
@@ -283,7 +283,7 @@ build_rnn_audio_classifier <- function(n_classes, sample_rate = 16000) {
 # Compile
 rnn_model <- build_rnn_audio_classifier(n_classes = 10)
 
-rnn_model %>% compile(
+rnn_model |> compile(
   optimizer = optimizer_adam(),
   loss = "sparse_categorical_crossentropy",
   metrics = c("accuracy")
@@ -376,7 +376,7 @@ model <- build_audio_classifier(
   sample_rate = 16000
 )
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = 0.001),
   loss = "sparse_categorical_crossentropy",
   metrics = c("accuracy")
@@ -398,7 +398,7 @@ callbacks <- list(
 )
 
 # Train
-history <- model %>% fit(
+history <- model |> fit(
   x = train_audio,
   y = train_labels,
   validation_data = list(val_audio, val_labels),
@@ -409,7 +409,7 @@ history <- model %>% fit(
 )
 
 # Evaluate
-results <- model %>% evaluate(val_audio, val_labels)
+results <- model |> evaluate(val_audio, val_labels)
 cat(sprintf("Validation accuracy: %.2f%%\n", results["accuracy"] * 100))
 ```
 
@@ -445,7 +445,7 @@ predict_audio <- function(model, audio_file, sample_rate = 16000, label_names) {
   waveform <- array(waveform, dim = c(1, length(waveform)))
 
   # Predict
-  predictions <- model %>% predict(waveform)
+  predictions <- model |> predict(waveform)
 
   # Get top prediction
   pred_class <- which.max(predictions[1, ]) - 1

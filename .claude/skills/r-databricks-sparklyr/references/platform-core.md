@@ -338,9 +338,9 @@ trips <- dplyr::tbl(
 
 **Write to Table**:
 ```r
-group_by(jsonDF, author) %>%
-  count() %>%
-  arrange(desc(n)) %>%
+group_by(jsonDF, author) |>
+  count() |>
+  arrange(desc(n)) |>
   spark_write_table(name = "json_books_agg", mode = "overwrite")
 ```
 
@@ -378,8 +378,8 @@ collect(jsonDF)
 local_df <- collect(sparkDF)
 
 # Collect with row limit (recommended)
-local_df <- sparkDF %>%
-  head(1000) %>%
+local_df <- sparkDF |>
+  head(1000) |>
   collect()
 ```
 
@@ -402,16 +402,16 @@ sparkDF <- sdf_copy_to(
 #### Adding and Computing Columns
 
 ```r
-withDate <- jsonDF %>%
+withDate <- jsonDF |>
   mutate(today = current_timestamp())
 
-withMMyyyy <- withDate %>%
+withMMyyyy <- withDate |>
   mutate(
     month = month(today),
     year  = year(today)
   )
 
-withUnixTimestamp <- withMMyyyy %>%
+withUnixTimestamp <- withMMyyyy |>
   mutate(
     formatted_date = date_format(today, "yyyy-MM-dd"),
     day = dayofmonth(formatted_date)
@@ -424,11 +424,11 @@ withUnixTimestamp <- withMMyyyy %>%
 
 ```r
 # Filter rows
-filtered_df <- jsonDF %>%
+filtered_df <- jsonDF |>
   filter(pages > 200)
 
 # Select columns
-selected_df <- jsonDF %>%
+selected_df <- jsonDF |>
   select(author, pages)
 ```
 
@@ -437,9 +437,9 @@ selected_df <- jsonDF %>%
 #### Grouping and Aggregation
 
 ```r
-aggregated <- jsonDF %>%
-  group_by(author) %>%
-  count() %>%
+aggregated <- jsonDF |>
+  group_by(author) |>
+  count() |>
   arrange(desc(n))
 ```
 
@@ -449,7 +449,7 @@ aggregated <- jsonDF %>%
 createOrReplaceTempView(withTimestampDF, viewName = "timestampTable")
 
 # Read view back
-spark_read_table(sc = sc, name = "timestampTable") %>%
+spark_read_table(sc = sc, name = "timestampTable") |>
   collect()
 ```
 
@@ -458,8 +458,8 @@ spark_read_table(sc = sc, name = "timestampTable") %>%
 #### Quantile Calculations (Method 1 - dplyr)
 
 ```r
-quantileDF <- irisDF %>%
-  group_by(Species) %>%
+quantileDF <- irisDF |>
+  group_by(Species) |>
   summarize(
     quantile_25th = percentile_approx(Sepal_Length, 0.25),
     quantile_50th = percentile_approx(Sepal_Length, 0.50),
@@ -472,7 +472,7 @@ collect(quantileDF)
 
 ```r
 sdf_quantile(
-  x = irisDF %>% filter(Species == "virginica"),
+  x = irisDF |> filter(Species == "virginica"),
   column = "Sepal_Length",
   probabilities = c(0.25, 0.5, 0.75, 1.0)
 )
@@ -697,9 +697,9 @@ print(trips, n = 5)
 local_data <- collect(large_sparkDF)
 
 # GOOD - Filters first
-local_data <- large_sparkDF %>%
-  filter(date > "2023-01-01") %>%
-  select(essential_columns) %>%
+local_data <- large_sparkDF |>
+  filter(date > "2023-01-01") |>
+  select(essential_columns) |>
   collect()
 ```
 
@@ -710,15 +710,15 @@ local_data <- large_sparkDF %>%
 **Select Early, Select Often**:
 ```r
 # BAD - Carries unnecessary columns
-result <- sparkDF %>%
-  join(other_df) %>%
-  filter(condition) %>%
+result <- sparkDF |>
+  join(other_df) |>
+  filter(condition) |>
   select(needed_cols)
 
 # GOOD - Selects early
-result <- sparkDF %>%
-  select(needed_cols) %>%
-  join(other_df %>% select(join_col, other_needed)) %>%
+result <- sparkDF |>
+  select(needed_cols) |>
+  join(other_df |> select(join_col, other_needed)) |>
   filter(condition)
 ```
 
@@ -729,13 +729,13 @@ result <- sparkDF %>%
 **Cache Reused DataFrames**:
 ```r
 # Cache expensive computation
-expensive_df <- sparkDF %>%
-  complex_transformation() %>%
+expensive_df <- sparkDF |>
+  complex_transformation() |>
   compute("cached_table")
 
 # Reuse multiple times
-result1 <- expensive_df %>% operation1()
-result2 <- expensive_df %>% operation2()
+result1 <- expensive_df |> operation1()
+result2 <- expensive_df |> operation2()
 ```
 
 ### Memory Management
@@ -767,7 +767,7 @@ dbClearCache()
 **Partition Management**:
 ```r
 # Repartition for better parallelism
-optimized_df <- sparkDF %>%
+optimized_df <- sparkDF |>
   sdf_repartition(partitions = 200)
 ```
 
@@ -820,7 +820,7 @@ library(dplyr)
 **Example - Date Functions**:
 ```r
 # WORKS - Hive functions
-withDate <- df %>%
+withDate <- df |>
   mutate(
     current_ts = current_timestamp(),
     month_num = month(date_col),
@@ -829,7 +829,7 @@ withDate <- df %>%
   )
 
 # DOESN'T WORK - Base R functions
-withDate <- df %>%
+withDate <- df |>
   mutate(formatted = format(date_col, "%Y-%m-%d"))  # ERROR
 ```
 
@@ -932,38 +932,38 @@ sales_data <- dplyr::tbl(
 )
 
 # Data transformation pipeline
-monthly_summary <- sales_data %>%
+monthly_summary <- sales_data |>
   # Add date components
   mutate(
     year = year(transaction_date),
     month = month(transaction_date)
-  ) %>%
+  ) |>
   # Filter recent data
-  filter(year >= 2023) %>%
+  filter(year >= 2023) |>
   # Select relevant columns
-  select(year, month, product_id, amount, quantity) %>%
+  select(year, month, product_id, amount, quantity) |>
   # Group and aggregate
-  group_by(year, month, product_id) %>%
+  group_by(year, month, product_id) |>
   summarize(
     total_amount = sum(amount),
     total_quantity = sum(quantity),
     avg_price = sum(amount) / sum(quantity),
     transaction_count = n()
-  ) %>%
+  ) |>
   # Sort results
   arrange(desc(year), desc(month), desc(total_amount))
 
 # Write results to table
-monthly_summary %>%
+monthly_summary |>
   spark_write_table(
     name = "sales_monthly_summary",
     mode = "overwrite"
   )
 
 # Preview results (collect small sample)
-monthly_summary %>%
-  head(20) %>%
-  collect() %>%
+monthly_summary |>
+  head(20) |>
+  collect() |>
   print()
 ```
 
@@ -985,8 +985,8 @@ irisDF <- sdf_copy_to(
 )
 
 # Calculate quantiles by species
-quantiles_summary <- irisDF %>%
-  group_by(Species) %>%
+quantiles_summary <- irisDF |>
+  group_by(Species) |>
   summarize(
     sepal_length_25th = percentile_approx(Sepal_Length, 0.25),
     sepal_length_50th = percentile_approx(Sepal_Length, 0.50),
@@ -1002,7 +1002,7 @@ print(results)
 
 # Alternative: sparklyr quantile function
 virginica_quantiles <- sdf_quantile(
-  x = irisDF %>% filter(Species == "virginica"),
+  x = irisDF |> filter(Species == "virginica"),
   column = "Sepal_Length",
   probabilities = c(0.25, 0.5, 0.75, 1.0)
 )
@@ -1033,27 +1033,27 @@ booksDF <- spark_read_json(
 )
 
 # Analyze books by author
-author_stats <- booksDF %>%
-  group_by(author) %>%
+author_stats <- booksDF |>
+  group_by(author) |>
   summarize(
     book_count = n(),
     total_pages = sum(pages),
     avg_pages = mean(pages),
     earliest_year = min(year),
     latest_year = max(year)
-  ) %>%
+  ) |>
   arrange(desc(book_count))
 
 # Write aggregated results
-author_stats %>%
+author_stats |>
   spark_write_table(
     name = "books_author_summary",
     mode = "overwrite"
   )
 
 # Display top authors
-author_stats %>%
-  head(10) %>%
+author_stats |>
+  head(10) |>
   collect()
 ```
 
@@ -1097,19 +1097,19 @@ trips <- dplyr::tbl(
 )
 
 # Local development with debugging
-trip_summary <- trips %>%
-  filter(!is.na(fare_amount)) %>%
-  group_by(pickup_zip) %>%
+trip_summary <- trips |>
+  filter(!is.na(fare_amount)) |>
+  group_by(pickup_zip) |>
   summarize(
     trip_count = n(),
     avg_fare = mean(fare_amount),
     total_fare = sum(fare_amount)
-  ) %>%
+  ) |>
   arrange(desc(trip_count))
 
 # Collect results
-local_results <- trip_summary %>%
-  head(100) %>%
+local_results <- trip_summary |>
+  head(100) |>
   collect()
 
 # Inspect in RStudio Environment view
@@ -1170,7 +1170,7 @@ library(dplyr)
 sc <- spark_connect(method = "databricks")
 
 # Create DataFrame with date transformations
-sales_with_dates <- spark_read_table(sc, "sales_raw") %>%
+sales_with_dates <- spark_read_table(sc, "sales_raw") |>
   mutate(
     transaction_timestamp = current_timestamp(),
     transaction_date = date_format(transaction_timestamp, "yyyy-MM-dd"),
@@ -1192,7 +1192,7 @@ createOrReplaceTempView(
 from_view <- spark_read_table(
   sc = sc,
   name = "sales_with_dates_view"
-) %>%
+) |>
   collect()
 
 print(from_view)
@@ -1259,13 +1259,13 @@ spark_write_json(df, "path/to/output", mode = "overwrite")
 
 ```r
 # Filter and select
-result <- df %>%
-  filter(column > 100) %>%
+result <- df |>
+  filter(column > 100) |>
   select(col1, col2, col3)
 
 # Group and aggregate
-result <- df %>%
-  group_by(category) %>%
+result <- df |>
+  group_by(category) |>
   summarize(
     count = n(),
     avg_value = mean(value),
@@ -1273,12 +1273,12 @@ result <- df %>%
   )
 
 # Join operations
-result <- df1 %>%
+result <- df1 |>
   left_join(df2, by = "key_column")
 
 # Window functions
-result <- df %>%
-  group_by(partition_col) %>%
+result <- df |>
+  group_by(partition_col) |>
   mutate(row_num = row_number(order_by = sort_col))
 ```
 

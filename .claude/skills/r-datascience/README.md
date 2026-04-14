@@ -33,15 +33,15 @@ Use this skill when you need to:
 ```r
 library(tidyverse)
 
-clean_data <- raw_data %>%
-  filter(!is.na(key_var)) %>%
-  mutate(new_var = if_else(condition, value1, value2)) %>%
-  group_by(category) %>%
+clean_data <- raw_data |>
+  filter(!is.na(key_var)) |>
+  mutate(new_var = if_else(condition, value1, value2)) |>
+  group_by(category) |>
   summarize(
     mean_val = mean(value),
     sd_val = sd(value),
     n = n()
-  ) %>%
+  ) |>
   arrange(desc(mean_val))
 ```
 
@@ -56,19 +56,19 @@ train <- training(split)
 test <- testing(split)
 
 # Recipe
-rec <- recipe(outcome ~ ., data = train) %>%
-  step_impute_median(all_numeric_predictors()) %>%
-  step_dummy(all_nominal_predictors()) %>%
+rec <- recipe(outcome ~ ., data = train) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
   step_normalize(all_numeric_predictors())
 
 # Model
-rf_spec <- rand_forest(trees = 1000) %>%
-  set_engine("ranger") %>%
+rf_spec <- rand_forest(trees = 1000) |>
+  set_engine("ranger") |>
   set_mode("classification")
 
 # Workflow
-wf <- workflow() %>%
-  add_recipe(rec) %>%
+wf <- workflow() |>
+  add_recipe(rec) |>
   add_model(rf_spec)
 
 # Fit and evaluate
@@ -175,7 +175,7 @@ glance(model)
 ## Best Practices
 
 ### Data Wrangling
-✅ Use pipes (`%>%`) for readability
+✅ Use native pipe (`|>`) for readability
 ✅ Handle missing values explicitly
 ✅ Verify joins don't create unexpected rows
 ✅ Use `count()` instead of `group_by() + summarise(n())`

@@ -55,12 +55,12 @@ CustomDenseLayer <- Layer(
 
 # Usage
 input <- keras_input(shape = 10)
-output <- input %>%
-  CustomDenseLayer(units = 32, activation = "relu") %>%
+output <- input |>
+  CustomDenseLayer(units = 32, activation = "relu") |>
   layer_dense(units = 1)
 
 model <- keras_model(inputs = input, outputs = output)
-model %>% compile(optimizer = "adam", loss = "mse")
+model |> compile(optimizer = "adam", loss = "mse")
 ```
 
 ## Deferred Weight Creation with build()
@@ -113,14 +113,14 @@ AdaptiveNormalizationLayer <- Layer(
 )
 
 # Example: Use with different input dimensions
-model1 <- keras_model_sequential() %>%
-  layer_input(shape = 64) %>%
-  AdaptiveNormalizationLayer() %>%
+model1 <- keras_model_sequential() |>
+  layer_input(shape = 64) |>
+  AdaptiveNormalizationLayer() |>
   layer_dense(units = 10)
 
-model2 <- keras_model_sequential() %>%
-  layer_input(shape = 128) %>%
-  AdaptiveNormalizationLayer() %>%  # Automatically adapts to 128 features
+model2 <- keras_model_sequential() |>
+  layer_input(shape = 128) |>
+  AdaptiveNormalizationLayer() |>  # Automatically adapts to 128 features
   layer_dense(units = 5)
 ```
 
@@ -166,12 +166,12 @@ DropoutDenseLayer <- Layer(
 )
 
 # Create and save model
-model <- keras_model_sequential() %>%
-  layer_input(shape = 20) %>%
-  DropoutDenseLayer(units = 64, dropout_rate = 0.3, activation = "relu") %>%
+model <- keras_model_sequential() |>
+  layer_input(shape = 20) |>
+  DropoutDenseLayer(units = 64, dropout_rate = 0.3, activation = "relu") |>
   layer_dense(units = 1)
 
-model %>% compile(optimizer = "adam", loss = "mse")
+model |> compile(optimizer = "adam", loss = "mse")
 
 # Save and reload (configuration preserved)
 save_model(model, "model_with_custom.keras")
@@ -229,16 +229,16 @@ RunningMeanLayer <- Layer(
 )
 
 # Usage
-model <- keras_model_sequential() %>%
-  layer_input(shape = c(100, 10)) %>%
-  RunningMeanLayer(momentum = 0.95) %>%
-  layer_lstm(units = 32) %>%
+model <- keras_model_sequential() |>
+  layer_input(shape = c(100, 10)) |>
+  RunningMeanLayer(momentum = 0.95) |>
+  layer_lstm(units = 32) |>
   layer_dense(units = 1)
 
-model %>% compile(optimizer = "adam", loss = "mse")
+model |> compile(optimizer = "adam", loss = "mse")
 
 # State persists across training batches
-history <- model %>% fit(
+history <- model |> fit(
   x = train_x,
   y = train_y,
   epochs = 10,
@@ -344,7 +344,7 @@ model <- ResidualClassifier(num_classes = 10, num_blocks = 4)
 dummy_input <- keras3::k_random_uniform(c(1, 224, 224, 3))
 dummy_output <- model(dummy_input)
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(),
   loss = "categorical_crossentropy",
   metrics = c("accuracy")
@@ -468,10 +468,10 @@ VariationalAutoencoder <- Model(
 vae <- VariationalAutoencoder(latent_dim = 16)
 
 # Compile (optimizer only, loss is computed internally)
-vae %>% compile(optimizer = optimizer_adam())
+vae |> compile(optimizer = optimizer_adam())
 
 # Train
-history <- vae %>% fit(
+history <- vae |> fit(
   x = train_images,
   y = train_images,  # Autoencoder: output = input
   epochs = 30,

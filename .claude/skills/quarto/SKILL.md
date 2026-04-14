@@ -473,7 +473,7 @@ params:
 ```{r}
 # Access parameters
 current_month <- params$month
-data_filtered <- data %>%
+data_filtered <- data |>
   filter(month == params$month,
          year == params$year,
          region == params$region)

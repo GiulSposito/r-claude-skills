@@ -325,10 +325,10 @@ model <- nn_module(
     self$fc2 <- nn_linear(128, 1)
   },
   forward = function(x) {
-    x <- self$conv1(x) %>% nnf_relu() %>% nnf_max_pool2d(2)
-    x <- self$conv2(x) %>% nnf_relu() %>% nnf_max_pool2d(2)
+    x <- self$conv1(x) |> nnf_relu() |> nnf_max_pool2d(2)
+    x <- self$conv2(x) |> nnf_relu() |> nnf_max_pool2d(2)
     x <- torch_flatten(x, start_dim = 2)
-    x <- self$fc1(x) %>% nnf_relu()
+    x <- self$fc1(x) |> nnf_relu()
     self$fc2(x)
   }
 )

@@ -224,7 +224,7 @@ ml_linear_regression(
 partitions <- sdf_random_split(mtcars_tbl, training = 0.7, test = 0.3)
 
 # Train model
-lm_model <- partitions$training %>%
+lm_model <- partitions$training |>
   ml_linear_regression(mpg ~ .)
 
 # Predict
@@ -279,12 +279,12 @@ ml_regression_evaluator(predictions, label_col = "mpg")
 
 **Pipeline Creation:**
 ```r
-pipeline <- ml_pipeline(sc) %>%
-  ft_string_indexer(input_col = "species", output_col = "species_idx") %>%
+pipeline <- ml_pipeline(sc) |>
+  ft_string_indexer(input_col = "species", output_col = "species_idx") |>
   ft_vector_assembler(
     input_cols = c("Sepal_Length", "Sepal_Width", "species_idx"),
     output_col = "features"
-  ) %>%
+  ) |>
   ml_logistic_regression(features_col = "features", label_col = "label")
 
 # Fit pipeline
@@ -487,15 +487,15 @@ Sparklyr provides seamless integration with dplyr, allowing familiar R syntax fo
 ```r
 library(dplyr)
 
-result <- iris_tbl %>%
-  filter(Sepal_Length > 5.0) %>%
-  select(Species, Sepal_Length, Petal_Length) %>%
-  mutate(sepal_petal_ratio = Sepal_Length / Petal_Length) %>%
-  group_by(Species) %>%
+result <- iris_tbl |>
+  filter(Sepal_Length > 5.0) |>
+  select(Species, Sepal_Length, Petal_Length) |>
+  mutate(sepal_petal_ratio = Sepal_Length / Petal_Length) |>
+  group_by(Species) |>
   summarize(
     avg_ratio = mean(sepal_petal_ratio),
     count = n()
-  ) %>%
+  ) |>
   arrange(desc(avg_ratio))
 ```
 
@@ -512,15 +512,15 @@ result <- iris_tbl %>%
 
 ```r
 # Build query (no execution)
-lazy_result <- iris_tbl %>%
-  filter(Sepal_Length > 5.0) %>%
+lazy_result <- iris_tbl |>
+  filter(Sepal_Length > 5.0) |>
   select(Species, Sepal_Length)
 
 # Inspect SQL
-lazy_result %>% show_query()
+lazy_result |> show_query()
 
 # Execute and collect
-local_data <- lazy_result %>% collect()
+local_data <- lazy_result |> collect()
 ```
 
 ### collect() vs compute()
@@ -532,7 +532,7 @@ local_data <- lazy_result %>% collect()
 - Potentially expensive operation
 
 ```r
-local_df <- remote_df %>% collect()
+local_df <- remote_df |> collect()
 ```
 
 **compute():**
@@ -542,8 +542,8 @@ local_df <- remote_df %>% collect()
 - Useful for iterative operations
 
 ```r
-cached_df <- remote_df %>%
-  complex_transformation() %>%
+cached_df <- remote_df |>
+  complex_transformation() |>
   compute("cached_table")
 ```
 
@@ -570,7 +570,7 @@ cached_df <- remote_df %>%
 **Per-operation grouping with `.by`:**
 ```r
 # Instead of group_by() + summarize() + ungroup()
-result <- df %>%
+result <- df |>
   summarize(
     avg_value = mean(value),
     .by = c(category, region)
@@ -579,7 +579,7 @@ result <- df %>%
 
 **across() for multiple columns:**
 ```r
-result <- df %>%
+result <- df |>
   mutate(across(
     where(is.numeric),
     ~ .x * 2,
@@ -626,16 +626,16 @@ stream <- stream_read_delta(sc, "path/to/delta/")
 
 Use standard dplyr operations:
 ```r
-transformed_stream <- stream %>%
-  filter(value > 100) %>%
-  mutate(processed_value = value * 2) %>%
-  group_by(category) %>%
+transformed_stream <- stream |>
+  filter(value > 100) |>
+  mutate(processed_value = value * 2) |>
+  group_by(category) |>
   summarize(total = sum(processed_value))
 ```
 
 **Watermarks for time-windowed aggregations:**
 ```r
-windowed_stream <- stream %>%
+windowed_stream <- stream |>
   stream_watermark(timestamp_col = "event_time", threshold = "10 minutes")
 ```
 
@@ -704,7 +704,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   output$stream_data <- renderTable({
-    reactiveSpark(stream_table) %>%
+    reactiveSpark(stream_table) |>
       head(10)
   })
 }
@@ -724,7 +724,7 @@ result <- spark_apply(
   df,
   function(data) {
     # Custom R processing
-    data %>%
+    data |>
       mutate(custom_col = some_r_function(value))
   },
   columns = list(
@@ -761,7 +761,7 @@ Work with array and map columns:
 **hof_transform():**
 ```r
 # Element-wise transformation on arrays
-df %>%
+df |>
   hof_transform(~ .x * .x)  # Square each element
 ```
 
@@ -822,7 +822,7 @@ Register R functions as Spark UDFs:
 **In-Memory Caching:**
 ```r
 # Cache DataFrame
-cached_df <- df %>%
+cached_df <- df |>
   tbl_cache()
 
 # Uncache when done
@@ -832,7 +832,7 @@ tbl_uncache(cached_df)
 **Persistence Levels:**
 ```r
 # Persist with specific storage level
-df %>% sdf_persist(storage_level = "MEMORY_AND_DISK")
+df |> sdf_persist(storage_level = "MEMORY_AND_DISK")
 ```
 
 ### Partitioning Recommendations
@@ -840,11 +840,11 @@ df %>% sdf_persist(storage_level = "MEMORY_AND_DISK")
 **Repartitioning:**
 ```r
 # Increase partitions for better parallelism
-df_repartitioned <- df %>%
+df_repartitioned <- df |>
   sdf_repartition(partitions = 100)
 
 # Reduce partitions to minimize overhead
-df_coalesced <- df %>%
+df_coalesced <- df |>
   sdf_coalesce(partitions = 10)
 ```
 
@@ -860,7 +860,7 @@ Push smaller DataFrames to workers:
 
 ```r
 # Broadcast small lookup table
-result <- large_df %>%
+result <- large_df |>
   left_join(
     sdf_broadcast(small_df),
     by = "key"
@@ -917,8 +917,8 @@ Break lineage to reduce optimization overhead:
 spark_set_checkpoint_dir(sc, "/path/to/checkpoint/")
 
 # Checkpoint DataFrame
-checkpointed_df <- df %>%
-  complex_transformations() %>%
+checkpointed_df <- df |>
+  complex_transformations() |>
   sdf_checkpoint()
 ```
 
@@ -953,17 +953,17 @@ spark_web(sc)
 raw_data <- spark_read_parquet(sc, "s3://bucket/raw/")
 
 # Transform
-clean_data <- raw_data %>%
-  filter(!is.na(key_column)) %>%
+clean_data <- raw_data |>
+  filter(!is.na(key_column)) |>
   mutate(
     processed_date = to_date(timestamp),
     normalized_value = (value - mean(value)) / sd(value)
-  ) %>%
-  group_by(category, processed_date) %>%
+  ) |>
+  group_by(category, processed_date) |>
   summarize(
     total_value = sum(normalized_value),
     count = n()
-  ) %>%
+  ) |>
   compute("clean_data")
 
 # Load
@@ -983,9 +983,9 @@ data <- spark_read_delta(sc, "s3://bucket/training-data/")
 partitions <- sdf_random_split(data, training = 0.8, test = 0.2, seed = 123)
 
 # Create pipeline
-pipeline <- ml_pipeline(sc) %>%
-  ft_string_indexer("category", "category_idx") %>%
-  ft_vector_assembler(c("feature1", "feature2", "category_idx"), "features") %>%
+pipeline <- ml_pipeline(sc) |>
+  ft_string_indexer("category", "category_idx") |>
+  ft_vector_assembler(c("feature1", "feature2", "category_idx"), "features") |>
   ml_random_forest_classifier(features_col = "features", label_col = "label")
 
 # Train
@@ -1007,8 +1007,8 @@ ml_multiclass_classification_evaluator(predictions, metric_name = "accuracy")
 # Process new data only
 existing_processed <- spark_read_delta(sc, "s3://bucket/processed/")
 
-new_data <- spark_read_parquet(sc, "s3://bucket/raw/latest/") %>%
-  anti_join(existing_processed, by = "id") %>%
+new_data <- spark_read_parquet(sc, "s3://bucket/raw/latest/") |>
+  anti_join(existing_processed, by = "id") |>
   transform_data()
 
 # Append to processed
@@ -1023,8 +1023,8 @@ spark_write_delta(
 
 ```r
 # Sample for ggplot2
-sample_data <- large_df %>%
-  sdf_sample(fraction = 0.01, seed = 42) %>%
+sample_data <- large_df |>
+  sdf_sample(fraction = 0.01, seed = 42) |>
   collect()
 
 library(ggplot2)
@@ -1037,12 +1037,12 @@ ggplot(sample_data, aes(x = feature1, y = feature2)) +
 
 ```r
 # Initialize
-current_df <- initial_data %>% compute("iteration_0")
+current_df <- initial_data |> compute("iteration_0")
 
 for (i in 1:max_iterations) {
   # Update
-  current_df <- current_df %>%
-    mutate(value = value + delta) %>%
+  current_df <- current_df |>
+    mutate(value = value + delta) |>
     compute(paste0("iteration_", i))
 
   # Check convergence
@@ -1066,15 +1066,15 @@ sc <- spark_connect(master = "local")
 flights <- spark_read_csv(sc, "flights", "flights.csv", header = TRUE)
 
 # Analysis
-summary_stats <- flights %>%
-  filter(!is.na(dep_delay)) %>%
-  group_by(carrier) %>%
+summary_stats <- flights |>
+  filter(!is.na(dep_delay)) |>
+  group_by(carrier) |>
   summarize(
     avg_delay = mean(dep_delay),
     max_delay = max(dep_delay),
     flight_count = n()
-  ) %>%
-  arrange(desc(avg_delay)) %>%
+  ) |>
+  arrange(desc(avg_delay)) |>
   collect()
 
 # Disconnect
@@ -1096,12 +1096,12 @@ iris_tbl <- copy_to(sc, iris, overwrite = TRUE)
 partitions <- sdf_random_split(iris_tbl, training = 0.7, test = 0.3)
 
 # Build pipeline
-pipeline <- ml_pipeline(sc) %>%
-  ft_string_indexer("Species", "species_idx") %>%
+pipeline <- ml_pipeline(sc) |>
+  ft_string_indexer("Species", "species_idx") |>
   ft_vector_assembler(
     c("Sepal_Length", "Sepal_Width", "Petal_Length", "Petal_Width"),
     "features"
-  ) %>%
+  ) |>
   ml_random_forest_classifier(
     label_col = "species_idx",
     features_col = "features",
@@ -1162,7 +1162,7 @@ results <- spark_apply(
     r_squared = "double",
     n_obs = "integer"
   )
-) %>%
+) |>
   collect()
 
 print(results)
@@ -1184,11 +1184,11 @@ stream <- stream_read_kafka(
 )
 
 # Process stream
-processed <- stream %>%
+processed <- stream |>
   mutate(
     value_str = as.character(value),
     timestamp = current_timestamp()
-  ) %>%
+  ) |>
   filter(nchar(value_str) > 10)
 
 # Write to Kafka
@@ -1222,7 +1222,7 @@ spark_write_delta(data_tbl, "delta-table", mode = "overwrite")
 delta_df <- spark_read_delta(sc, "delta-table")
 
 # Update (via overwrite)
-updated_data <- delta_df %>%
+updated_data <- delta_df |>
   mutate(value = value * 2)
 
 spark_write_delta(updated_data, "delta-table", mode = "overwrite")

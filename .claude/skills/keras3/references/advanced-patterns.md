@@ -17,9 +17,9 @@ x_train <- array(rnorm(1000 * 784), dim = c(1000, 784))
 y_train <- array(sample(0:9, 1000, replace = TRUE), dim = c(1000))
 
 # Build model
-model <- keras_model_sequential(input_shape = c(784)) %>%
-  layer_dense(128, activation = "relu") %>%
-  layer_dense(64, activation = "relu") %>%
+model <- keras_model_sequential(input_shape = c(784)) |>
+  layer_dense(128, activation = "relu") |>
+  layer_dense(64, activation = "relu") |>
   layer_dense(10, activation = "softmax")
 
 # Define optimizer and loss
@@ -80,8 +80,8 @@ library(keras3)
 library(tensorflow)
 
 # Build model and optimizer
-model <- keras_model_sequential(input_shape = c(784)) %>%
-  layer_dense(128, activation = "relu") %>%
+model <- keras_model_sequential(input_shape = c(784)) |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax")
 
 optimizer <- optimizer_adam()
@@ -159,8 +159,8 @@ library(keras3)
 library(tensorflow)
 
 # Build model
-model <- keras_model_sequential(input_shape = c(784)) %>%
-  layer_dense(128, activation = "relu") %>%
+model <- keras_model_sequential(input_shape = c(784)) |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax")
 
 optimizer <- optimizer_adam()
@@ -199,8 +199,8 @@ Simulate larger batch sizes by accumulating gradients.
 library(keras3)
 library(tensorflow)
 
-model <- keras_model_sequential(input_shape = c(784)) %>%
-  layer_dense(128, activation = "relu") %>%
+model <- keras_model_sequential(input_shape = c(784)) |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax")
 
 optimizer <- optimizer_adam()
@@ -264,9 +264,9 @@ policy <- tf$keras$mixed_precision$Policy("mixed_float16")
 tf$keras$mixed_precision$set_global_policy(policy)
 
 # Build model (automatically uses mixed precision)
-model <- keras_model_sequential(input_shape = c(784)) %>%
-  layer_dense(128, activation = "relu") %>%
-  layer_dense(128, activation = "relu") %>%
+model <- keras_model_sequential(input_shape = c(784)) |>
+  layer_dense(128, activation = "relu") |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax", dtype = "float32")  # Keep output in float32
 
 # Use loss scaling optimizer
@@ -298,21 +298,21 @@ train_step <- function(x_batch, y_batch) {
 config_set_dtype_policy("mixed_float16")
 
 # All layers automatically use mixed precision
-model <- keras_model_sequential(input_shape = c(224, 224, 3)) %>%
-  layer_conv_2d(32, c(3, 3), activation = "relu") %>%
-  layer_max_pooling_2d(c(2, 2)) %>%
-  layer_flatten() %>%
-  layer_dense(128, activation = "relu") %>%
+model <- keras_model_sequential(input_shape = c(224, 224, 3)) |>
+  layer_conv_2d(32, c(3, 3), activation = "relu") |>
+  layer_max_pooling_2d(c(2, 2)) |>
+  layer_flatten() |>
+  layer_dense(128, activation = "relu") |>
   layer_dense(10, activation = "softmax", dtype = "float32")
 
 # Regular training (Keras handles loss scaling internally)
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(),
   loss = "sparse_categorical_crossentropy",
   metrics = "accuracy"
 )
 
-model %>% fit(x_train, y_train, epochs = 10)
+model |> fit(x_train, y_train, epochs = 10)
 ```
 
 ## Distributed Training
@@ -330,12 +330,12 @@ cat(sprintf("Number of devices: %d\n", strategy$num_replicas_in_sync))
 
 # Build and compile model within strategy scope
 with(strategy$scope(), {
-  model <- keras_model_sequential(input_shape = c(784)) %>%
-    layer_dense(128, activation = "relu") %>%
-    layer_dense(64, activation = "relu") %>%
+  model <- keras_model_sequential(input_shape = c(784)) |>
+    layer_dense(128, activation = "relu") |>
+    layer_dense(64, activation = "relu") |>
     layer_dense(10, activation = "softmax")
 
-  model %>% compile(
+  model |> compile(
     optimizer = optimizer_adam(),
     loss = "sparse_categorical_crossentropy",
     metrics = "accuracy"
@@ -350,7 +350,7 @@ train_dataset <- tf$data$Dataset$from_tensor_slices(
 train_dist_dataset <- strategy$experimental_distribute_dataset(train_dataset)
 
 # Train
-model %>% fit(
+model |> fit(
   train_dist_dataset,
   epochs = 10
 )
@@ -401,7 +401,7 @@ num_gpus <- 4
 
 scaled_lr <- base_lr * (actual_batch_size * num_gpus) / base_batch_size
 
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(learning_rate = scaled_lr),
   loss = "categorical_crossentropy",
   metrics = "accuracy"
@@ -433,7 +433,7 @@ focal_loss <- function(gamma = 2.0, alpha = 0.25) {
 }
 
 # Use in model
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(),
   loss = focal_loss(gamma = 2.0, alpha = 0.25),
   metrics = "accuracy"
@@ -497,7 +497,7 @@ F1Score <- new_metric_class(
 )
 
 # Use in model
-model %>% compile(
+model |> compile(
   optimizer = optimizer_adam(),
   loss = "binary_crossentropy",
   metrics = list(metric_accuracy(), F1Score())
@@ -596,7 +596,7 @@ train_with_curriculum <- function(model, x_full, y_full, difficulty_scores, epoc
                 epoch, nrow(x_curr), nrow(x_full), threshold))
 
     # Train on current curriculum
-    model %>% fit(
+    model |> fit(
       x_curr, y_curr,
       epochs = 1,
       verbose = 0
@@ -605,7 +605,7 @@ train_with_curriculum <- function(model, x_full, y_full, difficulty_scores, epoc
 }
 
 # Example: Define difficulty based on model confidence
-difficulty_scores <- 1 - predict(pretrained_model, x_full) %>%
+difficulty_scores <- 1 - predict(pretrained_model, x_full) |>
   apply(1, max)  # Lower confidence = harder
 
 train_with_curriculum(model, x_train, y_train, difficulty_scores, epochs = 50)
@@ -651,7 +651,7 @@ profiler_callback <- tf$keras$callbacks$TensorBoard(
   profile_batch = "10,20"  # Profile batches 10-20
 )
 
-model %>% fit(
+model |> fit(
   x_train, y_train,
   epochs = 5,
   callbacks = list(profiler_callback)
@@ -683,8 +683,8 @@ keras3::keras$backend$clear_session()
 
 # Use gradient checkpointing for large models
 # (recompute activations during backward pass)
-model <- keras_model_sequential() %>%
-  layer_dense(1024, activation = "relu") %>%
+model <- keras_model_sequential() |>
+  layer_dense(1024, activation = "relu") |>
   # Large layers here
   layer_dense(1024, activation = "relu")
 

@@ -39,11 +39,11 @@ sc <- spark_connect(method = "databricks")
 data <- spark_read_table(sc, "training_data")
 
 # 3. Split
-splits <- data %>%
+splits <- data |>
   sdf_random_split(training = 0.8, testing = 0.2, seed = 123)
 
 # 4. Train model
-model <- splits$training %>%
+model <- splits$training |>
   ml_logistic_regression(
     label ~ feature1 + feature2 + feature3
   )
@@ -94,13 +94,13 @@ ml_save(model, "path/to/model")
 
 ```r
 # Create pipeline
-pipeline <- ml_pipeline(sc) %>%
-  ft_string_indexer("category", "category_idx") %>%
-  ft_one_hot_encoder("category_idx", "category_vec") %>%
+pipeline <- ml_pipeline(sc) |>
+  ft_string_indexer("category", "category_idx") |>
+  ft_one_hot_encoder("category_idx", "category_vec") |>
   ft_vector_assembler(
     c("category_vec", "numeric_feature1", "numeric_feature2"),
     "features"
-  ) %>%
+  ) |>
   ml_random_forest_classifier(features_col = "features", label_col = "label")
 
 # Fit pipeline
@@ -170,14 +170,14 @@ delta_df <- tbl(sc, in_catalog("catalog_name", "schema_name", "table_name"))
 
 ```r
 # Write new table
-spark_df %>%
+spark_df |>
   spark_write_delta(
     path = "dbfs:/path/to/delta/table",
     mode = "overwrite"  # or "append", "error", "ignore"
   )
 
 # Write to catalog
-spark_df %>%
+spark_df |>
   spark_write_table(
     name = "catalog.schema.table",
     mode = "overwrite"
@@ -203,7 +203,7 @@ historical <- spark_read_delta(
 
 # View table history
 history <- tbl(sc, sql("DESCRIBE HISTORY delta.`/path/to/table`"))
-history %>% collect()
+history |> collect()
 ```
 
 ### Optimization Operations
@@ -223,7 +223,7 @@ DBI::dbExecute(sc, "OPTIMIZE catalog.schema.table ZORDER BY (date, customer_id)"
 
 ```r
 # Add columns automatically
-spark_df_with_new_column %>%
+spark_df_with_new_column |>
   spark_write_table(
     name = "my_table",
     mode = "append",
@@ -240,23 +240,23 @@ spark_df_with_new_column %>%
 
 ```r
 # Bronze layer
-raw_data %>%
+raw_data |>
   spark_write_delta(path = "bronze/events", mode = "append")
 
 # Silver layer
 bronze <- spark_read_delta(sc, "bronze/events")
-silver <- bronze %>%
-  filter(!is.na(important_field)) %>%
-  mutate(processed_date = today()) %>%
+silver <- bronze |>
+  filter(!is.na(important_field)) |>
+  mutate(processed_date = today()) |>
   compute("silver.events")
 
 # Gold layer
-gold <- silver %>%
-  group_by(date, product) %>%
+gold <- silver |>
+  group_by(date, product) |>
   summarize(
     total_sales = sum(amount),
     total_units = sum(quantity)
-  ) %>%
+  ) |>
   spark_write_table("gold.daily_sales")
 ```
 
@@ -267,38 +267,38 @@ gold <- silver %>%
 **1. Filter Early (Predicate Pushdown)**:
 ```r
 # GOOD: Filter at source
-spark_read_table(sc, "large_table") %>%
-  filter(date >= "2024-01-01") %>%  # Pushed down to storage
-  group_by(category) %>%
+spark_read_table(sc, "large_table") |>
+  filter(date >= "2024-01-01") |>  # Pushed down to storage
+  group_by(category) |>
   summarize(total = sum(amount))
 
 # BAD: Filter after aggregation
-spark_read_table(sc, "large_table") %>%
-  group_by(category) %>%
-  summarize(total = sum(amount)) %>%
+spark_read_table(sc, "large_table") |>
+  group_by(category) |>
+  summarize(total = sum(amount)) |>
   filter(date >= "2024-01-01")  # Too late!
 ```
 
 **2. Partition Pruning**:
 ```r
 # Tables partitioned by date automatically skip irrelevant partitions
-delta_table %>%
-  filter(year == 2024, month == 3) %>%  # Only reads March 2024 partitions
+delta_table |>
+  filter(year == 2024, month == 3) |>  # Only reads March 2024 partitions
   collect()
 ```
 
 **3. Broadcast Small Tables**:
 ```r
 # Broadcast dimension tables < 100MB
-large_fact_table %>%
+large_fact_table |>
   left_join(sdf_broadcast(small_dimension_table), by = "key")
 ```
 
 **4. Avoid Shuffles When Possible**:
 ```r
 # GOOD: Pre-partitioned on join key
-data %>%
-  sdf_repartition(partition_by = "customer_id") %>%
+data |>
+  sdf_repartition(partition_by = "customer_id") |>
   left_join(other_data, by = "customer_id")  # No shuffle needed
 
 # BAD: Join on different keys triggers shuffle
@@ -307,29 +307,29 @@ data %>%
 **5. Cache Intermediate Results**:
 ```r
 # Reused dataframe
-base <- spark_df %>%
-  filter(complex_conditions) %>%
+base <- spark_df |>
+  filter(complex_conditions) |>
   compute("base")  # Cache in Spark
 
 # Reuse without recomputing
-result1 <- base %>% filter(region == "US") %>% collect()
-result2 <- base %>% filter(region == "EU") %>% collect()
+result1 <- base |> filter(region == "US") |> collect()
+result2 <- base |> filter(region == "EU") |> collect()
 ```
 
 ### Partitioning Strategies
 
 ```r
 # Repartition for better parallelism
-spark_df %>%
+spark_df |>
   sdf_repartition(partitions = 200)  # Default: usually too few
 
 # Repartition by key for joins/aggregations
-spark_df %>%
+spark_df |>
   sdf_repartition(partition_by = "user_id")
 
 # Coalesce to reduce partitions (no shuffle)
-result_df %>%
-  sdf_coalesce(partitions = 10) %>%
+result_df |>
+  sdf_coalesce(partitions = 10) |>
   spark_write_parquet("output")
 ```
 
@@ -440,8 +440,8 @@ stream <- spark_read_stream(
 )
 
 # Transform (same as batch)
-processed <- stream %>%
-  filter(event_type == "purchase") %>%
+processed <- stream |>
+  filter(event_type == "purchase") |>
   mutate(processed_time = now())
 
 # Write stream
@@ -506,7 +506,7 @@ library(dplyr)
 
 sc <- spark_connect(method = "databricks")
 df <- spark_read_parquet(sc, "my_data", "path/to/data")
-result <- df %>% select(col1, col2)
+result <- df |> select(col1, col2)
 ```
 
 ### Common Migration Patterns
@@ -515,8 +515,8 @@ result <- df %>% select(col1, col2)
 |--------|----------|
 | `read.df()` | `spark_read_*()` |
 | `write.df()` | `spark_write_*()` |
-| `select(df, "col")` | `df %>% select(col)` |
-| `filter(df, condition)` | `df %>% filter(condition)` |
+| `select(df, "col")` | `df |> select(col)` |
+| `filter(df, condition)` | `df |> filter(condition)` |
 | `groupBy()` | `group_by()` |
 | `summarize()` | `summarize()` |
 | `collect()` | `collect()` |
@@ -541,13 +541,13 @@ result <- df %>% select(col1, col2)
 **Solutions**:
 ```r
 # Increase partitions
-df %>% sdf_repartition(partitions = 400)
+df |> sdf_repartition(partitions = 400)
 
 # Avoid collect() on large data
 # Use aggregation first
-df %>%
-  group_by(category) %>%
-  summarize(count = n()) %>%
+df |>
+  group_by(category) |>
+  summarize(count = n()) |>
   collect()  # Small result
 
 # Configure memory
@@ -560,7 +560,7 @@ config$spark.executor.memory <- "16g"
 **Diagnosis**:
 ```r
 # Check execution plan
-df %>% explain()
+df |> explain()
 
 # Look for:
 # - Full table scans (missing partition pruning)
@@ -599,17 +599,17 @@ reticulate::py_install("databricks-connect==14.3.0", pip = TRUE)
 **Diagnosis**:
 ```r
 # See generated SQL
-df %>% show_query()
+df |> show_query()
 ```
 
 **Solutions**:
 ```r
 # Use Spark SQL functions directly
-df %>% mutate(result = expr("spark_sql_function(column)"))
+df |> mutate(result = expr("spark_sql_function(column)"))
 
 # Or use spark_apply() for custom R code
-df %>% spark_apply(function(data) {
-  data %>% mutate(result = custom_r_function(column))
+df |> spark_apply(function(data) {
+  data |> mutate(result = custom_r_function(column))
 })
 ```
 
@@ -623,17 +623,17 @@ df %>% spark_apply(function(data) {
 **2. show_query() and explain()**:
 ```r
 # SQL translation
-query %>% show_query()
+query |> show_query()
 
 # Execution plan
-query %>% explain()
+query |> explain()
 ```
 
 **3. Logging**:
 ```r
 # Log intermediate steps
 message("Processing step 1...")
-result1 <- step1() %>% compute()
+result1 <- step1() |> compute()
 
 message("Row count: ", sdf_nrow(result1))
 ```
@@ -641,9 +641,9 @@ message("Row count: ", sdf_nrow(result1))
 **4. Sampling for Testing**:
 ```r
 # Test on small sample first
-spark_df %>%
-  sdf_sample(fraction = 0.001) %>%
-  <your_transformation> %>%
+spark_df |>
+  sdf_sample(fraction = 0.001) |>
+  <your_transformation> |>
   collect()
 ```
 
@@ -684,7 +684,7 @@ sc <- spark_connect(method = "databricks")
 # No special R code needed - Databricks handles it
 
 # User sees only authorized data
-tbl(sc, "catalog.schema.protected_table") %>%
+tbl(sc, "catalog.schema.protected_table") |>
   collect()  # Automatically filtered by permissions
 ```
 

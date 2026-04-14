@@ -37,7 +37,7 @@ metadata <- data.frame(
 )
 
 # Encode labels to integers
-metadata <- metadata %>%
+metadata <- metadata |>
   mutate(label_id = as.integer(factor(species)) - 1L)
 
 # Split data (temporal split for audio)
@@ -258,28 +258,28 @@ audio_cnn <- nn_module(
   forward = function(x) {
     # Input: (batch, 1, n_mels, n_frames)
 
-    x <- x %>%
-      self$conv1() %>%
-      self$bn1() %>%
-      nnf_relu() %>%
+    x <- x |>
+      self$conv1() |>
+      self$bn1() |>
+      nnf_relu() |>
       self$pool1()
 
-    x <- x %>%
-      self$conv2() %>%
-      self$bn2() %>%
-      nnf_relu() %>%
+    x <- x |>
+      self$conv2() |>
+      self$bn2() |>
+      nnf_relu() |>
       self$pool2()
 
-    x <- x %>%
-      self$conv3() %>%
-      self$bn3() %>%
-      nnf_relu() %>%
+    x <- x |>
+      self$conv3() |>
+      self$bn3() |>
+      nnf_relu() |>
       self$pool3()
 
-    x <- x %>%
-      self$conv4() %>%
-      self$bn4() %>%
-      nnf_relu() %>%
+    x <- x |>
+      self$conv4() |>
+      self$bn4() |>
+      nnf_relu() |>
       self$pool4()
 
     # Global average pooling: (batch, 256, h, w) -> (batch, 256, 1, 1)
@@ -349,7 +349,7 @@ focal_loss <- function(alpha = 0.25, gamma = 2.0) {
 
 ```r
 # Train model
-fitted <- model %>%
+fitted <- model |>
   setup(
     # Use weighted cross-entropy for class imbalance
     loss = nn_cross_entropy_loss(weight = class_weights),
@@ -362,17 +362,17 @@ fitted <- model %>%
       luz_metric_recall(),
       luz_metric_precision()
     )
-  ) %>%
+  ) |>
 
   set_hparams(
     n_classes = n_classes,
     dropout = 0.5
-  ) %>%
+  ) |>
 
   set_opt_hparams(
     lr = 0.001,
     weight_decay = 1e-4  # L2 regularization
-  ) %>%
+  ) |>
 
   fit(
     train_dl,
@@ -453,16 +453,16 @@ evaluate_model <- function(model, test_dl) {
   )
 
   # Overall metrics
-  overall_metrics <- results %>%
+  overall_metrics <- results |>
     metrics(truth, estimate)
 
   # Confusion matrix
-  conf_mat <- results %>%
+  conf_mat <- results |>
     conf_mat(truth, estimate)
 
   # Per-class metrics
-  class_metrics <- results %>%
-    group_by(truth) %>%
+  class_metrics <- results |>
+    group_by(truth) |>
     summarise(
       n = n(),
       precision = precision_vec(truth, estimate),
@@ -578,7 +578,7 @@ predict_continuous_audio <- function(model, audio_path,
   results <- data.frame(
     timestamp = timestamps,
     pred_matrix
-  ) %>%
+  ) |>
     mutate(
       max_prob = apply(select(., starts_with("prob_")), 1, max),
       predicted_class = apply(select(., starts_with("prob_")), 1, which.max) - 1
@@ -596,7 +596,7 @@ predictions <- predict_continuous_audio(
 )
 
 # Filter high-confidence detections
-detections <- predictions %>%
+detections <- predictions |>
   filter(max_prob > 0.7)
 
 print(head(detections))
@@ -624,7 +624,7 @@ smooth_predictions <- function(predictions, window_size = 3) {
   }
 
   # Recalculate predicted class
-  smoothed <- smoothed %>%
+  smoothed <- smoothed |>
     mutate(
       max_prob = apply(select(., starts_with("prob_")), 1, max),
       predicted_class = apply(select(., starts_with("prob_")), 1, which.max) - 1
@@ -640,11 +640,11 @@ smoothed_preds <- smooth_predictions(predictions, window_size = 5)
 library(ggplot2)
 library(tidyr)
 
-plot_data <- smoothed_preds %>%
-  select(timestamp, starts_with("prob_")) %>%
+plot_data <- smoothed_preds |>
+  select(timestamp, starts_with("prob_")) |>
   pivot_longer(cols = starts_with("prob_"),
                names_to = "class",
-               values_to = "probability") %>%
+               values_to = "probability") |>
   mutate(class = gsub("prob_", "", class))
 
 ggplot(plot_data, aes(x = timestamp, y = probability, color = class)) +

@@ -31,7 +31,7 @@ generate_stock_data <- function(dates, start_price = 100, trend = 0.001, volatil
     high = prices * (1 + abs(rnorm(n, 0.01, 0.01))),
     low = prices * (1 - abs(rnorm(n, 0.01, 0.01))),
     volume = round(rnorm(n, 1000000, 300000))
-  ) %>%
+  ) |>
     mutate(
       high = pmax(high, open, close),
       low = pmin(low, open, close)
@@ -41,14 +41,14 @@ generate_stock_data <- function(dates, start_price = 100, trend = 0.001, volatil
 stock_data <- generate_stock_data(dates)
 
 # Calculate technical indicators
-stock_data <- stock_data %>%
-  arrange(date) %>%
+stock_data <- stock_data |>
+  arrange(date) |>
   mutate(
     sma_20 = zoo::rollmean(close, k = 20, fill = NA, align = "right"),
     sma_50 = zoo::rollmean(close, k = 50, fill = NA, align = "right"),
     ema_12 = TTR::EMA(close, n = 12),
     ema_26 = TTR::EMA(close, n = 26)
-  ) %>%
+  ) |>
   mutate(
     macd = ema_12 - ema_26,
     signal = TTR::EMA(macd, n = 9),
@@ -62,13 +62,13 @@ fig_candlestick <- plot_ly(stock_data, x = ~date, type = "candlestick",
                            increasing = list(line = list(color = "#26a69a"),
                                            fillcolor = "#26a69a"),
                            decreasing = list(line = list(color = "#ef5350"),
-                                           fillcolor = "#ef5350")) %>%
+                                           fillcolor = "#ef5350")) |>
   add_lines(y = ~sma_20, name = "SMA 20",
            line = list(color = "#2196F3", width = 1.5, dash = "solid"),
-           hovertemplate = "SMA 20: $%{y:.2f}<extra></extra>") %>%
+           hovertemplate = "SMA 20: $%{y:.2f}<extra></extra>") |>
   add_lines(y = ~sma_50, name = "SMA 50",
            line = list(color = "#FF9800", width = 1.5, dash = "dash"),
-           hovertemplate = "SMA 50: $%{y:.2f}<extra></extra>") %>%
+           hovertemplate = "SMA 50: $%{y:.2f}<extra></extra>") |>
   layout(
     title = list(
       text = "<b>Stock Price Analysis</b>",
@@ -107,7 +107,7 @@ fig_volume <- plot_ly(stock_data, x = ~date, y = ~volume, type = "bar",
                         color = ~ifelse(close >= open, "#26a69a", "#ef5350"),
                         line = list(width = 0)
                       ),
-                      hovertemplate = "Volume: %{y:,.0f}<extra></extra>") %>%
+                      hovertemplate = "Volume: %{y:,.0f}<extra></extra>") |>
   layout(
     yaxis = list(
       title = "Volume",
@@ -120,19 +120,19 @@ fig_volume <- plot_ly(stock_data, x = ~date, y = ~volume, type = "bar",
   )
 
 # Create MACD indicator
-fig_macd <- plot_ly(stock_data, x = ~date) %>%
+fig_macd <- plot_ly(stock_data, x = ~date) |>
   add_bars(y = ~macd_hist, name = "MACD Histogram",
           marker = list(
             color = ~ifelse(macd_hist >= 0, "#26a69a", "#ef5350"),
             line = list(width = 0)
           ),
-          hovertemplate = "MACD Hist: %{y:.3f}<extra></extra>") %>%
+          hovertemplate = "MACD Hist: %{y:.3f}<extra></extra>") |>
   add_lines(y = ~macd, name = "MACD",
            line = list(color = "#2196F3", width = 2),
-           hovertemplate = "MACD: %{y:.3f}<extra></extra>") %>%
+           hovertemplate = "MACD: %{y:.3f}<extra></extra>") |>
   add_lines(y = ~signal, name = "Signal",
            line = list(color = "#FF9800", width = 2),
-           hovertemplate = "Signal: %{y:.3f}<extra></extra>") %>%
+           hovertemplate = "Signal: %{y:.3f}<extra></extra>") |>
   layout(
     yaxis = list(
       title = "MACD",
@@ -153,7 +153,7 @@ fig_dashboard <- subplot(
   heights = c(0.5, 0.25, 0.25),
   shareX = TRUE,
   titleY = TRUE
-) %>%
+) |>
   layout(
     title = list(
       text = "<b>Financial Analysis Dashboard</b><br><sub>Complete Technical Analysis with Interactive Controls</sub>",
@@ -242,7 +242,7 @@ server <- function(input, output, session) {
       high = prices * (1 + abs(rnorm(n, 0.01, 0.01))),
       low = prices * (1 - abs(rnorm(n, 0.01, 0.01))),
       volume = round(rnorm(n, 1000000, 300000))
-    ) %>%
+    ) |>
       mutate(
         high = pmax(high, open, close),
         low = pmin(low, open, close),
@@ -260,11 +260,11 @@ server <- function(input, output, session) {
             open = ~open, high = ~high, low = ~low, close = ~close,
             name = input$ticker,
             increasing = list(line = list(color = "#26a69a"), fillcolor = "#26a69a"),
-            decreasing = list(line = list(color = "#ef5350"), fillcolor = "#ef5350")) %>%
+            decreasing = list(line = list(color = "#ef5350"), fillcolor = "#ef5350")) |>
       add_lines(y = ~sma_short, name = paste("SMA", input$sma_short),
-                line = list(color = "#2196F3", width = 2)) %>%
+                line = list(color = "#2196F3", width = 2)) |>
       add_lines(y = ~sma_long, name = paste("SMA", input$sma_long),
-                line = list(color = "#FF9800", width = 2)) %>%
+                line = list(color = "#FF9800", width = 2)) |>
       layout(
         title = paste("<b>", input$ticker, "Stock Analysis</b>"),
         xaxis = list(title = "", rangeslider = list(visible = FALSE)),
@@ -278,7 +278,7 @@ server <- function(input, output, session) {
     data <- stock_data()
 
     plot_ly(data, x = ~date, y = ~volume, type = "bar",
-            marker = list(color = ~ifelse(close >= open, "#26a69a", "#ef5350"))) %>%
+            marker = list(color = ~ifelse(close >= open, "#26a69a", "#ef5350"))) |>
       layout(
         yaxis = list(title = "Volume"),
         xaxis = list(title = ""),
@@ -293,9 +293,9 @@ server <- function(input, output, session) {
 
     plot_ly(data, x = ~date, y = ~rsi, type = "scatter", mode = "lines",
             line = list(color = "#9C27B0", width = 2),
-            name = "RSI") %>%
-      add_lines(y = 70, line = list(color = "red", dash = "dash"), name = "Overbought") %>%
-      add_lines(y = 30, line = list(color = "green", dash = "dash"), name = "Oversold") %>%
+            name = "RSI") |>
+      add_lines(y = 70, line = list(color = "red", dash = "dash"), name = "Overbought") |>
+      add_lines(y = 30, line = list(color = "green", dash = "dash"), name = "Oversold") |>
       layout(
         title = "Relative Strength Index (RSI)",
         yaxis = list(title = "RSI", range = c(0, 100)),
@@ -383,7 +383,7 @@ states_data <- data.frame(
                         3.8, 3.9, 3.2, 4.0, 3.3, 3.1, 3.6, 3.4, 2.5, 3.7,
                         4.2, 4.5, 4.1, 3.8, 2.7, 4.3, 3.5, 3.9, 3.6, 2.6,
                         3.4, 3.0, 3.7, 3.9, 2.4, 3.3, 3.2, 4.0, 2.9, 3.5, 3.8)
-) %>%
+) |>
   mutate(
     gdp_per_capita = gdp_billions * 1000000000 / population,
     category = case_when(
@@ -395,7 +395,7 @@ states_data <- data.frame(
   )
 
 # GDP per capita choropleth
-fig_gdp <- plot_geo(states_data, locationmode = "USA-states") %>%
+fig_gdp <- plot_geo(states_data, locationmode = "USA-states") |>
   add_trace(
     z = ~gdp_per_capita,
     locations = ~code,
@@ -409,7 +409,7 @@ fig_gdp <- plot_geo(states_data, locationmode = "USA-states") %>%
     ),
     hovertemplate = "%{text}<extra></extra>",
     marker = list(line = list(color = "white", width = 1))
-  ) %>%
+  ) |>
   layout(
     title = list(
       text = "<b>US GDP per Capita by State</b><br><sub>Economic Output per Person (2025)</sub>",
@@ -421,11 +421,11 @@ fig_gdp <- plot_geo(states_data, locationmode = "USA-states") %>%
       showlakes = TRUE,
       lakecolor = toRGB("lightblue")
     )
-  ) %>%
+  ) |>
   colorbar(title = "GDP per<br>Capita ($)", tickprefix = "$", tickformat = ",.0f")
 
 # Unemployment rate choropleth
-fig_unemployment <- plot_geo(states_data, locationmode = "USA-states") %>%
+fig_unemployment <- plot_geo(states_data, locationmode = "USA-states") |>
   add_trace(
     z = ~unemployment_rate,
     locations = ~code,
@@ -439,7 +439,7 @@ fig_unemployment <- plot_geo(states_data, locationmode = "USA-states") %>%
     ),
     hovertemplate = "%{text}<extra></extra>",
     marker = list(line = list(color = "white", width = 1))
-  ) %>%
+  ) |>
   layout(
     title = list(
       text = "<b>US Unemployment Rate by State</b><br><sub>Labor Market Conditions (2025)</sub>",
@@ -451,7 +451,7 @@ fig_unemployment <- plot_geo(states_data, locationmode = "USA-states") %>%
       showlakes = TRUE,
       lakecolor = toRGB("lightblue")
     )
-  ) %>%
+  ) |>
   colorbar(title = "Unemployment<br>Rate (%)", ticksuffix = "%")
 
 fig_gdp
@@ -472,8 +472,8 @@ geo_timeseries <- expand.grid(
   year = years,
   state = states,
   stringsAsFactors = FALSE
-) %>%
-  arrange(year, state) %>%
+) |>
+  arrange(year, state) |>
   mutate(
     base_gdp = runif(n(), 200, 800),
     growth_rate = rnorm(n(), 0.03, 0.02),
@@ -483,7 +483,7 @@ geo_timeseries <- expand.grid(
   )
 
 # Create animated choropleth
-fig_animated <- plot_geo(geo_timeseries, locationmode = "USA-states") %>%
+fig_animated <- plot_geo(geo_timeseries, locationmode = "USA-states") |>
   add_trace(
     z = ~gdp_per_capita,
     locations = ~state,
@@ -497,7 +497,7 @@ fig_animated <- plot_geo(geo_timeseries, locationmode = "USA-states") %>%
     ),
     hovertemplate = "%{text}<extra></extra>",
     marker = list(line = list(color = "white", width = 1))
-  ) %>%
+  ) |>
   layout(
     title = list(
       text = "<b>GDP per Capita Evolution (2015-2025)</b><br><sub>Animated State Economic Growth</sub>",
@@ -550,7 +550,7 @@ fig_animated <- plot_geo(geo_timeseries, locationmode = "USA-states") %>%
         yanchor = "top"
       )
     )
-  ) %>%
+  ) |>
   colorbar(title = "GDP per<br>Capita ($)", tickprefix = "$", tickformat = ",.0f")
 
 fig_animated
@@ -588,14 +588,14 @@ cities <- data.frame(
                  103000, 88000, 115000, 102000, 145000,
                  108000, 85000, 97000, 93000, 96000,
                  152000, 91000, 135000, 107000, 128000)
-) %>%
+) |>
   mutate(
     tech_concentration = tech_jobs / population * 100,
     size_factor = sqrt(population) / 100
   )
 
 # Create bubble map
-fig_bubbles <- plot_geo(cities, locationmode = "USA-states") %>%
+fig_bubbles <- plot_geo(cities, locationmode = "USA-states") |>
   add_markers(
     x = ~lon,
     y = ~lat,
@@ -615,7 +615,7 @@ fig_bubbles <- plot_geo(cities, locationmode = "USA-states") %>%
       "Tech Concentration: ", round(tech_concentration, 2), "%"
     ),
     hovertemplate = "%{text}<extra></extra>"
-  ) %>%
+  ) |>
   layout(
     title = list(
       text = "<b>US Tech Hubs Analysis</b><br><sub>Population, Jobs, and Salaries in Major Cities</sub>",
@@ -632,7 +632,7 @@ fig_bubbles <- plot_geo(cities, locationmode = "USA-states") %>%
       coastlinecolor = toRGB("gray80")
     ),
     margin = list(t = 100)
-  ) %>%
+  ) |>
   colorbar(
     title = "Average<br>Salary ($)",
     tickprefix = "$",
@@ -667,7 +667,7 @@ z_matrix <- matrix(
 )
 
 # Create 3D surface with contour projections
-fig_surface <- plot_ly() %>%
+fig_surface <- plot_ly() |>
   add_surface(
     x = x,
     y = y,
@@ -698,7 +698,7 @@ fig_surface <- plot_ly() %>%
       )
     ),
     hovertemplate = "x: %{x:.2f}<br>y: %{y:.2f}<br>z: %{z:.2f}<extra></extra>"
-  ) %>%
+  ) |>
   layout(
     title = list(
       text = "<b>3D Surface with Contour Projections</b><br><sub>f(x,y) = 10·e^(-(x²+y²)/8)·cos(√(x²+y²)) + 5·sin(x)·cos(y/2)</sub>",
@@ -738,7 +738,7 @@ compounds <- data.frame(
   solubility = rnorm(n_compounds, -3, 1.5),
   bioavailability = runif(n_compounds, 0.1, 0.9),
   toxicity_score = runif(n_compounds, 0, 100)
-) %>%
+) |>
   mutate(
     drug_class = case_when(
       molecular_weight < 250 ~ "Small Molecule",
@@ -800,7 +800,7 @@ fig_parallel <- plot_ly(
       range = c(0, 100)
     )
   )
-) %>%
+) |>
   layout(
     title = list(
       text = "<b>Drug Compound Multivariate Analysis</b><br><sub>Parallel Coordinates for Chemical Property Exploration</sub>",
@@ -869,10 +869,10 @@ edges <- data.frame(
   to = edge_list[, 2],
   weight = E(g)$weight,
   stringsAsFactors = FALSE
-) %>%
-  left_join(nodes %>% select(id, x, y), by = c("from" = "id")) %>%
-  rename(x_from = x, y_from = y) %>%
-  left_join(nodes %>% select(id, x, y), by = c("to" = "id")) %>%
+) |>
+  left_join(nodes |> select(id, x, y), by = c("from" = "id")) |>
+  rename(x_from = x, y_from = y) |>
+  left_join(nodes |> select(id, x, y), by = c("to" = "id")) |>
   rename(x_to = x, y_to = y)
 
 # Color mapping for fields
@@ -890,7 +890,7 @@ fig_network <- plot_ly()
 
 # Add edges
 for (i in 1:nrow(edges)) {
-  fig_network <- fig_network %>%
+  fig_network <- fig_network |>
     add_segments(
       x = edges$x_from[i],
       xend = edges$x_to[i],
@@ -907,7 +907,7 @@ for (i in 1:nrow(edges)) {
 }
 
 # Add nodes
-fig_network <- fig_network %>%
+fig_network <- fig_network |>
   add_markers(
     data = nodes,
     x = ~x,
@@ -932,7 +932,7 @@ fig_network <- fig_network %>%
 
 # Add legend manually
 for (field in names(field_colors)) {
-  fig_network <- fig_network %>%
+  fig_network <- fig_network |>
     add_markers(
       x = NA,
       y = NA,
@@ -942,7 +942,7 @@ for (field in names(field_colors)) {
     )
 }
 
-fig_network <- fig_network %>%
+fig_network <- fig_network |>
   layout(
     title = list(
       text = "<b>Scientific Collaboration Network</b><br><sub>Researcher Connections and Impact Metrics</sub>",
@@ -1043,13 +1043,13 @@ fig_confusion <- plot_ly(
   textfont = list(size = 24, color = "black"),
   hovertemplate = "Predicted: %{x}<br>Actual: %{y}<br>Count: %{z}<extra></extra>",
   showscale = FALSE
-) %>%
+) |>
   layout(
     title = list(text = "<b>Confusion Matrix - Random Forest</b>", font = list(size = 16)),
     xaxis = list(title = "Predicted Label", side = "top"),
     yaxis = list(title = "Actual Label", autorange = "reversed"),
     margin = list(t = 80)
-  ) %>%
+  ) |>
   add_annotations(
     text = paste0(
       "Accuracy: ", round((cm_rf$tp + cm_rf$tn) / n_samples * 100, 1), "%<br>",
@@ -1079,10 +1079,10 @@ fig_roc <- plot_ly()
 model_colors <- c("#2196F3", "#4CAF50", "#FF9800", "#9C27B0")
 for (i in seq_along(names(models))) {
   model_name <- names(models)[i]
-  model_data <- roc_df %>% filter(model == model_name)
+  model_data <- roc_df |> filter(model == model_name)
   auc_value <- unique(model_data$auc)
 
-  fig_roc <- fig_roc %>%
+  fig_roc <- fig_roc |>
     add_lines(
       data = model_data,
       x = ~fpr,
@@ -1098,14 +1098,14 @@ for (i in seq_along(names(models))) {
     )
 }
 
-fig_roc <- fig_roc %>%
+fig_roc <- fig_roc |>
   add_lines(
     x = c(0, 1),
     y = c(0, 1),
     line = list(color = "gray", dash = "dash", width = 1.5),
     name = "Random Classifier",
     showlegend = TRUE
-  ) %>%
+  ) |>
   layout(
     title = list(text = "<b>ROC Curves - Model Comparison</b>", font = list(size = 16)),
     xaxis = list(title = "False Positive Rate", range = c(0, 1)),
@@ -1124,7 +1124,7 @@ features <- data.frame(
   importance = c(0.18, 0.22, 0.31, 0.12, 0.15, 0.25, 0.19, 0.08, 0.06, 0.11),
   category = c("Demographics", "Financial", "Financial", "Demographics", "Financial",
                "History", "Financial", "Financial", "Demographics", "Demographics")
-) %>%
+) |>
   arrange(importance)
 
 fig_importance <- plot_ly(
@@ -1142,7 +1142,7 @@ fig_importance <- plot_ly(
   text = ~paste0(round(importance * 100, 1), "%"),
   textposition = "outside",
   hovertemplate = "<b>%{y}</b><br>Importance: %{x:.3f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = list(text = "<b>Feature Importance - Random Forest</b>", font = list(size = 16)),
     xaxis = list(title = "Importance Score", range = c(0, max(features$importance) * 1.1)),
@@ -1173,7 +1173,7 @@ fig_metrics <- plot_ly(
   text = ~paste0(round(value * 100, 1), "%"),
   textposition = "outside",
   hovertemplate = "<b>%{x}</b><br>%{data.name}: %{y:.3f}<extra></extra>"
-) %>%
+) |>
   layout(
     title = list(text = "<b>Model Performance Metrics</b>", font = list(size = 16)),
     xaxis = list(title = ""),
@@ -1194,7 +1194,7 @@ fig_dashboard <- subplot(
   titleX = TRUE,
   titleY = TRUE,
   margin = 0.08
-) %>%
+) |>
   layout(
     title = list(
       text = "<b>Machine Learning Model Evaluation Dashboard</b><br><sub>Comprehensive Performance Analysis</sub>",
@@ -1293,7 +1293,7 @@ server <- function(input, output, session) {
       text = cm_matrix,
       texttemplate = "<b>%{text}</b>",
       showscale = FALSE
-    ) %>%
+    ) |>
       layout(
         title = paste("Confusion Matrix -", input$model),
         xaxis = list(title = "Predicted", side = "top"),
@@ -1317,12 +1317,12 @@ server <- function(input, output, session) {
         tpr = tp / (tp + fn),
         fpr = fp / (fp + tn)
       )
-    }) %>% bind_rows()
+    }) |> bind_rows()
 
     plot_ly(roc_data, x = ~fpr, y = ~tpr, type = "scatter", mode = "lines",
-            line = list(color = "#2196F3", width = 3)) %>%
+            line = list(color = "#2196F3", width = 3)) |>
       add_segments(x = 0, xend = 1, y = 0, yend = 1,
-                  line = list(dash = "dash", color = "gray")) %>%
+                  line = list(dash = "dash", color = "gray")) |>
       layout(
         title = "ROC Curve",
         xaxis = list(title = "False Positive Rate"),
@@ -1339,8 +1339,8 @@ server <- function(input, output, session) {
       predicted = preds$pred_probs,
       actual = preds$true_labels,
       bin = bins
-    ) %>%
-      group_by(bin) %>%
+    ) |>
+      group_by(bin) |>
       summarise(
         mean_predicted = mean(predicted),
         mean_actual = mean(actual),
@@ -1350,9 +1350,9 @@ server <- function(input, output, session) {
     plot_ly(calib_data, x = ~mean_predicted, y = ~mean_actual,
             type = "scatter", mode = "markers+lines",
             marker = list(size = ~sqrt(count) * 2, color = "#4CAF50"),
-            line = list(color = "#4CAF50", width = 2)) %>%
+            line = list(color = "#4CAF50", width = 2)) |>
       add_segments(x = 0, xend = 1, y = 0, yend = 1,
-                  line = list(dash = "dash", color = "gray")) %>%
+                  line = list(dash = "dash", color = "gray")) |>
       layout(
         title = "Calibration Curve",
         xaxis = list(title = "Mean Predicted Probability"),

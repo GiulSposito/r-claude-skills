@@ -159,8 +159,8 @@ freq_mask <- function(spec, freq_mask_param = 15) {
 
 # Combined augmentation
 augment_spectrogram <- function(spec) {
-  spec %>%
-    time_mask(time_mask_param = 30) %>%
+  spec |>
+    time_mask(time_mask_param = 30) |>
     freq_mask(freq_mask_param = 20)
 }
 ```
@@ -303,15 +303,15 @@ multilabel_cnn <- nn_module(
     # x: [batch, 1, n_mels, time]
 
     # Convolutional blocks
-    x <- self$conv1(x) %>% nnf_relu() %>% self$pool()
-    x <- self$conv2(x) %>% nnf_relu() %>% self$pool()
-    x <- self$conv3(x) %>% nnf_relu() %>% self$pool()
+    x <- self$conv1(x) |> nnf_relu() |> self$pool()
+    x <- self$conv2(x) |> nnf_relu() |> self$pool()
+    x <- self$conv3(x) |> nnf_relu() |> self$pool()
 
     # Flatten
     x <- x$view(c(x$size(1), -1))
 
     # Fully connected
-    x <- self$fc1(x) %>% nnf_relu() %>% self$dropout()
+    x <- self$fc1(x) |> nnf_relu() |> self$dropout()
     logits <- self$fc2(x)  # Raw logits (no activation)
 
     logits

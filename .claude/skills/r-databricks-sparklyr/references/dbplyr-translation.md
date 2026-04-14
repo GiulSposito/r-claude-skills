@@ -20,17 +20,17 @@ sc <- spark_connect(method = "databricks")
 spark_df <- spark_read_table(sc, "my_table")
 
 # dplyr operations are translated to Spark SQL
-result <- spark_df %>%
-  filter(age > 25) %>%
-  group_by(department) %>%
+result <- spark_df |>
+  filter(age > 25) |>
+  group_by(department) |>
   summarize(avg_salary = mean(salary))
 
 # No computation yet - it's lazy!
 # Use show_query() to see the SQL
-result %>% show_query()
+result |> show_query()
 
 # Execute and bring to R
-local_result <- result %>% collect()
+local_result <- result |> collect()
 ```
 
 ### Lazy Evaluation Model
@@ -71,7 +71,7 @@ local_result <- result %>% collect()
 
 ```r
 # R code
-spark_df %>%
+spark_df |>
   filter(age > 30, department == "Engineering")
 
 # Generated SQL
@@ -91,15 +91,15 @@ WHERE (age > 30.0 AND department = 'Engineering')
 
 ```r
 # R code
-spark_df %>%
+spark_df |>
   select(name, age, salary)
 
 # Renaming
-spark_df %>%
+spark_df |>
   select(employee_name = name, years = age)
 
 # Helper functions
-spark_df %>%
+spark_df |>
   select(starts_with("dept_"))
 ```
 
@@ -115,7 +115,7 @@ spark_df %>%
 
 ```r
 # R code
-spark_df %>%
+spark_df |>
   mutate(
     age_group = case_when(
       age < 30 ~ "Young",
@@ -142,8 +142,8 @@ spark_df %>%
 
 ```r
 # R code
-spark_df %>%
-  group_by(department) %>%
+spark_df |>
+  group_by(department) |>
   summarize(
     count = n(),
     avg_salary = mean(salary),
@@ -174,7 +174,7 @@ GROUP BY department
 
 ```r
 # R code
-spark_df %>%
+spark_df |>
   arrange(desc(salary), name)
 
 # Generated SQL
@@ -191,10 +191,10 @@ ORDER BY salary DESC, name
 
 ```r
 # All columns
-spark_df %>% distinct()
+spark_df |> distinct()
 
 # Specific columns
-spark_df %>% distinct(department, location)
+spark_df |> distinct(department, location)
 ```
 
 #### slice() - Row Selection by Position
@@ -207,7 +207,7 @@ spark_df %>% distinct(department, location)
 
 ```r
 # Works: head() translates to LIMIT
-spark_df %>% head(10)
+spark_df |> head(10)
 
 # Limited: slice() may not work as expected
 ```
@@ -220,15 +220,15 @@ spark_df %>% head(10)
 
 ```r
 # R code
-employees %>%
+employees |>
   left_join(departments, by = "dept_id")
 
 # Modern join_by() syntax (dbplyr 2.0+)
-employees %>%
+employees |>
   left_join(departments, join_by(dept_id == id))
 
 # Multiple keys
-employees %>%
+employees |>
   inner_join(assignments, by = c("emp_id", "project_id"))
 ```
 
@@ -247,7 +247,7 @@ Small tables can be broadcast to all worker nodes for efficient joins:
 
 ```r
 # Use sdf_broadcast() to hint broadcast join
-large_table %>%
+large_table |>
   left_join(sdf_broadcast(small_lookup_table), by = "key")
 ```
 
@@ -299,11 +299,11 @@ large_table %>%
 **Date Arithmetic**:
 ```r
 # Add days
-spark_df %>%
+spark_df |>
   mutate(future_date = date_col + days(7))
 
 # Difference between dates
-spark_df %>%
+spark_df |>
   mutate(days_diff = as.numeric(date2 - date1))
 ```
 
@@ -315,7 +315,7 @@ spark_df %>%
 - `sin()`, `cos()`, `tan()`
 
 ```r
-spark_df %>%
+spark_df |>
   mutate(
     abs_value = abs(x),
     rounded = round(value, 2),
@@ -329,11 +329,11 @@ spark_df %>%
 
 ```r
 # if_else()
-spark_df %>%
+spark_df |>
   mutate(status = if_else(age >= 18, "Adult", "Minor"))
 
 # case_when()
-spark_df %>%
+spark_df |>
   mutate(
     category = case_when(
       score >= 90 ~ "A",
@@ -346,7 +346,7 @@ spark_df %>%
 
 **coalesce() - Handle NULLs**:
 ```r
-spark_df %>%
+spark_df |>
   mutate(filled = coalesce(col1, col2, col3, 0))
 ```
 
@@ -356,35 +356,35 @@ spark_df %>%
 
 ```r
 # Row number
-spark_df %>%
-  group_by(department) %>%
+spark_df |>
+  group_by(department) |>
   mutate(row_num = row_number())
 
 # Rank
-spark_df %>%
-  group_by(department) %>%
+spark_df |>
+  group_by(department) |>
   mutate(salary_rank = min_rank(desc(salary)))
 
 # Lead/Lag
-spark_df %>%
-  arrange(date) %>%
+spark_df |>
+  arrange(date) |>
   mutate(
     prev_value = lag(value, 1),
     next_value = lead(value, 1)
   )
 
 # Cumulative sum
-spark_df %>%
-  arrange(date) %>%
+spark_df |>
+  arrange(date) |>
   mutate(cumulative = cumsum(amount))
 ```
 
 **Window Frame Specification**:
 ```r
 # Moving average
-spark_df %>%
-  arrange(date) %>%
-  mutate(ma_7day = mean(value, na.rm = TRUE)) %>%
+spark_df |>
+  arrange(date) |>
+  mutate(ma_7day = mean(value, na.rm = TRUE)) |>
   dbplyr::window_frame(-6, 0)
 ```
 
@@ -412,20 +412,20 @@ spark_df %>%
 
 ```r
 # These operations don't execute immediately
-query <- spark_df %>%
-  filter(age > 30) %>%
-  group_by(department) %>%
-  summarize(avg_salary = mean(salary)) %>%
-  filter(avg_salary > 50000) %>%
+query <- spark_df |>
+  filter(age > 30) |>
+  group_by(department) |>
+  summarize(avg_salary = mean(salary)) |>
+  filter(avg_salary > 50000) |>
   arrange(desc(avg_salary))
 
 # Still no execution - just a query plan
 
 # Execution triggered by:
-result <- query %>% collect()        # Bring to R
-query %>% compute("temp_table")      # Materialize in Spark
-query %>% show_query()               # Show SQL (doesn't execute)
-query %>% head(10) %>% collect()     # Execute with LIMIT
+result <- query |> collect()        # Bring to R
+query |> compute("temp_table")      # Materialize in Spark
+query |> show_query()               # Show SQL (doesn't execute)
+query |> head(10) |> collect()     # Execute with LIMIT
 ```
 
 ### show_query() - Inspecting Generated SQL
@@ -433,9 +433,9 @@ query %>% head(10) %>% collect()     # Execute with LIMIT
 **Purpose**: See the SQL that dbplyr generates without executing it
 
 ```r
-spark_df %>%
-  filter(age > 30) %>%
-  select(name, department, salary) %>%
+spark_df |>
+  filter(age > 30) |>
+  select(name, department, salary) |>
   show_query()
 
 # Output:
@@ -456,10 +456,10 @@ spark_df %>%
 **Purpose**: Show Spark's physical execution plan
 
 ```r
-spark_df %>%
-  filter(age > 30) %>%
-  group_by(department) %>%
-  summarize(count = n()) %>%
+spark_df |>
+  filter(age > 30) |>
+  group_by(department) |>
+  summarize(count = n()) |>
   explain()
 
 # Shows:
@@ -476,14 +476,14 @@ spark_df %>%
 
 ```r
 # Expensive transformation
-intermediate <- spark_df %>%
-  filter(status == "active") %>%
-  mutate(complex_calc = expensive_operation(x, y, z)) %>%
+intermediate <- spark_df |>
+  filter(status == "active") |>
+  mutate(complex_calc = expensive_operation(x, y, z)) |>
   compute("intermediate_table")
 
 # Reuse cached results
-result1 <- intermediate %>% filter(region == "US") %>% collect()
-result2 <- intermediate %>% filter(region == "EU") %>% collect()
+result1 <- intermediate |> filter(region == "US") |> collect()
+result2 <- intermediate |> filter(region == "EU") |> collect()
 ```
 
 **When to use compute()**:
@@ -495,10 +495,10 @@ result2 <- intermediate %>% filter(region == "EU") %>% collect()
 **Syntax**:
 ```r
 # Named table (persists in Spark catalog)
-df %>% compute("my_table")
+df |> compute("my_table")
 
 # Temporary table (session-scoped)
-df %>% compute()
+df |> compute()
 ```
 
 ### collect() - Bringing Data to R
@@ -507,9 +507,9 @@ df %>% compute()
 
 ```r
 # Execute and collect
-local_df <- spark_df %>%
-  filter(age > 30) %>%
-  select(name, salary) %>%
+local_df <- spark_df |>
+  filter(age > 30) |>
+  select(name, salary) |>
   collect()
 
 # Now it's a regular R data.frame/tibble
@@ -521,22 +521,22 @@ class(local_df)  # [1] "tbl_df" "tbl" "data.frame"
 **Best Practices**:
 ```r
 # BAD: Collect entire dataset
-all_data <- spark_df %>% collect()  # May crash R!
+all_data <- spark_df |> collect()  # May crash R!
 
 # GOOD: Filter first
-filtered <- spark_df %>%
-  filter(date == "2024-01-01") %>%
+filtered <- spark_df |>
+  filter(date == "2024-01-01") |>
   collect()
 
 # GOOD: Aggregate first
-summary <- spark_df %>%
-  group_by(department) %>%
-  summarize(count = n(), avg_salary = mean(salary)) %>%
+summary <- spark_df |>
+  group_by(department) |>
+  summarize(count = n(), avg_salary = mean(salary)) |>
   collect()
 
 # GOOD: Sample for exploration
-sample <- spark_df %>%
-  sdf_sample(0.01) %>%
+sample <- spark_df |>
+  sdf_sample(0.01) |>
   collect()
 ```
 
@@ -556,11 +556,11 @@ dbplyr translates dplyr operations into SQL AST (Abstract Syntax Tree), then ren
 **Example Translation**:
 ```r
 # R code
-spark_df %>%
-  filter(year == 2024) %>%
-  group_by(product) %>%
-  summarize(total = sum(revenue)) %>%
-  filter(total > 1000000) %>%
+spark_df |>
+  filter(year == 2024) |>
+  group_by(product) |>
+  summarize(total = sum(revenue)) |>
+  filter(total > 1000000) |>
   arrange(desc(total))
 
 # Generated SQL
@@ -596,8 +596,8 @@ custom_query <- tbl(sc, sql("
 "))
 
 # Continue with dplyr operations
-custom_query %>%
-  filter(additional_filter) %>%
+custom_query |>
+  filter(additional_filter) |>
   collect()
 ```
 
@@ -610,17 +610,17 @@ base_query <- tbl(sc, sql("
   FROM complex_join_or_cte
 "))
 
-result <- base_query %>%
-  filter(age > 30) %>%
-  select(name, salary) %>%
+result <- base_query |>
+  filter(age > 30) |>
+  select(name, salary) |>
   collect()
 ```
 
 **Strategy 2: Use dplyr, then SQL for complex operations**
 ```r
 # dplyr operations
-intermediate <- spark_df %>%
-  filter(status == "active") %>%
+intermediate <- spark_df |>
+  filter(status == "active") |>
   compute("temp_table")
 
 # Raw SQL for complex operation
@@ -640,9 +640,9 @@ final <- dbGetQuery(sc, "
 library(dbplyr)
 
 # Create lazy query
-query <- spark_df %>%
-  filter(age > 30) %>%
-  group_by(department) %>%
+query <- spark_df |>
+  filter(age > 30) |>
+  group_by(department) |>
   summarize(avg_salary = mean(salary))
 
 # Render to SQL
@@ -663,21 +663,21 @@ my_function <- function(x) {
   x^2 + 2*x + 1
 }
 
-spark_df %>%
+spark_df |>
   mutate(result = my_function(value))  # Error!
 ```
 
 **Workaround 1**: Use spark_apply()
 ```r
-spark_df %>%
+spark_df |>
   spark_apply(function(df) {
-    df %>% mutate(result = my_function(value))
+    df |> mutate(result = my_function(value))
   })
 ```
 
 **Workaround 2**: Break into SQL-translatable operations
 ```r
-spark_df %>%
+spark_df |>
   mutate(result = value^2 + 2*value + 1)  # Works!
 ```
 
@@ -691,13 +691,13 @@ spark_df %>%
 **Workarounds**:
 ```r
 # Option 1: Use compute() + collect() for small data
-small_subset <- spark_df %>%
-  filter(category == "A") %>%
-  collect() %>%
+small_subset <- spark_df |>
+  filter(category == "A") |>
+  collect() |>
   pivot_wider(names_from = key, values_from = value)
 
 # Option 2: Use Spark SQL functions
-spark_df %>%
+spark_df |>
   mutate(
     col1 = expr("split(column, ',')[0]"),
     col2 = expr("split(column, ',')[1]")
@@ -714,13 +714,13 @@ spark_df %>%
 **Workaround**: Sample or aggregate, then use R
 ```r
 # Aggregate in Spark
-aggregated <- spark_df %>%
-  group_by(group) %>%
+aggregated <- spark_df |>
+  group_by(group) |>
   summarize(
     n = n(),
     mean = mean(value),
     sd = sd(value)
-  ) %>%
+  ) |>
   collect()
 
 # Statistical tests in R
@@ -735,10 +735,10 @@ result <- t.test(aggregated$mean)
 
 ```r
 # Apply custom function to partitions
-result <- spark_df %>%
+result <- spark_df |>
   spark_apply(function(df) {
     # Any R code here
-    df %>%
+    df |>
       mutate(
         custom = my_complex_function(x, y),
         another = some_package_function(z)
@@ -754,15 +754,15 @@ result <- spark_df %>%
 
 ```r
 # Heavy lifting in Spark
-intermediate <- spark_df %>%
-  filter(conditions) %>%
-  group_by(keys) %>%
-  summarize(metrics) %>%
+intermediate <- spark_df |>
+  filter(conditions) |>
+  group_by(keys) |>
+  summarize(metrics) |>
   collect()  # Small result set
 
 # Complex operations in R
-final <- intermediate %>%
-  pivot_wider(...) %>%
+final <- intermediate |>
+  pivot_wider(...) |>
   mutate(complex_r_operation(...))
 ```
 
@@ -772,7 +772,7 @@ final <- intermediate %>%
 
 ```r
 # Use expr() for Spark SQL expressions
-spark_df %>%
+spark_df |>
   mutate(
     percentile = expr("percentile_approx(value, 0.95)"),
     array_col = expr("array(col1, col2, col3)"),
@@ -801,17 +801,17 @@ spark_df %>%
 **Hybrid Approach** (Best of Both):
 ```r
 # Use dplyr for clarity
-filtered <- spark_df %>%
+filtered <- spark_df |>
   filter(year == 2024, status == "active")
 
 # Switch to Spark API for specialized operation
-partitioned <- filtered %>%
+partitioned <- filtered |>
   sdf_repartition(partitions = 200, partition_by = "user_id")
 
 # Back to dplyr
-result <- partitioned %>%
-  group_by(user_id) %>%
-  summarize(total = sum(amount)) %>%
+result <- partitioned |>
+  group_by(user_id) |>
+  summarize(total = sum(amount)) |>
   collect()
 ```
 
@@ -820,57 +820,57 @@ result <- partitioned %>%
 #### 1. Filter Early and Often
 ```r
 # GOOD: Filter before expensive operations
-spark_df %>%
-  filter(year == 2024, status == "active") %>%  # Reduce data first
-  group_by(user_id) %>%
+spark_df |>
+  filter(year == 2024, status == "active") |>  # Reduce data first
+  group_by(user_id) |>
   summarize(complex_aggregation)
 
 # BAD: Filter after expensive operations
-spark_df %>%
-  group_by(user_id) %>%
-  summarize(complex_aggregation) %>%
+spark_df |>
+  group_by(user_id) |>
+  summarize(complex_aggregation) |>
   filter(year == 2024)  # Too late!
 ```
 
 #### 2. Use compute() for Reused Intermediates
 ```r
 # Expensive transformation used multiple times
-base_data <- spark_df %>%
-  filter(complex_conditions) %>%
-  mutate(expensive_calculation) %>%
+base_data <- spark_df |>
+  filter(complex_conditions) |>
+  mutate(expensive_calculation) |>
   compute("base_data")  # Cache it!
 
 # Reuse without recomputing
-result1 <- base_data %>% filter(region == "US") %>% collect()
-result2 <- base_data %>% filter(region == "EU") %>% collect()
+result1 <- base_data |> filter(region == "US") |> collect()
+result2 <- base_data |> filter(region == "EU") |> collect()
 ```
 
 #### 3. Limit Data Before collect()
 ```r
 # GOOD: Aggregate first
-summary <- spark_df %>%
-  group_by(department) %>%
-  summarize(count = n(), avg_salary = mean(salary)) %>%
+summary <- spark_df |>
+  group_by(department) |>
+  summarize(count = n(), avg_salary = mean(salary)) |>
   collect()  # Small result
 
 # GOOD: Sample for exploration
-sample <- spark_df %>%
-  sdf_sample(0.01) %>%
+sample <- spark_df |>
+  sdf_sample(0.01) |>
   collect()
 
 # BAD: Collect entire table
-all_data <- spark_df %>% collect()  # May crash R!
+all_data <- spark_df |> collect()  # May crash R!
 ```
 
 #### 4. Optimize Joins
 ```r
 # Broadcast small lookup tables
-large_table %>%
+large_table |>
   left_join(sdf_broadcast(small_table), by = "key")
 
 # Repartition on join keys
-large_table %>%
-  sdf_repartition(partition_by = "join_key") %>%
+large_table |>
+  sdf_repartition(partition_by = "join_key") |>
   inner_join(other_table, by = "join_key")
 ```
 
@@ -878,33 +878,33 @@ large_table %>%
 
 #### 1. Use show_query() to Inspect SQL
 ```r
-query %>% show_query()
+query |> show_query()
 ```
 
 #### 2. Use explain() to See Execution Plan
 ```r
-query %>% explain()
+query |> explain()
 ```
 
 #### 3. Test on Small Samples
 ```r
 # Test query logic on sample
-spark_df %>%
-  sdf_sample(0.001) %>%
-  <your_query_here> %>%
+spark_df |>
+  sdf_sample(0.001) |>
+  <your_query_here> |>
   collect()
 ```
 
 #### 4. Break Complex Queries into Steps
 ```r
 # Instead of one long chain
-step1 <- spark_df %>% filter(...) %>% compute()
-step2 <- step1 %>% mutate(...) %>% compute()
-step3 <- step2 %>% group_by(...) %>% summarize(...) %>% collect()
+step1 <- spark_df |> filter(...) |> compute()
+step2 <- step1 |> mutate(...) |> compute()
+step3 <- step2 |> group_by(...) |> summarize(...) |> collect()
 
 # Verify each step
-step1 %>% show_query()
-step2 %>% show_query()
+step1 |> show_query()
+step2 |> show_query()
 ```
 
 ### Testing Query Performance
@@ -912,14 +912,14 @@ step2 %>% show_query()
 ```r
 # Time query execution
 system.time({
-  result <- spark_df %>%
-    <query> %>%
+  result <- spark_df |>
+    <query> |>
     collect()
 })
 
 # Check query plan
-spark_df %>%
-  <query> %>%
+spark_df |>
+  <query> |>
   explain()
 
 # Monitor in Spark UI
@@ -933,17 +933,17 @@ spark_df %>%
 **Modern Syntax** (dbplyr 2.3.0+):
 ```r
 # Old way
-spark_df %>%
-  group_by(department) %>%
-  summarize(avg_salary = mean(salary)) %>%
+spark_df |>
+  group_by(department) |>
+  summarize(avg_salary = mean(salary)) |>
   ungroup()
 
 # New way with .by
-spark_df %>%
+spark_df |>
   summarize(avg_salary = mean(salary), .by = department)
 
 # Multiple grouping variables
-spark_df %>%
+spark_df |>
   summarize(
     total = sum(amount),
     .by = c(department, year)
@@ -960,21 +960,21 @@ spark_df %>%
 **Apply function to multiple columns**:
 ```r
 # Summarize multiple columns
-spark_df %>%
-  group_by(department) %>%
+spark_df |>
+  group_by(department) |>
   summarize(across(c(salary, bonus), mean))
 
 # Mutate multiple columns
-spark_df %>%
+spark_df |>
   mutate(across(c(col1, col2, col3), ~ . * 1.1))
 
 # With tidyselect helpers
-spark_df %>%
+spark_df |>
   mutate(across(where(is.numeric), ~ round(., 2)))
 
 # Multiple functions
-spark_df %>%
-  group_by(department) %>%
+spark_df |>
+  group_by(department) |>
   summarize(across(
     c(salary, bonus),
     list(mean = mean, max = max, min = min)
@@ -986,22 +986,22 @@ spark_df %>%
 **Modern Join Syntax** (dplyr 1.1.0+):
 ```r
 # Old way
-employees %>%
+employees |>
   left_join(departments, by = c("dept_id" = "id"))
 
 # New way with join_by()
-employees %>%
+employees |>
   left_join(departments, join_by(dept_id == id))
 
 # More expressive for complex joins
-employees %>%
+employees |>
   left_join(assignments, join_by(
     emp_id == employee_id,
     hire_date <= assignment_date
   ))
 
 # Inequality joins
-sales %>%
+sales |>
   left_join(targets, join_by(
     region,
     date >= start_date,
@@ -1014,19 +1014,19 @@ sales %>%
 **Column Selection Helpers**:
 ```r
 # Select by pattern
-spark_df %>%
+spark_df |>
   select(starts_with("sales_"))
 
 # Select by type
-spark_df %>%
+spark_df |>
   select(where(is.numeric))
 
 # Select with complex conditions
-spark_df %>%
+spark_df |>
   select(where(~ is.numeric(.) && max(., na.rm = TRUE) > 1000))
 
 # Remove columns
-spark_df %>%
+spark_df |>
   select(-c(temp_col1, temp_col2))
 ```
 
@@ -1081,8 +1081,8 @@ query <- tbl(sc, sql("
 "))
 
 # Continue with dplyr
-query %>%
-  filter(department == "Engineering") %>%
+query |>
+  filter(department == "Engineering") |>
   collect()
 ```
 
@@ -1128,20 +1128,20 @@ sc <- spark_connect(method = "databricks")
 transactions <- spark_read_table(sc, "sales.transactions")
 
 # Exploration pipeline
-summary_stats <- transactions %>%
+summary_stats <- transactions |>
   filter(
     date >= as.Date("2024-01-01"),
     status == "completed"
-  ) %>%
-  group_by(product_category, region) %>%
+  ) |>
+  group_by(product_category, region) |>
   summarize(
     n_transactions = n(),
     total_revenue = sum(amount),
     avg_order_value = mean(amount),
     median_order = median(amount)
-  ) %>%
-  filter(n_transactions >= 100) %>%
-  arrange(desc(total_revenue)) %>%
+  ) |>
+  filter(n_transactions >= 100) |>
+  arrange(desc(total_revenue)) |>
   collect()
 
 # View results
@@ -1151,7 +1151,7 @@ print(summary_stats)
 ### Example 2: Feature Engineering
 ```r
 # Create features for ML
-features <- transactions %>%
+features <- transactions |>
   mutate(
     # Date features
     year = year(date),
@@ -1176,16 +1176,16 @@ features <- transactions %>%
 
     # Log transform
     log_amount = log(amount + 1)
-  ) %>%
+  ) |>
   compute("features_table")
 ```
 
 ### Example 3: Complex Aggregation with Window Functions
 ```r
 # Calculate running totals and rankings
-customer_metrics <- transactions %>%
-  group_by(customer_id) %>%
-  arrange(date) %>%
+customer_metrics <- transactions |>
+  group_by(customer_id) |>
+  arrange(date) |>
   mutate(
     # Cumulative
     cumulative_spend = cumsum(amount),
@@ -1197,71 +1197,71 @@ customer_metrics <- transactions %>%
     # Previous order
     prev_order_amount = lag(amount, 1),
     days_since_last_order = as.numeric(date - lag(date, 1))
-  ) %>%
-  ungroup() %>%
+  ) |>
+  ungroup() |>
   compute("customer_metrics")
 ```
 
 ### Example 4: Multi-Table Join Pipeline
 ```r
 # Complex join with multiple tables
-comprehensive_view <- transactions %>%
+comprehensive_view <- transactions |>
   # Join customer data
   left_join(
     tbl(sc, "customers"),
     by = "customer_id"
-  ) %>%
+  ) |>
   # Join product data
   left_join(
     tbl(sc, "products"),
     by = "product_id"
-  ) %>%
+  ) |>
   # Join regional data (broadcast small table)
   left_join(
     sdf_broadcast(tbl(sc, "regions")),
     by = "region_code"
-  ) %>%
+  ) |>
   # Filter and select
   filter(
     customer_status == "active",
     product_availability == TRUE
-  ) %>%
+  ) |>
   select(
     customer_id, customer_name, customer_segment,
     product_id, product_name, product_category,
     region_name, region_market,
     transaction_date = date,
     amount, quantity
-  ) %>%
+  ) |>
   compute("comprehensive_view")
 ```
 
 ### Example 5: Debugging SQL Translation
 ```r
 # Build complex query
-query <- transactions %>%
-  filter(year(date) == 2024) %>%
-  group_by(product_category) %>%
+query <- transactions |>
+  filter(year(date) == 2024) |>
+  group_by(product_category) |>
   summarize(
     total_sales = sum(amount),
     avg_order = mean(amount)
-  ) %>%
-  filter(total_sales > 100000) %>%
+  ) |>
+  filter(total_sales > 100000) |>
   arrange(desc(total_sales))
 
 # Inspect SQL before executing
-query %>% show_query()
+query |> show_query()
 
 # Check execution plan
-query %>% explain()
+query |> explain()
 
 # Execute on sample first
-query %>%
-  head(10) %>%
+query |>
+  head(10) |>
   collect()
 
 # If satisfied, collect full results
-results <- query %>% collect()
+results <- query |> collect()
 ```
 
 ## 11. Comparison Tables

@@ -115,7 +115,7 @@ plot_ly(
     "<b>HP:</b> %{y}<br>",
     "<extra></extra>"
   )
-) %>%
+) |>
   layout(
     title = "Interactive Car Performance",
     xaxis = list(title = "Miles per Gallon"),
@@ -158,12 +158,12 @@ install.packages("leaflet")
 ```{r}
 library(leaflet)
 
-leaflet() %>%
-  addTiles() %>%
+leaflet() |>
+  addTiles() |>
   addMarkers(
     lng = -122.4194, lat = 37.7749,
     popup = "San Francisco, CA"
-  ) %>%
+  ) |>
   setView(lng = -122.4194, lat = 37.7749, zoom = 12)
 ```
 ```
@@ -185,8 +185,8 @@ locations <- data.frame(
 # Color palette
 pal <- colorNumeric(palette = "YlOrRd", domain = locations$value)
 
-leaflet(locations) %>%
-  addProviderTiles(providers$CartoDB.Positron) %>%
+leaflet(locations) |>
+  addProviderTiles(providers$CartoDB.Positron) |>
   addCircleMarkers(
     lng = ~lng,
     lat = ~lat,
@@ -194,7 +194,7 @@ leaflet(locations) %>%
     color = ~pal(value),
     popup = ~paste0("<b>", name, "</b><br>Value: ", value),
     fillOpacity = 0.7
-  ) %>%
+  ) |>
   addLegend(
     position = "bottomright",
     pal = pal,
@@ -247,8 +247,8 @@ datatable(
       list(className = "dt-center", targets = "_all")
     )
   )
-) %>%
-  formatRound(columns = 1:4, digits = 2) %>%
+) |>
+  formatRound(columns = 1:4, digits = 2) |>
   formatStyle(
     "Sepal.Length",
     background = styleColorBar(iris$Sepal.Length, "lightblue"),
@@ -271,9 +271,9 @@ install.packages("dygraphs")
 ```{r}
 library(dygraphs)
 
-dygraph(nhtemp, main = "New Haven Temperatures") %>%
-  dyRangeSelector() %>%
-  dyOptions(fillGraph = TRUE, fillAlpha = 0.4) %>%
+dygraph(nhtemp, main = "New Haven Temperatures") |>
+  dyRangeSelector() |>
+  dyOptions(fillGraph = TRUE, fillAlpha = 0.4) |>
   dyHighlight(highlightCircleSize = 5)
 ```
 ```
@@ -292,9 +292,9 @@ series2 <- cumsum(rnorm(length(dates)))
 data <- xts(cbind(series1, series2), order.by = dates)
 colnames(data) <- c("Series A", "Series B")
 
-dygraph(data, main = "Time Series Comparison") %>%
-  dyRangeSelector() %>%
-  dyOptions(colors = c("#1f77b4", "#ff7f0e")) %>%
+dygraph(data, main = "Time Series Comparison") |>
+  dyRangeSelector() |>
+  dyOptions(colors = c("#1f77b4", "#ff7f0e")) |>
   dyLegend(width = 400)
 ```
 ```
@@ -314,13 +314,13 @@ install.packages("gt")
 library(gt)
 library(dplyr)
 
-mtcars %>%
-  head(10) %>%
-  gt() %>%
+mtcars |>
+  head(10) |>
+  gt() |>
   tab_header(
     title = "Motor Trend Car Road Tests",
     subtitle = "Top 10 vehicles"
-  ) %>%
+  ) |>
   fmt_number(
     columns = c(mpg, disp, hp, drat, wt, qsec),
     decimals = 1
@@ -334,39 +334,39 @@ mtcars %>%
 library(gt)
 library(dplyr)
 
-mtcars %>%
-  group_by(cyl) %>%
+mtcars |>
+  group_by(cyl) |>
   summarize(
     count = n(),
     avg_mpg = mean(mpg),
     avg_hp = mean(hp),
     .groups = "drop"
-  ) %>%
-  gt() %>%
+  ) |>
+  gt() |>
   tab_header(
     title = "Car Statistics by Cylinder Count"
-  ) %>%
-  tab_stubhead(label = "Cylinders") %>%
+  ) |>
+  tab_stubhead(label = "Cylinders") |>
   fmt_number(
     columns = c(avg_mpg, avg_hp),
     decimals = 1
-  ) %>%
+  ) |>
   cols_label(
     count = "Count",
     avg_mpg = "Avg MPG",
     avg_hp = "Avg HP"
-  ) %>%
+  ) |>
   data_color(
     columns = avg_mpg,
     colors = scales::col_numeric(
       palette = c("red", "yellow", "green"),
       domain = NULL
     )
-  ) %>%
+  ) |>
   tab_style(
     style = cell_text(weight = "bold"),
     locations = cells_body(columns = avg_mpg)
-  ) %>%
+  ) |>
   tab_source_note("Source: Motor Trend magazine")
 ```
 ```
@@ -399,20 +399,20 @@ kable(head(mtcars), caption = "Motor Trend Cars")
 library(knitr)
 library(kableExtra)
 
-mtcars %>%
-  head(10) %>%
+mtcars |>
+  head(10) |>
   kable(
     caption = "Motor Trend Car Road Tests",
     digits = 1,
     col.names = c("MPG", "Cyl", "Disp", "HP", "Drat", "WT", "Qsec", "VS", "AM", "Gear", "Carb")
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "hover", "condensed"),
     full_width = FALSE,
     position = "left"
-  ) %>%
-  row_spec(0, bold = TRUE) %>%
-  column_spec(1, bold = TRUE) %>%
+  ) |>
+  row_spec(0, bold = TRUE) |>
+  column_spec(1, bold = TRUE) |>
   add_header_above(c(" " = 1, "Engine" = 3, "Performance" = 7))
 ```
 ```
@@ -429,10 +429,10 @@ install.packages("flextable")
 ```{r}
 library(flextable)
 
-mtcars %>%
-  head(10) %>%
-  flextable() %>%
-  set_caption("Motor Trend Cars") %>%
+mtcars |>
+  head(10) |>
+  flextable() |>
+  set_caption("Motor Trend Cars") |>
   autofit()
 ```
 ```
@@ -443,19 +443,19 @@ mtcars %>%
 library(flextable)
 library(dplyr)
 
-mtcars %>%
-  head(10) %>%
-  flextable() %>%
+mtcars |>
+  head(10) |>
+  flextable() |>
   set_header_labels(
     mpg = "MPG",
     cyl = "Cylinders",
     hp = "Horsepower"
-  ) %>%
-  colformat_double(digits = 1) %>%
-  bg(bg = "#EFEFEF", part = "header") %>%
-  bold(part = "header") %>%
-  color(j = "mpg", color = "blue") %>%
-  autofit() %>%
+  ) |>
+  colformat_double(digits = 1) |>
+  bg(bg = "#EFEFEF", part = "header") |>
+  bold(part = "header") |>
+  color(j = "mpg", color = "blue") |>
+  autofit() |>
   set_caption("Motor Trend Car Road Tests")
 ```
 ```
@@ -539,8 +539,8 @@ install.packages("tidyverse")
 library(tidyverse)
 
 # Read and process data
-data <- read_csv("data.csv") %>%
-  filter(!is.na(value)) %>%
+data <- read_csv("data.csv") |>
+  filter(!is.na(value)) |>
   mutate(
     log_value = log(value),
     category = case_when(
@@ -548,14 +548,14 @@ data <- read_csv("data.csv") %>%
       value > 50 ~ "Medium",
       TRUE ~ "Low"
     )
-  ) %>%
-  group_by(category) %>%
+  ) |>
+  group_by(category) |>
   summarize(
     count = n(),
     mean_value = mean(value),
     sd_value = sd(value),
     .groups = "drop"
-  ) %>%
+  ) |>
   arrange(desc(mean_value))
 
 # Display results
@@ -565,7 +565,7 @@ knitr::kable(data)
 
 **Best Practices:**
 - Use `read_csv()` for better defaults than `read.csv()`
-- Pipe operations with `%>%` for readability
+- Pipe operations with `|>` for readability
 - Use `group_by()` + `summarize()` for aggregations
 - Add `.groups = "drop"` to avoid warnings
 
@@ -679,8 +679,8 @@ summary(model)
 
 # Tidy results with broom
 library(broom)
-tidy(model) %>% knitr::kable(digits = 3)
-glance(model) %>% knitr::kable(digits = 3)
+tidy(model) |> knitr::kable(digits = 3)
+glance(model) |> knitr::kable(digits = 3)
 ```
 ```
 
@@ -692,7 +692,7 @@ library(broom.mixed)
 
 model <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 
-tidy(model) %>% knitr::kable(digits = 3)
+tidy(model) |> knitr::kable(digits = 3)
 ```
 ```
 

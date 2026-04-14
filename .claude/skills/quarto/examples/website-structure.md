@@ -216,7 +216,7 @@ Your blog post content here...
 library(tidyverse)
 library(palmerpenguins)
 
-penguins %>%
+penguins |>
   ggplot(aes(x = species, y = body_mass_g)) +
   geom_boxplot()
 ```
